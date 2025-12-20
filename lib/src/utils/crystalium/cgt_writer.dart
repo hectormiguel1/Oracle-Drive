@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'package:ff13_mod_resource/models/crystalium/cgt_file.dart';
+import 'package:oracle_drive/models/crystalium/cgt_file.dart';
 
 /// Writer for FF13 Crystarium CGT (Crystal Graph Tree) files.
 ///
@@ -17,7 +17,8 @@ class CgtWriter {
     // Calculate total size
     final entryCount = cgtFile.entries.length;
     final nodeCount = cgtFile.nodes.length;
-    final totalSize = _headerSize + (entryCount * _entrySize) + (nodeCount * _nodeRecordSize);
+    final totalSize =
+        _headerSize + (entryCount * _entrySize) + (nodeCount * _nodeRecordSize);
 
     final buffer = ByteData(totalSize);
     var offset = 0;

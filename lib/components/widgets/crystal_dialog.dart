@@ -1,5 +1,5 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_panel.dart';
-import 'package:ff13_mod_resource/components/widgets/style.dart';
+import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
 import 'package:flutter/material.dart';
 
 class CrystalDialog extends StatelessWidget {
@@ -28,10 +28,7 @@ class CrystalDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: CrystalStyles.title.copyWith(fontSize: 20),
-              ),
+              Text(title, style: CrystalStyles.title.copyWith(fontSize: 20)),
               const SizedBox(height: 16),
               DefaultTextStyle(
                 style: const TextStyle(

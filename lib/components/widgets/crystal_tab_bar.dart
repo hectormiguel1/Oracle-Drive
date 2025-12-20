@@ -1,15 +1,12 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
 import 'package:flutter/material.dart';
 
 class CrystalTabBar extends StatelessWidget {
   final List<String> labels;
   final List<IconData> icons;
 
-  const CrystalTabBar({
-    super.key,
-    required this.labels,
-    required this.icons,
-  }) : assert(labels.length == icons.length);
+  const CrystalTabBar({super.key, required this.labels, required this.icons})
+    : assert(labels.length == icons.length);
 
   @override
   Widget build(BuildContext context) {

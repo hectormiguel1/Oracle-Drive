@@ -1,6 +1,6 @@
-import 'package:ff13_mod_resource/components/widgets/style.dart';
-import 'package:ff13_mod_resource/src/third_party/logging_ctx.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
+import 'package:oracle_drive/src/third_party/logging_ctx.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -59,9 +59,7 @@ class _CrystalConsoleState extends State<CrystalConsole> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.9),
-        border: Border(
-          top: BorderSide(color: accentColor, width: 2),
-        ),
+        border: Border(top: BorderSide(color: accentColor, width: 2)),
         boxShadow: [
           BoxShadow(
             color: accentColor.withValues(alpha: 0.1),
@@ -80,22 +78,18 @@ class _CrystalConsoleState extends State<CrystalConsole> {
             decoration: BoxDecoration(
               color: CrystalColors.panelBackground.withValues(alpha: 0.5),
               border: Border(
-                bottom: BorderSide(
-                  color: Colors.white.withValues(alpha: 0.1),
-                ),
+                bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
               ),
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.terminal,
-                  color: accentColor,
-                  size: 18,
-                ),
+                Icon(Icons.terminal, color: accentColor, size: 18),
                 const SizedBox(width: 8),
                 Text(
                   "SYSTEM LOG",
-                  style: CrystalStyles.sectionHeader.copyWith(color: accentColor),
+                  style: CrystalStyles.sectionHeader.copyWith(
+                    color: accentColor,
+                  ),
                 ),
                 const Spacer(),
                 // Clear Button

@@ -1,10 +1,10 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart';
-import 'package:ff13_mod_resource/models/ztr_model.dart';
-import 'package:ff13_mod_resource/src/services/native_service.dart';
-import 'package:ff13_mod_resource/src/third_party/ztrlib/ztr.g.dart' as native;
-import 'package:ff13_mod_resource/src/utils/native_result_utils.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/models/ztr_model.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/third_party/ztrlib/ztr.g.dart' as native;
+import 'package:oracle_drive/src/utils/native_result_utils.dart';
 
 class ZtrTool {
   static Future<int> extractDataToDb(String path, AppGameCode game) async {
@@ -16,7 +16,11 @@ class ZtrTool {
     AppGameCode game, {
     native.ZTREncoding encoding = native.ZTREncoding.ZTR_ENCODING_AUTO,
   }) async {
-    return await NativeService.instance.extractZtrToTxt(inZtrPath, game, encoding: encoding);
+    return await NativeService.instance.extractZtrToTxt(
+      inZtrPath,
+      game,
+      encoding: encoding,
+    );
   }
 
   static Future<int> convertToZtr(
@@ -25,7 +29,12 @@ class ZtrTool {
     native.ZTREncoding encoding = native.ZTREncoding.ZTR_ENCODING_AUTO,
     native.ZTRAction action = native.ZTRAction.ZTR_ACTION_X,
   }) async {
-    return await NativeService.instance.convertTxtToZtr(inTxtPath, game, encoding: encoding, action: action);
+    return await NativeService.instance.convertTxtToZtr(
+      inTxtPath,
+      game,
+      encoding: encoding,
+      action: action,
+    );
   }
 
   static Future<int> packFromData(
@@ -35,7 +44,13 @@ class ZtrTool {
     native.ZTREncoding encoding = native.ZTREncoding.ZTR_ENCODING_AUTO,
     native.ZTRAction action = native.ZTRAction.ZTR_ACTION_X,
   }) async {
-    return await NativeService.instance.packZtrData(data, outZtrPath, game, encoding: encoding, action: action);
+    return await NativeService.instance.packZtrData(
+      data,
+      outZtrPath,
+      game,
+      encoding: encoding,
+      action: action,
+    );
   }
 
   static Future<int> dumpFromData(ZtrData data, String outTxtPath) async {
@@ -48,7 +63,12 @@ class ZtrTool {
     native.ZTREncoding encoding = native.ZTREncoding.ZTR_ENCODING_AUTO,
     native.ZTRAction action = native.ZTRAction.ZTR_ACTION_C2,
   }) async {
-    return await NativeService.instance.dumpZtrFileFromDb(game, outZtrPath, encoding: encoding, action: action);
+    return await NativeService.instance.dumpZtrFileFromDb(
+      game,
+      outZtrPath,
+      encoding: encoding,
+      action: action,
+    );
   }
 
   static Future<int> dumpFromDb(AppGameCode game, String outTxtPath) async {
@@ -104,7 +124,9 @@ class ZtrTool {
     return ptr;
   }
 
-  static Map<String, String> convertFromNative(Pointer<native.ZtrResultData> dataPtr) {
+  static Map<String, String> convertFromNative(
+    Pointer<native.ZtrResultData> dataPtr,
+  ) {
     final data = dataPtr.ref;
     final Map<String, String> strings = {};
 
@@ -146,7 +168,12 @@ class ZtrTool {
     });
   }
 
-  static void convert(String path, int gameCodeValue, int encodingVal, int actionVal) {
+  static void convert(
+    String path,
+    int gameCodeValue,
+    int encodingVal,
+    int actionVal,
+  ) {
     using((Arena arena) {
       final pathPtr = path.toNativeUtf8(allocator: arena).cast<Char>();
       final result = native.ztr_convert(
@@ -163,7 +190,13 @@ class ZtrTool {
     });
   }
 
-  static void packData(ZtrData data, String path, int gameCodeValue, int encodingVal, int actionVal) {
+  static void packData(
+    ZtrData data,
+    String path,
+    int gameCodeValue,
+    int encodingVal,
+    int actionVal,
+  ) {
     using((Arena arena) {
       final pathPtr = path.toNativeUtf8(allocator: arena).cast<Char>();
       final dataPtr = allocateZtrData(data, arena);

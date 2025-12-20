@@ -1,5 +1,5 @@
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/src/third_party/wdb/wdb.g.dart' as native;
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/src/third_party/wdb/wdb.g.dart' as native;
 
 class WdbData {
   String sheetName;
@@ -22,11 +22,7 @@ class WdbHeaderEntry {
   final native.WDBValueType type;
   final dynamic value;
 
-  WdbHeaderEntry({
-    required this.name,
-    required this.type,
-    required this.value,
-  });
+  WdbHeaderEntry({required this.name, required this.type, required this.value});
 }
 
 class WdbColumn {

@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
 import 'package:isar_plus/isar_plus.dart';
 
 class IsarUpsertSpec<T> {

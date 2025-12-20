@@ -1,7 +1,6 @@
-import 'package:ff13_mod_resource/src/isar/common/models.dart' show fastHash;
+import 'package:oracle_drive/src/isar/common/models.dart' show fastHash;
 import 'package:isar_plus/isar_plus.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/shop.dart'
-    as wdb_entity;
+import 'package:oracle_drive/models/wdb_entities/xiii/shop.dart' as wdb_entity;
 
 part 'shop.g.dart';
 

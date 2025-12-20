@@ -1,8 +1,8 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'package:ff13_mod_resource/src/services/native_service.dart';
-import 'package:ff13_mod_resource/src/third_party/wpdlib/wpd.g.dart' as native;
-import 'package:ff13_mod_resource/src/utils/native_result_utils.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/third_party/wpdlib/wpd.g.dart' as native;
+import 'package:oracle_drive/src/utils/native_result_utils.dart';
 
 class WpdTool {
   static Future<int> unpackFile(String inputWdpFile) async {

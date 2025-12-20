@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
 
 Map<String, Map<LookupType, List<String>>> get sharedLookups => {
   'treasurebox': {

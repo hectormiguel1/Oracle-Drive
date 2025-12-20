@@ -1,9 +1,9 @@
-import 'package:ff13_mod_resource/src/isar/common/common_repository.dart';
-import 'package:ff13_mod_resource/src/isar/update_sepc.dart';
-import 'package:ff13_mod_resource/src/isar/xiii/entity_mapper.dart';
-import 'package:ff13_mod_resource/src/isar/xiii/mission.dart';
-import 'package:ff13_mod_resource/src/isar/xiii/shop.dart';
-import 'package:ff13_mod_resource/src/isar/xiii/special_ability.dart';
+import 'package:oracle_drive/src/isar/common/common_repository.dart';
+import 'package:oracle_drive/src/isar/update_sepc.dart';
+import 'package:oracle_drive/src/isar/xiii/entity_mapper.dart';
+import 'package:oracle_drive/src/isar/xiii/mission.dart';
+import 'package:oracle_drive/src/isar/xiii/shop.dart';
+import 'package:oracle_drive/src/isar/xiii/special_ability.dart';
 import 'package:isar_plus/isar_plus.dart';
 
 class FF13Repository extends CommonGameRepository {

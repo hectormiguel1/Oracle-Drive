@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 
 class CrystalProgressBar extends StatelessWidget {

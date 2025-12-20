@@ -1,6 +1,6 @@
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
-import 'package:ff13_mod_resource/src/third_party/common.g.dart' as common;
+import 'package:oracle_drive/src/third_party/common.g.dart' as common;
 
 class NativeResult {
   /// Unwraps a Result, freeing it afterwards using the provided [freeFunction].

@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -27,9 +27,7 @@ class CrystalTextField extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.3),
-        border: Border(
-          bottom: BorderSide(color: accentColor, width: 1.5),
-        ),
+        border: Border(bottom: BorderSide(color: accentColor, width: 1.5)),
       ),
       child: TextField(
         controller: controller,

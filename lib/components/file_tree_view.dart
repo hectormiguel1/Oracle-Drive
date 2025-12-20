@@ -1,6 +1,6 @@
-import 'package:ff13_mod_resource/models/file_node.dart';
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/models/file_node.dart';
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view2/flutter_fancy_tree_view2.dart';
 

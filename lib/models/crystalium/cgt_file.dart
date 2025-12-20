@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
 
 /// Represents a Crystarium role (combat class)
 enum CrystariumRole {

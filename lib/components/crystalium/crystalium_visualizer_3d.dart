@@ -1,14 +1,14 @@
 import 'dart:math' as math;
 import 'dart:ui';
-import 'package:ff13_mod_resource/components/widgets/crystal_button.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_checkbox.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_container.dart';
-import 'package:ff13_mod_resource/components/widgets/style.dart';
-import 'package:ff13_mod_resource/models/crystalium/cgt_file.dart';
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
-import 'package:ff13_mod_resource/src/utils/crystalium/crystalium_renderer.dart';
-import 'package:ff13_mod_resource/src/utils/crystalium/crystalium_walker.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_checkbox.dart';
+import 'package:oracle_drive/components/widgets/crystal_container.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
+import 'package:oracle_drive/models/crystalium/cgt_file.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/src/utils/crystalium/crystalium_renderer.dart';
+import 'package:oracle_drive/src/utils/crystalium/crystalium_walker.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 enum VisualizerMode {
   /// Free orbit camera mode
   orbit,
+
   /// Walking mode - navigate through the tree
   walk,
 }
@@ -127,7 +128,8 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
       _walker = CrystariumWalker(_renderer);
 
       // Restore walker position if we were in walk mode and the node still exists
-      if (wasInWalkMode && _renderer.nodeWorldPositions.containsKey(previousNodeId)) {
+      if (wasInWalkMode &&
+          _renderer.nodeWorldPositions.containsKey(previousNodeId)) {
         _walker!.jumpToNode(previousNodeId);
         // Restore visited nodes that still exist
         for (final nodeId in previousVisitedNodes) {
@@ -287,7 +289,10 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
     _clickableDirections = directions;
   }
 
-  List<Widget> _buildDirectionButtons(BoxConstraints constraints, CrystalTheme theme) {
+  List<Widget> _buildDirectionButtons(
+    BoxConstraints constraints,
+    CrystalTheme theme,
+  ) {
     if (_walker == null) return [];
 
     // Filter directions by enabled roles only
@@ -369,11 +374,7 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    icon,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                  Icon(icon, color: Colors.white, size: 28),
                   const SizedBox(height: 2),
                   Text(
                     label,
@@ -397,7 +398,8 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
       if (cgtNode != null && cgtNode.parentIndex >= 0) {
         // Check if parent is in enabled roles
         final parentInfo = _renderer.nodeInfo[cgtNode.parentIndex];
-        final parentRoleEnabled = parentInfo == null || _enabledRoles.contains(parentInfo.roleId);
+        final parentRoleEnabled =
+            parentInfo == null || _enabledRoles.contains(parentInfo.roleId);
 
         if (parentRoleEnabled) {
           widgets.add(
@@ -481,8 +483,14 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                     // Walk mode - allow rotation and zoom adjustment
                     _walkRotationY += details.focalPointDelta.dx * 0.01;
                     _walkRotationX -= details.focalPointDelta.dy * 0.01;
-                    _walkRotationX = _walkRotationX.clamp(-math.pi / 2, math.pi / 2);
-                    _walkZoom = (_previousZoom * details.scale).clamp(4.0, 25.0);
+                    _walkRotationX = _walkRotationX.clamp(
+                      -math.pi / 2,
+                      math.pi / 2,
+                    );
+                    _walkZoom = (_previousZoom * details.scale).clamp(
+                      4.0,
+                      25.0,
+                    );
                   }
                 });
               },
@@ -492,10 +500,13 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                 }
               },
               onDoubleTap: () {
-                if (_mode == VisualizerMode.walk && _walker != null && widget.onEditNodeName != null) {
+                if (_mode == VisualizerMode.walk &&
+                    _walker != null &&
+                    widget.onEditNodeName != null) {
                   final currentNodeId = _walker!.currentNodeId;
                   final cgtNode = widget.cgtFile.getNode(currentNodeId);
-                  final currentName = cgtNode?.name.replaceAll(RegExp(r'\x00'), '') ?? '';
+                  final currentName =
+                      cgtNode?.name.replaceAll(RegExp(r'\x00'), '') ?? '';
                   widget.onEditNodeName!(currentNodeId, currentName);
                 }
               },
@@ -508,9 +519,15 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                         size: _lastSize,
                         painter: CrystariumPainter(
                           renderer: _renderer,
-                          rotationX: _mode == VisualizerMode.orbit ? _rotationX : _walkRotationX,
-                          rotationY: _mode == VisualizerMode.orbit ? _rotationY : _walkRotationY,
-                          zoom: _mode == VisualizerMode.orbit ? _zoom : _walkZoom,
+                          rotationX: _mode == VisualizerMode.orbit
+                              ? _rotationX
+                              : _walkRotationX,
+                          rotationY: _mode == VisualizerMode.orbit
+                              ? _rotationY
+                              : _walkRotationY,
+                          zoom: _mode == VisualizerMode.orbit
+                              ? _zoom
+                              : _walkZoom,
                           currentStage: _currentStage,
                           selectedEntry: widget.selectedEntry,
                           selectedNodeIdx: _mode == VisualizerMode.walk
@@ -520,7 +537,9 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                           walker: _mode == VisualizerMode.walk ? _walker : null,
                           visitedNodes: _walker?.visitedNodes ?? {},
                           enabledRoles: _enabledRoles,
-                          cameraOffset: _mode == VisualizerMode.walk ? _currentCameraPos : null,
+                          cameraOffset: _mode == VisualizerMode.walk
+                              ? _currentCameraPos
+                              : null,
                           isWalkMode: _mode == VisualizerMode.walk,
                           showNodeNames: _showNodeNames,
                         ),
@@ -550,9 +569,19 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildModeButton(VisualizerMode.orbit, 'Orbit', Icons.threed_rotation, theme),
+              _buildModeButton(
+                VisualizerMode.orbit,
+                'Orbit',
+                Icons.threed_rotation,
+                theme,
+              ),
               const SizedBox(width: 4),
-              _buildModeButton(VisualizerMode.walk, 'Walk', Icons.directions_walk, theme),
+              _buildModeButton(
+                VisualizerMode.walk,
+                'Walk',
+                Icons.directions_walk,
+                theme,
+              ),
             ],
           ),
           const SizedBox(width: 16),
@@ -657,20 +686,31 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
     );
   }
 
-  Widget _buildModeButton(VisualizerMode mode, String label, IconData icon, CrystalTheme theme) {
+  Widget _buildModeButton(
+    VisualizerMode mode,
+    String label,
+    IconData icon,
+    CrystalTheme theme,
+  ) {
     final isSelected = _mode == mode;
     return GestureDetector(
       onTap: () => _onModeChanged(mode),
       child: CrystalContainer(
         skew: 12,
-        color: isSelected ? theme.accent.withValues(alpha: 0.2) : CrystalColors.panelBackground,
+        color: isSelected
+            ? theme.accent.withValues(alpha: 0.2)
+            : CrystalColors.panelBackground,
         borderColor: isSelected ? theme.accent : Colors.white24,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 14, color: isSelected ? theme.accent : Colors.white54),
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? theme.accent : Colors.white54,
+              ),
               const SizedBox(width: 4),
               Text(
                 label,
@@ -703,11 +743,17 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                 onTap: () => _toggleRole(role.id),
                 onDoubleTap: () => _enableOnlyRole(role.id),
                 child: Tooltip(
-                  message: '${role.fullName}\nClick: Toggle\nDouble-click: Solo',
+                  message:
+                      '${role.fullName}\nClick: Toggle\nDouble-click: Solo',
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: isEnabled ? color.withValues(alpha: 0.3) : Colors.white10,
+                      color: isEnabled
+                          ? color.withValues(alpha: 0.3)
+                          : Colors.white10,
                       borderRadius: BorderRadius.circular(4),
                       border: Border.all(
                         color: isEnabled ? color : Colors.white24,
@@ -731,7 +777,9 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                           style: TextStyle(
                             color: isEnabled ? Colors.white : Colors.white38,
                             fontSize: 11,
-                            fontWeight: isEnabled ? FontWeight.bold : FontWeight.normal,
+                            fontWeight: isEnabled
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -748,7 +796,10 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               minimumSize: Size.zero,
             ),
-            child: Text('All', style: TextStyle(color: theme.accent, fontSize: 11)),
+            child: Text(
+              'All',
+              style: TextStyle(color: theme.accent, fontSize: 11),
+            ),
           ),
           const SizedBox(width: 16),
           Container(width: 1, height: 24, color: Colors.white24),
@@ -783,7 +834,8 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
     }
 
     final nodeName = cgtNode?.name.replaceAll(RegExp(r'\x00'), '') ?? 'Unknown';
-    final patternName = currentEntry?.patternName.replaceAll(RegExp(r'\x00'), '') ?? 'N/A';
+    final patternName =
+        currentEntry?.patternName.replaceAll(RegExp(r'\x00'), '') ?? 'N/A';
     final stage = nodeInfo?.stage ?? currentEntry?.stage ?? 1;
     final roleId = nodeInfo?.roleId ?? currentEntry?.roleId ?? 0;
     final role = CrystariumRole.fromId(roleId);
@@ -802,7 +854,10 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.white.withValues(alpha: 0.08), Colors.transparent],
+              colors: [
+                Colors.white.withValues(alpha: 0.08),
+                Colors.transparent,
+              ],
             ),
           ),
           child: Row(
@@ -833,7 +888,10 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                           color: theme.accent.withValues(alpha: 0.2),
                           borderColor: theme.accent,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             child: Text(
                               '#$currentNodeId',
                               style: TextStyle(
@@ -899,7 +957,11 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                       label: 'Add Offshoot',
                       icon: Icons.add_circle_outline,
                       onPressed: () {
-                        widget.onAddOffshoot?.call(currentNodeId, stage, roleId);
+                        widget.onAddOffshoot?.call(
+                          currentNodeId,
+                          stage,
+                          roleId,
+                        );
                       },
                     ),
                 ],
@@ -929,9 +991,13 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                             width: 20,
                             height: 20,
                             decoration: BoxDecoration(
-                              color: _getRoleColor(dir.roleId).withValues(alpha: 0.3),
+                              color: _getRoleColor(
+                                dir.roleId,
+                              ).withValues(alpha: 0.3),
                               shape: BoxShape.circle,
-                              border: Border.all(color: _getRoleColor(dir.roleId)),
+                              border: Border.all(
+                                color: _getRoleColor(dir.roleId),
+                              ),
                             ),
                           ),
                         );
@@ -961,13 +1027,7 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 12)),
       ],
     );
   }
@@ -994,18 +1054,12 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
             Container(
               width: 10,
               height: 10,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 4),
             Text(
               '${role.abbreviation} (${role.fullName})',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 12),
             ),
           ],
         ),
@@ -1051,13 +1105,20 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
 
   Color _getRoleColor(int roleId) {
     switch (roleId) {
-      case 0: return const Color(0xFFFF4444); // COM - Red
-      case 1: return const Color(0xFF44FF44); // RAV - Green
-      case 2: return const Color(0xFF4444FF); // SEN - Blue
-      case 3: return const Color(0xFFFF44FF); // SAB - Magenta
-      case 4: return const Color(0xFFFFFF44); // SYN - Yellow
-      case 5: return const Color(0xFF44FFFF); // MED - Cyan
-      default: return Colors.white;
+      case 0:
+        return const Color(0xFFFF4444); // COM - Red
+      case 1:
+        return const Color(0xFF44FF44); // RAV - Green
+      case 2:
+        return const Color(0xFF4444FF); // SEN - Blue
+      case 3:
+        return const Color(0xFFFF44FF); // SAB - Magenta
+      case 4:
+        return const Color(0xFFFFFF44); // SYN - Yellow
+      case 5:
+        return const Color(0xFF44FFFF); // MED - Cyan
+      default:
+        return Colors.white;
     }
   }
 }
@@ -1130,7 +1191,8 @@ class CrystariumPainter extends CustomPainter {
       final toRole = toInfo?.roleId ?? 0;
 
       // Show connection if either end is in enabled roles (or it's the root)
-      final showConnection = enabledRoles.contains(fromRole) ||
+      final showConnection =
+          enabledRoles.contains(fromRole) ||
           enabledRoles.contains(toRole) ||
           conn.fromNodeId == 0 ||
           conn.toNodeId == 0;
@@ -1142,17 +1204,21 @@ class CrystariumPainter extends CustomPainter {
       final from = _project(fromPos, scale);
       final to = _project(toPos, scale);
       if (from.isVisible && to.isVisible) {
-        final isVisited = visitedNodes.contains(conn.fromNodeId) &&
+        final isVisited =
+            visitedNodes.contains(conn.fromNodeId) &&
             visitedNodes.contains(conn.toNodeId);
-        final isFiltered = !enabledRoles.contains(fromRole) && !enabledRoles.contains(toRole);
-        projectedConnections.add(_ProjectedConnection(
-          from: from,
-          to: to,
-          depth: (from.z + to.z) / 2,
-          roleId: conn.roleId,
-          isVisited: isVisited,
-          isFiltered: isFiltered,
-        ));
+        final isFiltered =
+            !enabledRoles.contains(fromRole) && !enabledRoles.contains(toRole);
+        projectedConnections.add(
+          _ProjectedConnection(
+            from: from,
+            to: to,
+            depth: (from.z + to.z) / 2,
+            roleId: conn.roleId,
+            isVisited: isVisited,
+            isFiltered: isFiltered,
+          ),
+        );
       }
     }
     projectedConnections.sort((a, b) => b.depth.compareTo(a.depth));
@@ -1191,14 +1257,16 @@ class CrystariumPainter extends CustomPainter {
           nodeName = cgtNode?.name;
         }
 
-        projectedNodes.add(_ProjectedNode(
-          nodeId: nodeId,
-          screen: projected,
-          roleId: roleId,
-          stage: info?.stage ?? 1,
-          isVisited: visitedNodes.contains(nodeId),
-          nodeName: nodeName,
-        ));
+        projectedNodes.add(
+          _ProjectedNode(
+            nodeId: nodeId,
+            screen: projected,
+            roleId: roleId,
+            stage: info?.stage ?? 1,
+            isVisited: visitedNodes.contains(nodeId),
+            nodeName: nodeName,
+          ),
+        );
       }
     }
     projectedNodes.sort((a, b) => b.screen.z.compareTo(a.screen.z));
@@ -1228,7 +1296,8 @@ class CrystariumPainter extends CustomPainter {
 
     // Draw nodes
     for (final node in projectedNodes) {
-      final isCurrentWalkerNode = walker != null && node.nodeId == walker!.currentNodeId;
+      final isCurrentWalkerNode =
+          walker != null && node.nodeId == walker!.currentNodeId;
       final isSelected = node.nodeId == selectedNodeIdx || isCurrentWalkerNode;
       final isInSelectedEntry =
           selectedEntry?.nodeIds.contains(node.nodeId) ?? false;
@@ -1331,14 +1400,18 @@ class CrystariumPainter extends CustomPainter {
     final filteredMultiplier = isFiltered ? 0.2 : 1.0;
 
     final glowPaint = Paint()
-      ..color = color.withValues(alpha: opacity * 0.3 * visitedMultiplier * filteredMultiplier)
+      ..color = color.withValues(
+        alpha: opacity * 0.3 * visitedMultiplier * filteredMultiplier,
+      )
       ..strokeWidth = isVisited ? 8.0 : 4.0
       ..strokeCap = StrokeCap.round
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     canvas.drawLine(from, to, glowPaint);
 
     final linePaint = Paint()
-      ..color = color.withValues(alpha: opacity * 0.7 * visitedMultiplier * filteredMultiplier)
+      ..color = color.withValues(
+        alpha: opacity * 0.7 * visitedMultiplier * filteredMultiplier,
+      )
       ..strokeWidth = isVisited ? 3.0 : 1.5
       ..strokeCap = StrokeCap.round;
     canvas.drawLine(from, to, linePaint);
@@ -1395,7 +1468,10 @@ class CrystariumPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(position.dx - textPainter.width / 2, position.dy - textPainter.height / 2),
+        Offset(
+          position.dx - textPainter.width / 2,
+          position.dy - textPainter.height / 2,
+        ),
       );
     }
   }
@@ -1469,7 +1545,9 @@ class CrystariumPainter extends CustomPainter {
 
     // Inner highlight
     final innerPaint = Paint()
-      ..color = Colors.white.withValues(alpha: opacity * 0.7 * visitedMultiplier)
+      ..color = Colors.white.withValues(
+        alpha: opacity * 0.7 * visitedMultiplier,
+      )
       ..style = PaintingStyle.fill;
     canvas.drawCircle(position, baseSize * 0.4, innerPaint);
 
@@ -1479,14 +1557,13 @@ class CrystariumPainter extends CustomPainter {
         text: TextSpan(
           text: nodeName,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: opacity * visitedMultiplier * 0.9),
+            color: Colors.white.withValues(
+              alpha: opacity * visitedMultiplier * 0.9,
+            ),
             fontSize: 9.0 * depthFactor,
             fontWeight: FontWeight.w500,
             shadows: [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.8),
-                blurRadius: 3,
-              ),
+              Shadow(color: Colors.black.withValues(alpha: 0.8), blurRadius: 3),
             ],
           ),
         ),
@@ -1495,23 +1572,27 @@ class CrystariumPainter extends CustomPainter {
       textPainter.layout();
       textPainter.paint(
         canvas,
-        Offset(
-          position.dx - textPainter.width / 2,
-          position.dy + baseSize + 4,
-        ),
+        Offset(position.dx - textPainter.width / 2, position.dy + baseSize + 4),
       );
     }
   }
 
   Color _getRoleColor(int roleId) {
     switch (roleId) {
-      case 0: return const Color(0xFFFF4444);
-      case 1: return const Color(0xFF44FF44);
-      case 2: return const Color(0xFF4444FF);
-      case 3: return const Color(0xFFFF44FF);
-      case 4: return const Color(0xFFFFFF44);
-      case 5: return const Color(0xFF44FFFF);
-      default: return Colors.white;
+      case 0:
+        return const Color(0xFFFF4444);
+      case 1:
+        return const Color(0xFF44FF44);
+      case 2:
+        return const Color(0xFF4444FF);
+      case 3:
+        return const Color(0xFFFF44FF);
+      case 4:
+        return const Color(0xFFFFFF44);
+      case 5:
+        return const Color(0xFF44FFFF);
+      default:
+        return Colors.white;
     }
   }
 
@@ -1525,7 +1606,8 @@ class CrystariumPainter extends CustomPainter {
         oldDelegate.selectedNodeIdx != selectedNodeIdx ||
         oldDelegate.walker?.currentNodeId != walker?.currentNodeId ||
         oldDelegate.walker?.transitionProgress != walker?.transitionProgress ||
-        oldDelegate.walker?.selectedDirectionIndex != walker?.selectedDirectionIndex ||
+        oldDelegate.walker?.selectedDirectionIndex !=
+            walker?.selectedDirectionIndex ||
         oldDelegate.enabledRoles != enabledRoles ||
         oldDelegate.cameraOffset != cameraOffset ||
         oldDelegate.showNodeNames != showNodeNames;

@@ -1,12 +1,12 @@
-import 'package:ff13_mod_resource/components/file_tree_view.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_button.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_panel.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_tab_bar.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_progress_bar.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart'; // Import AppGameCode
-import 'package:ff13_mod_resource/providers/app_state_provider.dart';
-import 'package:ff13_mod_resource/providers/wbt_provider.dart';
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.dart'; // Import wbt.g.dart for GameCode
+import 'package:oracle_drive/components/file_tree_view.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/components/widgets/crystal_tab_bar.dart';
+import 'package:oracle_drive/components/widgets/crystal_progress_bar.dart';
+import 'package:oracle_drive/models/app_game_code.dart'; // Import AppGameCode
+import 'package:oracle_drive/providers/app_state_provider.dart';
+import 'package:oracle_drive/providers/wbt_provider.dart';
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.dart'; // Import wbt.g.dart for GameCode
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

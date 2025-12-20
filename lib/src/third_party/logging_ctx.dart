@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:ff13_mod_resource/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
 
 // ignore: constant_identifier_names
 enum LogLevel { Finest, Fine, Info, Warning, Error }

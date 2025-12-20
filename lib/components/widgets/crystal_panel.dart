@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:ff13_mod_resource/components/widgets/style.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
 import 'package:flutter/material.dart';
 
 class CrystalPanel extends StatelessWidget {
@@ -27,7 +27,10 @@ class CrystalPanel extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.white.withValues(alpha: 0.08), Colors.transparent],
+              colors: [
+                Colors.white.withValues(alpha: 0.08),
+                Colors.transparent,
+              ],
             ),
           ),
           child: child,

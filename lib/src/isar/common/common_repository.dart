@@ -1,8 +1,8 @@
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/src/isar/common/entity_mapper.dart';
-import 'package:ff13_mod_resource/src/isar/common/models.dart';
-import 'package:ff13_mod_resource/src/isar/generic_repository.dart';
-import 'package:ff13_mod_resource/src/isar/update_sepc.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/src/isar/common/entity_mapper.dart';
+import 'package:oracle_drive/src/isar/common/models.dart';
+import 'package:oracle_drive/src/isar/generic_repository.dart';
+import 'package:oracle_drive/src/isar/update_sepc.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:logging/logging.dart';
 

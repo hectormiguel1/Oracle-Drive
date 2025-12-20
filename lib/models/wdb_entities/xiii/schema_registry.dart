@@ -1,13 +1,13 @@
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/battle_ability.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/battle_auto_ability.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/crystal.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/item.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/item_consume.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/item_weapon.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/mission.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/shop.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/special_ability.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/battle_ability.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/battle_auto_ability.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/crystal.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/item.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/item_consume.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/item_weapon.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/mission.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/shop.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/special_ability.dart';
 
 class WdbSchemaRegistry {
   static final Map<String, WdbEntity Function(Map<String, dynamic>)>

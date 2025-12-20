@@ -1,7 +1,5 @@
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.g.dart'
-    as wbt_native;
-import 'package:ff13_mod_resource/src/third_party/ztrlib/ztr.g.dart'
-    as ztr_native;
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.g.dart' as wbt_native;
+import 'package:oracle_drive/src/third_party/ztrlib/ztr.g.dart' as ztr_native;
 
 enum AppGameCode {
   ff13_1(0, 'FINAL FANTASY XIII'),

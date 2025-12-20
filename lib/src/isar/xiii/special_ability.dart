@@ -1,6 +1,6 @@
-import 'package:ff13_mod_resource/src/isar/common/models.dart' show fastHash;
+import 'package:oracle_drive/src/isar/common/models.dart' show fastHash;
 import 'package:isar_plus/isar_plus.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/special_ability.dart'
+import 'package:oracle_drive/models/wdb_entities/xiii/special_ability.dart'
     as wdb_entity;
 
 part 'special_ability.g.dart';

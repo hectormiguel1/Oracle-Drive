@@ -1,19 +1,19 @@
 import 'dart:io';
-import 'package:ff13_mod_resource/components/crystalium/crystalium_visualizer_3d.dart';
-import 'package:ff13_mod_resource/components/crystalium/mcp_visualizer.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_button.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_container.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_dialog.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_dropdowns.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_panel.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_text_field.dart';
-import 'package:ff13_mod_resource/models/crystalium/cgt_file.dart';
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
-import 'package:ff13_mod_resource/src/utils/crystalium/cgt_modifier.dart';
-import 'package:ff13_mod_resource/src/utils/crystalium/cgt_parser.dart';
-import 'package:ff13_mod_resource/src/utils/crystalium/cgt_writer.dart';
-import 'package:ff13_mod_resource/src/utils/crystalium/mcp_parser.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/crystalium/crystalium_visualizer_3d.dart';
+import 'package:oracle_drive/components/crystalium/mcp_visualizer.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_container.dart';
+import 'package:oracle_drive/components/widgets/crystal_dialog.dart';
+import 'package:oracle_drive/components/widgets/crystal_dropdowns.dart';
+import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/components/widgets/crystal_text_field.dart';
+import 'package:oracle_drive/models/crystalium/cgt_file.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/src/utils/crystalium/cgt_modifier.dart';
+import 'package:oracle_drive/src/utils/crystalium/cgt_parser.dart';
+import 'package:oracle_drive/src/utils/crystalium/cgt_writer.dart';
+import 'package:oracle_drive/src/utils/crystalium/mcp_parser.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -84,10 +84,10 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
 
           final childrenMap = <int, List<int>>{};
           for (var i = 0; i < cgt.nodes.length; i++) {
-             final pIdx = cgt.nodes[i].parentIndex;
-             if (pIdx != -1) {
-               childrenMap.putIfAbsent(pIdx, () => []).add(i);
-             }
+            final pIdx = cgt.nodes[i].parentIndex;
+            if (pIdx != -1) {
+              childrenMap.putIfAbsent(pIdx, () => []).add(i);
+            }
           }
 
           setState(() {
@@ -103,14 +103,17 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
             if (cgt.entries.isNotEmpty) {
               _selectedEntry = cgt.entries.first;
               if (cgt.entries.first.nodeIds.isNotEmpty) {
-                 final firstNode = cgt.entries.first.nodeIds.firstWhere((id) => id != 0, orElse: () => -1);
-                 if (firstNode != -1) {
-                    _selectedNodeIdx = firstNode;
-                 } else {
-                    _selectedNodeIdx = null;
-                 }
+                final firstNode = cgt.entries.first.nodeIds.firstWhere(
+                  (id) => id != 0,
+                  orElse: () => -1,
+                );
+                if (firstNode != -1) {
+                  _selectedNodeIdx = firstNode;
+                } else {
+                  _selectedNodeIdx = null;
+                }
               } else {
-                 _selectedNodeIdx = null;
+                _selectedNodeIdx = null;
               }
             }
           });
@@ -158,7 +161,9 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
     if (outputPath == null) {
       final saveResult = await FilePicker.platform.saveFile(
         dialogTitle: 'Save CGT file',
-        fileName: _currentFilePath != null ? p.basename(_currentFilePath!) : 'crystarium.cgt',
+        fileName: _currentFilePath != null
+            ? p.basename(_currentFilePath!)
+            : 'crystarium.cgt',
         allowedExtensions: ['cgt'],
         type: FileType.custom,
       );
@@ -200,7 +205,12 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
     }
   }
 
-  void _showAddOffshootDialog({int? nodeId, int? stage, int? roleId, bool fromWalkMode = false}) {
+  void _showAddOffshootDialog({
+    int? nodeId,
+    int? stage,
+    int? roleId,
+    bool fromWalkMode = false,
+  }) {
     final targetNodeId = nodeId ?? _selectedNodeIdx;
     if (_modifier == null || targetNodeId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -210,10 +220,22 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
     }
 
     // Get available patterns
-    final patternNames = _cgtPatterns?.patterns.map((p) => p.name).toList() ??
-        ['test1', 'test2', 'test3', 'test4', 'test5', 'test6', 'test7', 'test8'];
+    final patternNames =
+        _cgtPatterns?.patterns.map((p) => p.name).toList() ??
+        [
+          'test1',
+          'test2',
+          'test3',
+          'test4',
+          'test5',
+          'test6',
+          'test7',
+          'test8',
+        ];
 
-    String selectedPattern = patternNames.isNotEmpty ? patternNames.first : 'test1';
+    String selectedPattern = patternNames.isNotEmpty
+        ? patternNames.first
+        : 'test1';
     int selectedStage = stage ?? 1;
     int selectedRole = roleId ?? 0;
     final isFromWalkMode = fromWalkMode;
@@ -250,7 +272,10 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
                         color: theme.accent.withValues(alpha: 0.15),
                         borderColor: theme.accent,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
                           child: Text(
                             '#$targetNodeId',
                             style: TextStyle(
@@ -313,7 +338,9 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
                         child: CrystalDropdown<int>(
                           label: 'ROLE',
                           value: selectedRole,
-                          items: CrystariumRole.values.map((r) => r.id).toList(),
+                          items: CrystariumRole.values
+                              .map((r) => r.id)
+                              .toList(),
                           itemLabelBuilder: (id) {
                             final role = CrystariumRole.fromId(id);
                             return '${role.abbreviation} - ${role.fullName}';
@@ -358,7 +385,14 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
     );
   }
 
-  void _addOffshoot(String patternName, int stage, int roleId, {int? nodeId, bool fromWalkMode = false, String? customNodeName}) {
+  void _addOffshoot(
+    String patternName,
+    int stage,
+    int roleId, {
+    int? nodeId,
+    bool fromWalkMode = false,
+    String? customNodeName,
+  }) {
     final targetNodeId = nodeId ?? _selectedNodeIdx;
     if (_modifier == null || targetNodeId == null) return;
 
@@ -407,7 +441,9 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Added offshoot with ${newEntry.nodeIds.length} nodes at node $targetNodeId'),
+            content: Text(
+              'Added offshoot with ${newEntry.nodeIds.length} nodes at node $targetNodeId',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -422,7 +458,10 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
     }
   }
 
-  void _showEditNodeNameDialog({required int nodeId, required String currentName}) {
+  void _showEditNodeNameDialog({
+    required int nodeId,
+    required String currentName,
+  }) {
     if (_modifier == null) return;
 
     final theme = Theme.of(context).extension<CrystalTheme>()!;
@@ -455,7 +494,10 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
                     color: theme.accent.withValues(alpha: 0.15),
                     borderColor: theme.accent,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       child: Text(
                         '#$nodeId',
                         style: TextStyle(
@@ -489,10 +531,7 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
               const SizedBox(height: 8),
               Text(
                 'Node names are limited to 16 characters',
-                style: TextStyle(
-                  color: Colors.white38,
-                  fontSize: 11,
-                ),
+                style: TextStyle(color: Colors.white38, fontSize: 11),
               ),
             ],
           ),
@@ -551,13 +590,16 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
     if (_cgtFile == null) return;
 
     if (_selectedNodeIdx == null) {
-       if (_cgtFile!.entries.isNotEmpty) {
-           final firstNode = _cgtFile!.entries.first.nodeIds.firstWhere((id) => id != 0, orElse: () => -1);
-           if (firstNode != -1) {
-              setState(() => _selectedNodeIdx = firstNode);
-           }
-       }
-       return;
+      if (_cgtFile!.entries.isNotEmpty) {
+        final firstNode = _cgtFile!.entries.first.nodeIds.firstWhere(
+          (id) => id != 0,
+          orElse: () => -1,
+        );
+        if (firstNode != -1) {
+          setState(() => _selectedNodeIdx = firstNode);
+        }
+      }
+      return;
     }
 
     final currentIdx = _selectedNodeIdx!;
@@ -570,10 +612,12 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
         setState(() => _selectedNodeIdx = currentNode.parentIndex);
       }
     } else if (key == LogicalKeyboardKey.arrowDown) {
-      if (_childrenMap.containsKey(currentIdx) && _childrenMap[currentIdx]!.isNotEmpty) {
+      if (_childrenMap.containsKey(currentIdx) &&
+          _childrenMap[currentIdx]!.isNotEmpty) {
         setState(() => _selectedNodeIdx = _childrenMap[currentIdx]!.first);
       }
-    } else if (key == LogicalKeyboardKey.arrowLeft || key == LogicalKeyboardKey.arrowRight) {
+    } else if (key == LogicalKeyboardKey.arrowLeft ||
+        key == LogicalKeyboardKey.arrowRight) {
       final parentIdx = currentNode.parentIndex;
       if (parentIdx != -1 && _childrenMap.containsKey(parentIdx)) {
         final siblings = _childrenMap[parentIdx]!;
@@ -603,10 +647,9 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
           _buildHeader(crystalTheme),
           const SizedBox(height: 16),
           Expanded(
-            child:
-                _viewMode == CrystaliumViewMode.mcp
-                    ? _buildMcpView(crystalTheme)
-                    : _buildCgtView(crystalTheme),
+            child: _viewMode == CrystaliumViewMode.mcp
+                ? _buildMcpView(crystalTheme)
+                : _buildCgtView(crystalTheme),
           ),
         ],
       ),
@@ -686,14 +729,20 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
     );
   }
 
-  Widget _buildModeButton(CrystaliumViewMode mode, String label, CrystalTheme theme) {
+  Widget _buildModeButton(
+    CrystaliumViewMode mode,
+    String label,
+    CrystalTheme theme,
+  ) {
     final isSelected = _viewMode == mode;
     return GestureDetector(
       onTap: () => setState(() => _viewMode = mode),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? theme.accent.withValues(alpha: 0.2) : Colors.transparent,
+          color: isSelected
+              ? theme.accent.withValues(alpha: 0.2)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -713,7 +762,12 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(color: theme.accent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          style: TextStyle(
+            color: theme.accent,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
         ),
         Text(value, style: const TextStyle(color: Colors.white, fontSize: 16)),
       ],
@@ -733,9 +787,7 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionLabel("AVAILABLE PATTERNS", theme),
-                  Expanded(
-                    child: _buildMcpList(theme),
-                  ),
+                  Expanded(child: _buildMcpList(theme)),
                 ],
               ),
             ),
@@ -747,7 +799,10 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
             padding: const EdgeInsets.all(8),
             child: _selectedPattern != null
                 ? McpVisualizer(pattern: _selectedPattern!)
-                : _buildPlaceholder("Select an MCP pattern to visualize", theme),
+                : _buildPlaceholder(
+                    "Select an MCP pattern to visualize",
+                    theme,
+                  ),
           ),
         ),
       ],
@@ -792,15 +847,11 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionLabel("ENTRIES (STAGES)", theme),
-                  Expanded(
-                    child: _buildEntryList(theme),
-                  ),
+                  Expanded(child: _buildEntryList(theme)),
                   if (_selectedEntry != null) ...[
                     const Divider(color: Colors.white10, height: 24),
                     _buildSectionLabel("NODES IN ENTRY", theme),
-                    Expanded(
-                      child: _buildNodeList(theme),
-                    ),
+                    Expanded(child: _buildNodeList(theme)),
                   ],
                 ],
               ),
@@ -823,13 +874,24 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
                       setState(() => _selectedNodeIdx = nodeId);
                     },
                     onAddOffshoot: (nodeId, stage, roleId) {
-                      _showAddOffshootDialog(nodeId: nodeId, stage: stage, roleId: roleId, fromWalkMode: true);
+                      _showAddOffshootDialog(
+                        nodeId: nodeId,
+                        stage: stage,
+                        roleId: roleId,
+                        fromWalkMode: true,
+                      );
                     },
                     onEditNodeName: (nodeId, currentName) {
-                      _showEditNodeNameDialog(nodeId: nodeId, currentName: currentName);
+                      _showEditNodeNameDialog(
+                        nodeId: nodeId,
+                        currentName: currentName,
+                      );
                     },
                   )
-                : _buildPlaceholder("Load a CGT file to visualize the layout", theme),
+                : _buildPlaceholder(
+                    "Load a CGT file to visualize the layout",
+                    theme,
+                  ),
           ),
         ),
       ],
@@ -888,7 +950,8 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
 
         final node = _cgtFile!.nodes[nodeIdx];
         final isSelected = _selectedNodeIdx == nodeIdx;
-        final hasChildren = _childrenMap.containsKey(nodeIdx) &&
+        final hasChildren =
+            _childrenMap.containsKey(nodeIdx) &&
             _childrenMap[nodeIdx]!.isNotEmpty;
 
         return ListTile(
@@ -941,7 +1004,10 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
         children: [
           Icon(Icons.auto_graph, size: 48, color: Colors.white12),
           const SizedBox(height: 16),
-          Text(text, style: const TextStyle(color: Colors.white54, fontSize: 16)),
+          Text(
+            text,
+            style: const TextStyle(color: Colors.white54, fontSize: 16),
+          ),
         ],
       ),
     );
@@ -949,13 +1015,20 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
 
   Color _getRoleColor(int roleId) {
     switch (roleId) {
-      case 0: return const Color(0xFFFF4444);
-      case 1: return const Color(0xFF44FF44);
-      case 2: return const Color(0xFF4444FF);
-      case 3: return const Color(0xFFFF44FF);
-      case 4: return const Color(0xFFFFFF44);
-      case 5: return const Color(0xFF44FFFF);
-      default: return Colors.white;
+      case 0:
+        return const Color(0xFFFF4444);
+      case 1:
+        return const Color(0xFF44FF44);
+      case 2:
+        return const Color(0xFF4444FF);
+      case 3:
+        return const Color(0xFFFF44FF);
+      case 4:
+        return const Color(0xFFFFFF44);
+      case 5:
+        return const Color(0xFF44FFFF);
+      default:
+        return Colors.white;
     }
   }
 }

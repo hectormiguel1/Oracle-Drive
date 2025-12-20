@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
 import 'ztr/ztr_data.dart';
 import 'ztr/ztr_parser.dart';
 
@@ -15,12 +15,7 @@ class ZtrTextRenderer {
   }) {
     // Fast path: if no tags, just return simple text
     if (!text.contains('{')) {
-      return Text(
-        text,
-        style: style,
-        maxLines: maxLines,
-        overflow: overflow,
-      );
+      return Text(text, style: style, maxLines: maxLines, overflow: overflow);
     }
 
     final ZtrGameConfig config = ZtrGameConfig.forGame(game);
@@ -29,8 +24,8 @@ class ZtrTextRenderer {
     // Check for plural pattern
     final Match? pluralMatch =
         (text.contains('{StraightLine}') && text.contains('{Article}'))
-            ? ZtrParser.pluralExp.firstMatch(text)
-            : null;
+        ? ZtrParser.pluralExp.firstMatch(text)
+        : null;
 
     if (pluralMatch != null) {
       final String singularBase = pluralMatch.group(1)!.trim();

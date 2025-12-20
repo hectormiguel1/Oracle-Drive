@@ -1,13 +1,15 @@
 import 'dart:math' as math;
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
-import 'package:ff13_mod_resource/src/utils/crystalium/crystalium_renderer.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/src/utils/crystalium/crystalium_renderer.dart';
 
 /// State of the Crystarium walker.
 enum WalkerState {
   /// Stopped at a node, waiting for input
   idle,
+
   /// Moving between nodes
   moving,
+
   /// At a branch point, selecting direction
   selecting,
 }
@@ -71,8 +73,10 @@ class CrystariumWalker {
   /// Get the current world position (interpolated during movement).
   Vector3 get currentPosition {
     if (_state == WalkerState.moving) {
-      final fromPos = renderer.nodeWorldPositions[_currentNodeId] ?? Vector3(0, 0, 0);
-      final toPos = renderer.nodeWorldPositions[_targetNodeId] ?? Vector3(0, 0, 0);
+      final fromPos =
+          renderer.nodeWorldPositions[_currentNodeId] ?? Vector3(0, 0, 0);
+      final toPos =
+          renderer.nodeWorldPositions[_targetNodeId] ?? Vector3(0, 0, 0);
       final t = _easeInOutCubic(_transitionProgress);
       return Vector3(
         fromPos.x + (toPos.x - fromPos.x) * t,
@@ -97,7 +101,8 @@ class CrystariumWalker {
   Vector3 get lookTarget {
     if (_state == WalkerState.moving) {
       // Look ahead towards target
-      final targetPos = renderer.nodeWorldPositions[_targetNodeId] ?? Vector3(0, 0, 0);
+      final targetPos =
+          renderer.nodeWorldPositions[_targetNodeId] ?? Vector3(0, 0, 0);
       final currentPos = currentPosition;
       // Blend between current and target
       return Vector3(
@@ -178,7 +183,8 @@ class CrystariumWalker {
   void _updateAvailableDirections() {
     _availableDirections = [];
     final neighbors = _adjacency[_currentNodeId] ?? [];
-    final currentPos = renderer.nodeWorldPositions[_currentNodeId] ?? Vector3(0, 0, 0);
+    final currentPos =
+        renderer.nodeWorldPositions[_currentNodeId] ?? Vector3(0, 0, 0);
 
     for (final neighborId in neighbors) {
       final neighborPos = renderer.nodeWorldPositions[neighborId];
@@ -191,13 +197,15 @@ class CrystariumWalker {
       final dz = neighborPos.z - currentPos.z;
       final angle = math.atan2(dz, dx);
 
-      _availableDirections.add(WalkerDirection(
-        nodeId: neighborId,
-        position: neighborPos,
-        stage: info?.stage ?? 1,
-        roleId: info?.roleId ?? 0,
-        angle: angle,
-      ));
+      _availableDirections.add(
+        WalkerDirection(
+          nodeId: neighborId,
+          position: neighborPos,
+          stage: info?.stage ?? 1,
+          roleId: info?.roleId ?? 0,
+          angle: angle,
+        ),
+      );
     }
 
     // Sort by angle for consistent ordering
@@ -230,13 +238,16 @@ class CrystariumWalker {
   /// Select the next direction (cycle through available).
   void selectNextDirection() {
     if (_availableDirections.isEmpty) return;
-    _selectedDirectionIndex = (_selectedDirectionIndex + 1) % _availableDirections.length;
+    _selectedDirectionIndex =
+        (_selectedDirectionIndex + 1) % _availableDirections.length;
   }
 
   /// Select the previous direction (cycle through available).
   void selectPreviousDirection() {
     if (_availableDirections.isEmpty) return;
-    _selectedDirectionIndex = (_selectedDirectionIndex - 1 + _availableDirections.length) % _availableDirections.length;
+    _selectedDirectionIndex =
+        (_selectedDirectionIndex - 1 + _availableDirections.length) %
+        _availableDirections.length;
   }
 
   /// Confirm the current selection and start moving.
@@ -296,8 +307,6 @@ class CrystariumWalker {
 
   /// Smooth easing function.
   double _easeInOutCubic(double t) {
-    return t < 0.5
-        ? 4 * t * t * t
-        : 1 - math.pow(-2 * t + 2, 3) / 2;
+    return t < 0.5 ? 4 * t * t * t : 1 - math.pow(-2 * t + 2, 3) / 2;
   }
 }

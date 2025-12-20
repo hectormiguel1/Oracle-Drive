@@ -1,7 +1,7 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_container.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_panel.dart';
-import 'package:ff13_mod_resource/components/widgets/style.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/widgets/crystal_container.dart';
+import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 
 class CrystalDropdown<T> extends StatefulWidget {
@@ -67,57 +67,55 @@ class _CrystalDropdownState<T> extends State<CrystalDropdown<T>> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: widget.items.map((item) {
-                  final isSelected = item == widget.value;
-                  final displayLabel = widget.itemLabelBuilder?.call(item) ?? item.toString();
-                  return InkWell(
-                    onTap: () {
-                      widget.onChanged(item);
-                      _closeDropdown();
-                    },
-                    hoverColor: accentColor.withValues(alpha: 0.2),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: Colors.white10),
-                        ),
-                        color: isSelected
-                            ? accentColor.withValues(alpha: 0.1)
-                            : null,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            displayLabel,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? accentColor
-                                  : Colors.white,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
+                      final isSelected = item == widget.value;
+                      final displayLabel =
+                          widget.itemLabelBuilder?.call(item) ??
+                          item.toString();
+                      return InkWell(
+                        onTap: () {
+                          widget.onChanged(item);
+                          _closeDropdown();
+                        },
+                        hoverColor: accentColor.withValues(alpha: 0.2),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
                           ),
-                          if (isSelected)
-                            Icon(
-                              Icons.check,
-                              size: 16,
-                              color: accentColor,
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: Colors.white10),
                             ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+                            color: isSelected
+                                ? accentColor.withValues(alpha: 0.1)
+                                : null,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                displayLabel,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? accentColor
+                                      : Colors.white,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(Icons.check, size: 16, color: accentColor),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
           ),
         ],
       ),
@@ -135,7 +133,8 @@ class _CrystalDropdownState<T> extends State<CrystalDropdown<T>> {
   @override
   Widget build(BuildContext context) {
     final accentColor = Theme.of(context).extension<CrystalTheme>()!.accent;
-    final displayValue = widget.itemLabelBuilder?.call(widget.value) ?? widget.value.toString();
+    final displayValue =
+        widget.itemLabelBuilder?.call(widget.value) ?? widget.value.toString();
     return CompositedTransformTarget(
       link: _layerLink,
       child: Column(

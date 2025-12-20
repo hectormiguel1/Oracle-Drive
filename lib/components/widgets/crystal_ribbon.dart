@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:ff13_mod_resource/components/widgets/style.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
 import 'package:flutter/material.dart';
 
 class CrystalRibbon extends StatelessWidget {

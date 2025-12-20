@@ -1,5 +1,5 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_button.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_text_field.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_text_field.dart';
 import 'package:flutter/material.dart';
 
 class WdbToolbar extends StatelessWidget {
@@ -35,11 +35,7 @@ class WdbToolbar extends StatelessWidget {
           ),
           if (currentPath != null) ...[
             const SizedBox(width: 8),
-            CrystalButton(
-              onPressed: onNew,
-              icon: Icons.add,
-              label: "New",
-            ),
+            CrystalButton(onPressed: onNew, icon: Icons.add, label: "New"),
           ],
           const SizedBox(width: 8),
           PopupMenuButton<String>(

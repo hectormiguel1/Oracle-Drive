@@ -1,6 +1,6 @@
-import 'package:ff13_mod_resource/models/wdb_entities/converters.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/models/wdb_model.dart';
+import 'package:oracle_drive/models/wdb_entities/converters.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'item.g.dart';

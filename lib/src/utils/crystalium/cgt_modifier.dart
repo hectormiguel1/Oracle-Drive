@@ -1,6 +1,6 @@
 import 'dart:math' as math;
-import 'package:ff13_mod_resource/models/crystalium/cgt_file.dart';
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/models/crystalium/cgt_file.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
 
 /// Handles modifications to CGT (Crystarium) data.
 class CgtModifier {
@@ -11,10 +11,7 @@ class CgtModifier {
   late List<CrystariumEntry> _entries;
   late List<CrystariumNode> _nodes;
 
-  CgtModifier({
-    required this.cgtFile,
-    this.mcpPatterns,
-  }) {
+  CgtModifier({required this.cgtFile, this.mcpPatterns}) {
     // Create mutable copies
     _entries = List.from(cgtFile.entries);
     _nodes = List.from(cgtFile.nodes);
@@ -114,7 +111,8 @@ class CgtModifier {
     // Validate parent node exists
     final parentNode = _nodes.firstWhere(
       (n) => n.index == actualParentId,
-      orElse: () => throw ArgumentError('Parent node $actualParentId not found'),
+      orElse: () =>
+          throw ArgumentError('Parent node $actualParentId not found'),
     );
 
     // Get pattern info
@@ -176,10 +174,14 @@ class CgtModifier {
       nodeScale: 10.0,
       roleId: roleId,
       stage: stage,
-      entryType: patternNodeCount == 1 ? 255 : 0, // Leaf if single node, Hub otherwise
+      entryType: patternNodeCount == 1
+          ? 255
+          : 0, // Leaf if single node, Hub otherwise
       reserved: 0,
       nodeIds: newNodeIds,
-      linkPosition: patternNodeCount == 1 ? Vector3(0, 0, 0) : Vector3(0.3, 0.2, -0.3),
+      linkPosition: patternNodeCount == 1
+          ? Vector3(0, 0, 0)
+          : Vector3(0.3, 0.2, -0.3),
       linkW: patternNodeCount == 1 ? 0.0 : 1.0,
     );
 
@@ -204,13 +206,15 @@ class CgtModifier {
       // First node connects to parent, others connect to first node
       final nodeParent = i == 0 ? actualParentId : newNodeIds[0];
 
-      newNodes.add(CrystariumNode(
-        index: nodeId,
-        name: nodeName,
-        parentIndex: nodeParent,
-        unknown: [0, 0, 0, 0],
-        scales: [1.0, 1.0, 1.0, 1.0],
-      ));
+      newNodes.add(
+        CrystariumNode(
+          index: nodeId,
+          name: nodeName,
+          parentIndex: nodeParent,
+          unknown: [0, 0, 0, 0],
+          scales: [1.0, 1.0, 1.0, 1.0],
+        ),
+      );
     }
 
     // Add to lists
@@ -223,7 +227,8 @@ class CgtModifier {
   /// Add a chain of nodes (multiple entries connected in sequence).
   List<CrystariumEntry> addChain({
     required int parentNodeId,
-    required List<({String patternName, int stage, int roleId})> chainDefinition,
+    required List<({String patternName, int stage, int roleId})>
+    chainDefinition,
     Vector3? startOffset,
     Vector3? stepOffset,
   }) {
@@ -414,7 +419,9 @@ class CgtModifier {
     final nodeIds = _nodes.map((n) => n.index).toSet();
     for (final node in _nodes) {
       if (node.parentIndex >= 0 && !nodeIds.contains(node.parentIndex)) {
-        errors.add('Node ${node.index} references non-existent parent ${node.parentIndex}');
+        errors.add(
+          'Node ${node.index} references non-existent parent ${node.parentIndex}',
+        );
       }
     }
 
@@ -422,7 +429,9 @@ class CgtModifier {
     for (final entry in _entries) {
       for (final nodeId in entry.nodeIds) {
         if (nodeId > 0 && !nodeIds.contains(nodeId)) {
-          errors.add('Entry ${entry.index} references non-existent node $nodeId');
+          errors.add(
+            'Entry ${entry.index} references non-existent node $nodeId',
+          );
         }
       }
     }
@@ -433,7 +442,8 @@ class CgtModifier {
     while (changed) {
       changed = false;
       for (final node in _nodes) {
-        if (!reachable.contains(node.index) && reachable.contains(node.parentIndex)) {
+        if (!reachable.contains(node.index) &&
+            reachable.contains(node.parentIndex)) {
           reachable.add(node.index);
           changed = true;
         }

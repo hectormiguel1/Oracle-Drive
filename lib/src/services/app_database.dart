@@ -1,15 +1,12 @@
-import 'package:ff13_mod_resource/models/app_game_code.dart';
-import 'package:ff13_mod_resource/src/isar/generic_repository.dart';
-import 'package:ff13_mod_resource/src/isar/common/schemas.dart'
-    as common_schemas;
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/src/isar/generic_repository.dart';
+import 'package:oracle_drive/src/isar/common/schemas.dart' as common_schemas;
 import 'package:isar_plus/isar_plus.dart';
 import 'package:logging/logging.dart';
-import 'package:ff13_mod_resource/src/isar/xiii/schemas.dart' as ff13_schemas;
-import 'package:ff13_mod_resource/src/isar/xiii/repository.dart' as ff13_repo;
-import 'package:ff13_mod_resource/src/isar/xiii-2/repository.dart'
-    as ff13_2_repo;
-import 'package:ff13_mod_resource/src/isar/xiii-lr/repository.dart'
-    as ff13_lr_repo;
+import 'package:oracle_drive/src/isar/xiii/schemas.dart' as ff13_schemas;
+import 'package:oracle_drive/src/isar/xiii/repository.dart' as ff13_repo;
+import 'package:oracle_drive/src/isar/xiii-2/repository.dart' as ff13_2_repo;
+import 'package:oracle_drive/src/isar/xiii-lr/repository.dart' as ff13_lr_repo;
 
 class AppDatabase {
   late final GameRepository _ff13Repository;

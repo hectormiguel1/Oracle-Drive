@@ -21,7 +21,7 @@ bool Function(dynamic) _makeIncluder(List<String> exclusions) {
 
 final commonImport = LibraryImport(
   "common",
-  "package:ff13_mod_resource/src/third_party/common.g.dart",
+  "package:oracle_drive/src/third_party/common.g.dart",
 );
 final commonImportedTypes = [
   ImportedType(commonImport, "Result", "Result", "Result"),

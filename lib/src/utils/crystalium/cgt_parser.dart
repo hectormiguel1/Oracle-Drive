@@ -1,6 +1,6 @@
 import 'dart:typed_data';
-import 'package:ff13_mod_resource/models/crystalium/cgt_file.dart';
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/models/crystalium/cgt_file.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
 
 /// Parser for FF13 Crystarium CGT (Crystal Graph Tree) files.
 ///

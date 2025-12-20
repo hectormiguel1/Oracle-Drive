@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/models/app_game_code.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
 import 'package:flutter/material.dart';
 
 @immutable
@@ -6,16 +6,10 @@ class CrystalTheme extends ThemeExtension<CrystalTheme> {
   final Color accent;
   final LinearGradient activeBarGradient;
 
-  const CrystalTheme({
-    required this.accent,
-    required this.activeBarGradient,
-  });
+  const CrystalTheme({required this.accent, required this.activeBarGradient});
 
   @override
-  CrystalTheme copyWith({
-    Color? accent,
-    LinearGradient? activeBarGradient,
-  }) {
+  CrystalTheme copyWith({Color? accent, LinearGradient? activeBarGradient}) {
     return CrystalTheme(
       accent: accent ?? this.accent,
       activeBarGradient: activeBarGradient ?? this.activeBarGradient,
@@ -23,13 +17,20 @@ class CrystalTheme extends ThemeExtension<CrystalTheme> {
   }
 
   @override
-  ThemeExtension<CrystalTheme> lerp(ThemeExtension<CrystalTheme>? other, double t) {
+  ThemeExtension<CrystalTheme> lerp(
+    ThemeExtension<CrystalTheme>? other,
+    double t,
+  ) {
     if (other is! CrystalTheme) {
       return this;
     }
     return CrystalTheme(
       accent: Color.lerp(accent, other.accent, t)!,
-      activeBarGradient: LinearGradient.lerp(activeBarGradient, other.activeBarGradient, t)!,
+      activeBarGradient: LinearGradient.lerp(
+        activeBarGradient,
+        other.activeBarGradient,
+        t,
+      )!,
     );
   }
 
@@ -53,7 +54,7 @@ class CrystalTheme extends ThemeExtension<CrystalTheme> {
         colors: [
           accentColor.withValues(alpha: 0.4), // Darker shade approximation
           accentColor,
-          Colors.white
+          Colors.white,
         ],
         stops: const [0.0, 0.85, 1.0],
       ),

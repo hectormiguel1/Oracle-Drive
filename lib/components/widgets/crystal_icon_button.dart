@@ -1,6 +1,6 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_container.dart';
-import 'package:ff13_mod_resource/components/widgets/style.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/widgets/crystal_container.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 
 class CrystalIconButton extends StatefulWidget {
@@ -33,8 +33,9 @@ class _CrystalIconButtonState extends State<CrystalIconButton> {
         ? Colors.white
         : CrystalColors.panelBackground.withValues(alpha: 0.7);
     final Color targetContentColor = isWhiteBg ? Colors.black : Colors.white;
-    final Color targetBorderColor =
-        widget.isSelected || _isHovered ? accentColor : Colors.white24;
+    final Color targetBorderColor = widget.isSelected || _isHovered
+        ? accentColor
+        : Colors.white24;
 
     Widget button = MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -63,11 +64,7 @@ class _CrystalIconButtonState extends State<CrystalIconButton> {
                     borderColor: targetBorderColor,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Icon(
-                        widget.icon,
-                        color: contentColor,
-                        size: 20,
-                      ),
+                      child: Icon(widget.icon, color: contentColor, size: 20),
                     ),
                   );
                 },

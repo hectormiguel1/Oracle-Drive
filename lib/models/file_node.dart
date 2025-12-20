@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.dart';
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.dart';
 
 class VirtualNode {
   final String name;

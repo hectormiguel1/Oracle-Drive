@@ -1,5 +1,5 @@
-import 'package:ff13_mod_resource/models/app_game_code.dart';
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 class WbtState {

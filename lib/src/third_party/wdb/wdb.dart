@@ -1,16 +1,15 @@
 import 'dart:ffi';
 
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/schema_registry.dart'
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/schema_registry.dart'
     as ff13_schema_registry;
-import 'package:ff13_mod_resource/models/wdb_entities/xiii-2/schema_registry.dart'
+import 'package:oracle_drive/models/wdb_entities/xiii-2/schema_registry.dart'
     as ff132_schema_registry;
 
-import 'package:ff13_mod_resource/models/wdb_model.dart';
-import 'package:ff13_mod_resource/src/services/native_service.dart';
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.g.dart'
-    as wbt_native;
-import 'package:ff13_mod_resource/src/utils/native_result_utils.dart';
+import 'package:oracle_drive/models/wdb_model.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.g.dart' as wbt_native;
+import 'package:oracle_drive/src/utils/native_result_utils.dart';
 import 'package:ffi/ffi.dart';
 import 'package:logging/logging.dart';
 

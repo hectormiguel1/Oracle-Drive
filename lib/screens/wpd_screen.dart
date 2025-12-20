@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:ff13_mod_resource/components/widgets/crystal_button.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_panel.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart'; // Import AppGameCode
-import 'package:ff13_mod_resource/providers/app_state_provider.dart';
-import 'package:ff13_mod_resource/providers/wpd_provider.dart';
-import 'package:ff13_mod_resource/src/third_party/wpdlib/wpd.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/models/app_game_code.dart'; // Import AppGameCode
+import 'package:oracle_drive/providers/app_state_provider.dart';
+import 'package:oracle_drive/providers/wpd_provider.dart';
+import 'package:oracle_drive/src/third_party/wpdlib/wpd.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view2/flutter_fancy_tree_view2.dart';

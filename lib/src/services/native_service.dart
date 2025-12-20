@@ -2,32 +2,29 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
-import 'package:ff13_mod_resource/src/services/navigation_service.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_dialog.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/src/services/navigation_service.dart';
+import 'package:oracle_drive/components/widgets/crystal_dialog.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
 
-import 'package:ff13_mod_resource/models/wdb_model.dart';
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.g.dart'
-    as wbt_native;
-import 'package:ff13_mod_resource/src/third_party/wbtlib/wbt.dart'; // For FileEntry, WhiteBinTools
+import 'package:oracle_drive/models/wdb_model.dart';
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.g.dart' as wbt_native;
+import 'package:oracle_drive/src/third_party/wbtlib/wbt.dart'; // For FileEntry, WhiteBinTools
 
-import 'package:ff13_mod_resource/src/third_party/wdb/wdb.g.dart' as wdb_native;
-import 'package:ff13_mod_resource/src/third_party/wpdlib/wpd.g.dart'
-    as wpd_native;
-import 'package:ff13_mod_resource/src/third_party/ztrlib/ztr.g.dart'
-    as ztr_native;
-import 'package:ff13_mod_resource/src/services/app_database.dart';
-import 'package:ff13_mod_resource/models/ztr_model.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart';
+import 'package:oracle_drive/src/third_party/wdb/wdb.g.dart' as wdb_native;
+import 'package:oracle_drive/src/third_party/wpdlib/wpd.g.dart' as wpd_native;
+import 'package:oracle_drive/src/third_party/ztrlib/ztr.g.dart' as ztr_native;
+import 'package:oracle_drive/src/services/app_database.dart';
+import 'package:oracle_drive/models/ztr_model.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 
-import 'package:ff13_mod_resource/src/third_party/wdb/wdb.dart';
-import 'package:ff13_mod_resource/src/third_party/wpdlib/wpd.dart';
-import 'package:ff13_mod_resource/src/third_party/ztrlib/ztr.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/schema_registry.dart'; // Import the WdbSchemaRegistry
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart'; // Import base WdbEntity
+import 'package:oracle_drive/src/third_party/wdb/wdb.dart';
+import 'package:oracle_drive/src/third_party/wpdlib/wpd.dart';
+import 'package:oracle_drive/src/third_party/ztrlib/ztr.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/schema_registry.dart'; // Import the WdbSchemaRegistry
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart'; // Import base WdbEntity
 
 class NativeService {
   static final NativeService instance = NativeService._();
@@ -111,7 +108,11 @@ class NativeService {
 
   final Map<int, void Function(double)> _progressCallbacks = {};
 
-  Future<T> _sendRequest<T>(String type, dynamic args, {void Function(double)? onProgress}) {
+  Future<T> _sendRequest<T>(
+    String type,
+    dynamic args, {
+    void Function(double)? onProgress,
+  }) {
     if (_workerSendPort == null) {
       throw Exception('NativeService not initialized');
     }
@@ -558,10 +559,9 @@ void _nativeWorker(_WorkerArgs args) {
           default:
             throw "Unknown request type: ${message.type}";
         }
-        
+
         final data = result is Future ? await result : result;
         sendPort.send(_NativeResponse(message.id, data, null));
-
       } catch (e, stack) {
         sendPort.send(_NativeResponse(message.id, null, "$e\n$stack"));
       }
@@ -689,14 +689,16 @@ Future<int> _handleZtrPackFromDb(Map<String, dynamic> args) async {
   final actionVal = args['action'] as int;
   final ztrGameCodeValue = ztr_native.ZTRGameCode.values[gameIndex].value;
 
-  final stream =
-      AppDatabase.instance.getRepositoryForGame(gameCode).getStrings();
+  final stream = AppDatabase.instance
+      .getRepositoryForGame(gameCode)
+      .getStrings();
   final Map<String, String> stringsMap = {};
   await for (final chunk in stream) {
     stringsMap.addAll(chunk);
   }
-  final entries =
-      stringsMap.entries.map((e) => ZtrEntry(e.key, e.value)).toList();
+  final entries = stringsMap.entries
+      .map((e) => ZtrEntry(e.key, e.value))
+      .toList();
   final ztrData = ZtrData(entries: entries);
 
   ZtrTool.packData(ztrData, path, ztrGameCodeValue, encodingVal, actionVal);
@@ -708,14 +710,16 @@ Future<int> _handleZtrDumpFromDb(Map<String, dynamic> args) async {
   final gameCode = AppGameCode.values[gameIndex];
   final path = args['path'] as String;
 
-  final stream =
-      AppDatabase.instance.getRepositoryForGame(gameCode).getStrings();
+  final stream = AppDatabase.instance
+      .getRepositoryForGame(gameCode)
+      .getStrings();
   final Map<String, String> stringsMap = {};
   await for (final chunk in stream) {
     stringsMap.addAll(chunk);
   }
-  final entries =
-      stringsMap.entries.map((e) => ZtrEntry(e.key, e.value)).toList();
+  final entries = stringsMap.entries
+      .map((e) => ZtrEntry(e.key, e.value))
+      .toList();
   final ztrData = ZtrData(entries: entries);
 
   ZtrTool.dumpData(ztrData, path);
@@ -766,7 +770,12 @@ Future<int> _handleWbtUnpackAll(Map<String, dynamic> args) async {
   final outputDir = args['outputDir'] as String?;
   final gameCode = wbt_native.GameCode.values[gameIndex];
 
-  WhiteBinTools.unpackAll(gameCode, fileListPath, binPath, outputDir: outputDir);
+  WhiteBinTools.unpackAll(
+    gameCode,
+    fileListPath,
+    binPath,
+    outputDir: outputDir,
+  );
   return 0;
 }
 
@@ -797,4 +806,3 @@ Future<int> _handleWpdUnpack(Map<String, dynamic> args) async {
   final inputWdpFile = args['inputWdpFile'] as String;
   return WpdTool.unpack(inputWdpFile);
 }
-

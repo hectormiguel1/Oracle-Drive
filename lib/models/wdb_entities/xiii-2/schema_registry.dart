@@ -1,5 +1,5 @@
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii-2/growth_pc_08.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii-2/growth_pc_08.dart';
 
 class WdbSchemaRegistry {
   static final Map<String, WdbEntity Function(Map<String, dynamic>)>

@@ -1,11 +1,10 @@
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/battle_ability.dart'
+import 'package:oracle_drive/models/wdb_entities/xiii/battle_ability.dart'
     as wdb_battle_ability;
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/battle_auto_ability.dart'
+import 'package:oracle_drive/models/wdb_entities/xiii/battle_auto_ability.dart'
     as wdb_battle_auto_ability;
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/item.dart'
-    as wdb_item;
-import 'package:ff13_mod_resource/src/isar/common/models.dart' as common_models;
-import 'package:ff13_mod_resource/src/isar/update_sepc.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/item.dart' as wdb_item;
+import 'package:oracle_drive/src/isar/common/models.dart' as common_models;
+import 'package:oracle_drive/src/isar/update_sepc.dart';
 
 IsarUpsertSpec? commonIsarEntityMappers<T>(String sheetName) {
   return switch (sheetName) {

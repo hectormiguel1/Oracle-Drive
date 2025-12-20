@@ -1,5 +1,5 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_container.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/widgets/crystal_container.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 
 class CrystalCheckbox extends StatelessWidget {
@@ -33,11 +33,7 @@ class CrystalCheckbox extends StatelessWidget {
               width: 16,
               height: 16,
               child: value
-                  ? Icon(
-                      Icons.check,
-                      size: 14,
-                      color: accentColor,
-                    )
+                  ? Icon(Icons.check, size: 14, color: accentColor)
                   : null,
             ),
           ),

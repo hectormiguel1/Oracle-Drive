@@ -1,8 +1,8 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_table.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_text_field.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart';
-import 'package:ff13_mod_resource/models/ztr_model.dart';
-import 'package:ff13_mod_resource/src/utils/ztr_text_renderer.dart';
+import 'package:oracle_drive/components/widgets/crystal_table.dart';
+import 'package:oracle_drive/components/widgets/crystal_text_field.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/models/ztr_model.dart';
+import 'package:oracle_drive/src/utils/ztr_text_renderer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -150,14 +150,14 @@ class _ZtrTableState extends State<ZtrTable> {
         if (_editingEntryId != null) {
           final entry = widget.entries.firstWhere(
             (e) => e.id == _editingEntryId,
-            orElse: () => widget.entries.first, 
+            orElse: () => widget.entries.first,
           ); // Fallback safe, though logic implies existence
-          
+
           if (_controllers.containsKey(entry.id)) {
-             final newValue = _controllers[entry.id]!.text;
-             if (newValue != entry.text) {
-               widget.onEntryUpdated(ZtrEntry(entry.id, newValue));
-             }
+            final newValue = _controllers[entry.id]!.text;
+            if (newValue != entry.text) {
+              widget.onEntryUpdated(ZtrEntry(entry.id, newValue));
+            }
           }
           setState(() {
             _editingEntryId = null;

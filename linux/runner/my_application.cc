@@ -45,11 +45,11 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "ff13_mod_resource");
+    gtk_header_bar_set_title(header_bar, "Oracle Drive");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "ff13_mod_resource");
+    gtk_window_set_title(window, "Oracle Drive");
   }
 
   gtk_window_set_default_size(window, 1280, 720);

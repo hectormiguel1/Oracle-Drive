@@ -1,9 +1,9 @@
-import 'package:ff13_mod_resource/providers/app_state_provider.dart';
-import 'package:ff13_mod_resource/screens/main_screen.dart';
-import 'package:ff13_mod_resource/src/services/app_database.dart';
-import 'package:ff13_mod_resource/src/services/native_service.dart';
-import 'package:ff13_mod_resource/src/services/navigation_service.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/providers/app_state_provider.dart';
+import 'package:oracle_drive/screens/main_screen.dart';
+import 'package:oracle_drive/src/services/app_database.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/navigation_service.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -35,7 +35,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp(
       navigatorKey: navigatorKey,
-      title: 'Crystal Tools',
+      title: 'Oracle Drive',
       theme: ThemeData(
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(

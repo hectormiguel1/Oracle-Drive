@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart';
-import 'package:ff13_mod_resource/components/icons/ff13_icons.dart';
-import 'package:ff13_mod_resource/components/icons/ff13_2_icons.dart';
-import 'package:ff13_mod_resource/components/icons/ff13_lr_icons.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/components/icons/ff13_icons.dart';
+import 'package:oracle_drive/components/icons/ff13_2_icons.dart';
+import 'package:oracle_drive/components/icons/ff13_lr_icons.dart';
 
 class ZtrGameConfig {
   final Map<String, Color> colorMap;
   final Map<String, IconData> iconMap;
 
-  const ZtrGameConfig({
-    required this.colorMap,
-    required this.iconMap,
-  });
+  const ZtrGameConfig({required this.colorMap, required this.iconMap});
 
   static ZtrGameConfig forGame(AppGameCode game) {
     switch (game) {

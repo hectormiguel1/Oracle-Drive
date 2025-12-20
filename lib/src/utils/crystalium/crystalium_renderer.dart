@@ -1,6 +1,6 @@
 import 'dart:math' as math;
-import 'package:ff13_mod_resource/models/crystalium/cgt_file.dart';
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/models/crystalium/cgt_file.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
 
 /// Represents a connection between two nodes in the Crystarium.
 class CrystariumConnection {
@@ -61,10 +61,7 @@ class CrystariumRenderer {
   late final List<CrystariumConnection> connections;
   late final Map<int, CrystariumNodeInfo> nodeInfo;
 
-  CrystariumRenderer({
-    required this.cgtFile,
-    this.mcpPatterns,
-  }) {
+  CrystariumRenderer({required this.cgtFile, this.mcpPatterns}) {
     _computeWorldPositions();
     _buildConnections();
   }
@@ -156,14 +153,16 @@ class CrystariumRenderer {
 
       if (fromPos == null || toPos == null) continue;
 
-      connections.add(CrystariumConnection(
-        fromNodeId: node.parentIndex,
-        toNodeId: node.index,
-        fromPosition: fromPos,
-        toPosition: toPos,
-        stage: nodeStages[node.index] ?? 1,
-        roleId: nodeRoles[node.index] ?? 0,
-      ));
+      connections.add(
+        CrystariumConnection(
+          fromNodeId: node.parentIndex,
+          toNodeId: node.index,
+          fromPosition: fromPos,
+          toPosition: toPos,
+          stage: nodeStages[node.index] ?? 1,
+          roleId: nodeRoles[node.index] ?? 0,
+        ),
+      );
     }
   }
 
@@ -229,9 +228,12 @@ class CrystariumRenderer {
     final sz = localPos.z * scale;
 
     // Apply rotation
-    final rx = rotMatrix[0][0] * sx + rotMatrix[0][1] * sy + rotMatrix[0][2] * sz;
-    final ry = rotMatrix[1][0] * sx + rotMatrix[1][1] * sy + rotMatrix[1][2] * sz;
-    final rz = rotMatrix[2][0] * sx + rotMatrix[2][1] * sy + rotMatrix[2][2] * sz;
+    final rx =
+        rotMatrix[0][0] * sx + rotMatrix[0][1] * sy + rotMatrix[0][2] * sz;
+    final ry =
+        rotMatrix[1][0] * sx + rotMatrix[1][1] * sy + rotMatrix[1][2] * sz;
+    final rz =
+        rotMatrix[2][0] * sx + rotMatrix[2][1] * sy + rotMatrix[2][2] * sz;
 
     // Translate to world position
     return Vector3(
@@ -275,7 +277,9 @@ class CrystariumRenderer {
   List<int> findPath(int start, int end) {
     final adjacency = buildAdjacencyList();
     final visited = <int>{};
-    final queue = <List<int>>[[start]];
+    final queue = <List<int>>[
+      [start],
+    ];
 
     while (queue.isNotEmpty) {
       final path = queue.removeAt(0);
@@ -317,10 +321,7 @@ class CrystariumRenderer {
       maxZ = math.max(maxZ, pos.z);
     }
 
-    return (
-      min: Vector3(minX, minY, minZ),
-      max: Vector3(maxX, maxY, maxZ),
-    );
+    return (min: Vector3(minX, minY, minZ), max: Vector3(maxX, maxY, maxZ));
   }
 
   /// Get center of all nodes.

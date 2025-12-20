@@ -1,6 +1,6 @@
 import 'dart:math' as math;
-import 'package:ff13_mod_resource/models/crystalium/mcp_file.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 
 class McpVisualizer extends StatefulWidget {
@@ -183,271 +183,173 @@ class McpPainter extends CustomPainter {
       );
     }
 
-        // Draw the thick glowing ring first
+    // Draw the thick glowing ring first
 
-        if (showRing) {
+    if (showRing) {
+      final ringPaintGlow = Paint()
+        ..color = accentColor.withAlpha(40)
+        ..strokeWidth = 6.0
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
-          final ringPaintGlow = Paint()
+      final ringPaintMain = Paint()
+        ..color = accentColor.withAlpha(100)
+        ..strokeWidth = 2.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
 
-            ..color = accentColor.withAlpha(40)
+      for (var i = 0; i < allProjected.length; i++) {
+        final p1 = allProjected[i];
 
-            ..strokeWidth = 6.0
+        final p2 = allProjected[(i + 1) % allProjected.length];
 
-            ..style = PaintingStyle.stroke
+        if (p1.isVisible && p2.isVisible) {
+          final node1 = points[i];
 
-            ..strokeCap = StrokeCap.round
+          final node2 = points[(i + 1) % allProjected.length];
 
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+          if ((node1.x == 0 && node1.z == 0) || (node2.x == 0 && node2.z == 0))
+            continue;
 
-    
+          final avgZ = (p1.z + p2.z) / 2.0;
 
-          final ringPaintMain = Paint()
-
-            ..color = accentColor.withAlpha(100)
-
-            ..strokeWidth = 2.5
-
-            ..style = PaintingStyle.stroke
-
-            ..strokeCap = StrokeCap.round;
-
-    
-
-          for (var i = 0; i < allProjected.length; i++) {
-
-            final p1 = allProjected[i];
-
-            final p2 = allProjected[(i + 1) % allProjected.length];
-
-    
-
-            if (p1.isVisible && p2.isVisible) {
-
-              final node1 = points[i];
-
-              final node2 = points[(i + 1) % allProjected.length];
-
-              if ((node1.x == 0 && node1.z == 0) || (node2.x == 0 && node2.z == 0)) continue;
-
-    
-
-              final avgZ = (p1.z + p2.z) / 2.0;
-
-              double depthFactor = focalLength / (focalLength + avgZ);
-
-              depthFactor = depthFactor.clamp(0.0, 1.5);
-
-    
-
-              ringPaintGlow.strokeWidth = 8.0 * depthFactor;
-
-              ringPaintMain.strokeWidth = 3.0 * depthFactor;
-
-    
-
-              final s1 = toScreen(p1.x, p1.y);
-
-              final s2 = toScreen(p2.x, p2.y);
-
-    
-
-              canvas.drawLine(s1, s2, ringPaintGlow);
-
-              canvas.drawLine(s1, s2, ringPaintMain);
-
-            }
-
-          }
-
-        }
-
-    
-
-        // Sort visible points for node rendering
-
-        final visibleProjectedWithIdx = <_ProjectedWithIndex>[];
-
-        for (int i = 0; i < allProjected.length; i++) {
-
-          if (allProjected[i].isVisible) {
-
-            visibleProjectedWithIdx.add(_ProjectedWithIndex(allProjected[i], i));
-
-          }
-
-        }
-
-        visibleProjectedWithIdx.sort((a, b) => b.point.z.compareTo(a.point.z));
-
-    
-
-        for (final item in visibleProjectedWithIdx) {
-
-          final p = item.point;
-
-          final originalNode = points[item.index];
-
-          if (originalNode.x == 0 && originalNode.z == 0 && originalNode.y == 0) continue;
-
-    
-
-          final screenPos = toScreen(p.x, p.y);
-
-          double depthFactor = focalLength / (focalLength + p.z);
+          double depthFactor = focalLength / (focalLength + avgZ);
 
           depthFactor = depthFactor.clamp(0.0, 1.5);
 
-    
+          ringPaintGlow.strokeWidth = 8.0 * depthFactor;
 
-          // Draw "Base Ring" underneath the dot
+          ringPaintMain.strokeWidth = 3.0 * depthFactor;
 
-          final baseRadius = 12.0 * depthFactor;
+          final s1 = toScreen(p1.x, p1.y);
 
-          final basePaint = Paint()
+          final s2 = toScreen(p2.x, p2.y);
 
-            ..color = accentColor.withAlpha(80)
+          canvas.drawLine(s1, s2, ringPaintGlow);
 
-            ..style = PaintingStyle.stroke
-
-            ..strokeWidth = 2.0 * depthFactor;
-
-          
-
-          final baseGlow = Paint()
-
-            ..color = accentColor.withAlpha(40)
-
-            ..style = PaintingStyle.stroke
-
-            ..strokeWidth = 4.0 * depthFactor
-
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
-
-    
-
-          // To make the base ring look "flat" in 3D, we'd ideally project it point by point,
-
-          // but a simple ellipse often suffices for this perspective.
-
-          canvas.drawOval(
-
-            Rect.fromCenter(center: screenPos, width: baseRadius * 2, height: baseRadius * 0.8),
-
-            baseGlow,
-
-          );
-
-          canvas.drawOval(
-
-            Rect.fromCenter(center: screenPos, width: baseRadius * 2, height: baseRadius * 0.8),
-
-            basePaint,
-
-          );
-
-    
-
-          // Draw the central dot (Crystal)
-
-          final pointSize = math.max(4.0, 10.0 * depthFactor);
-
-          final alpha = (255 * depthFactor).toInt().clamp(100, 255);
-
-    
-
-          final paint = Paint()
-
-            ..color = Colors.white.withAlpha(alpha)
-
-            ..style = PaintingStyle.fill;
-
-    
-
-          final corePaint = Paint()
-
-            ..color = accentColor.withAlpha(alpha)
-
-            ..style = PaintingStyle.fill;
-
-    
-
-          // Inner core
-
-          canvas.drawCircle(screenPos, pointSize / 2, corePaint);
-
-          // Brighter center
-
-          canvas.drawCircle(screenPos, pointSize / 4, paint);
-
-    
-
-          // Glow effect
-
-          final glowPaint = Paint()
-
-            ..color = accentColor.withAlpha(alpha ~/ 2)
-
-            ..style = PaintingStyle.fill
-
-            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-
-          canvas.drawCircle(screenPos, pointSize, glowPaint);
-
+          canvas.drawLine(s1, s2, ringPaintMain);
         }
-
       }
-
-    
-
-            @override
-
-    
-
-            bool shouldRepaint(covariant McpPainter oldDelegate) {
-
-    
-
-              return oldDelegate.pattern != pattern ||
-
-    
-
-                  oldDelegate.rotationX != rotationX ||
-
-    
-
-                  oldDelegate.rotationY != rotationY ||
-
-    
-
-                  oldDelegate.focalLength != focalLength ||
-
-    
-
-                  oldDelegate.showRing != showRing;
-
-    
-
-            }
-
     }
 
-    
+    // Sort visible points for node rendering
 
-    class _ProjectedWithIndex {
+    final visibleProjectedWithIdx = <_ProjectedWithIndex>[];
 
-      final _ProjectedPoint point;
-
-      final int index;
-
-      _ProjectedWithIndex(this.point, this.index);
-
+    for (int i = 0; i < allProjected.length; i++) {
+      if (allProjected[i].isVisible) {
+        visibleProjectedWithIdx.add(_ProjectedWithIndex(allProjected[i], i));
+      }
     }
 
-    
+    visibleProjectedWithIdx.sort((a, b) => b.point.z.compareTo(a.point.z));
 
-    class _ProjectedPoint {
+    for (final item in visibleProjectedWithIdx) {
+      final p = item.point;
 
-    
+      final originalNode = points[item.index];
+
+      if (originalNode.x == 0 && originalNode.z == 0 && originalNode.y == 0)
+        continue;
+
+      final screenPos = toScreen(p.x, p.y);
+
+      double depthFactor = focalLength / (focalLength + p.z);
+
+      depthFactor = depthFactor.clamp(0.0, 1.5);
+
+      // Draw "Base Ring" underneath the dot
+
+      final baseRadius = 12.0 * depthFactor;
+
+      final basePaint = Paint()
+        ..color = accentColor.withAlpha(80)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0 * depthFactor;
+
+      final baseGlow = Paint()
+        ..color = accentColor.withAlpha(40)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0 * depthFactor
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+
+      // To make the base ring look "flat" in 3D, we'd ideally project it point by point,
+
+      // but a simple ellipse often suffices for this perspective.
+
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: screenPos,
+          width: baseRadius * 2,
+          height: baseRadius * 0.8,
+        ),
+
+        baseGlow,
+      );
+
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: screenPos,
+          width: baseRadius * 2,
+          height: baseRadius * 0.8,
+        ),
+
+        basePaint,
+      );
+
+      // Draw the central dot (Crystal)
+
+      final pointSize = math.max(4.0, 10.0 * depthFactor);
+
+      final alpha = (255 * depthFactor).toInt().clamp(100, 255);
+
+      final paint = Paint()
+        ..color = Colors.white.withAlpha(alpha)
+        ..style = PaintingStyle.fill;
+
+      final corePaint = Paint()
+        ..color = accentColor.withAlpha(alpha)
+        ..style = PaintingStyle.fill;
+
+      // Inner core
+
+      canvas.drawCircle(screenPos, pointSize / 2, corePaint);
+
+      // Brighter center
+
+      canvas.drawCircle(screenPos, pointSize / 4, paint);
+
+      // Glow effect
+
+      final glowPaint = Paint()
+        ..color = accentColor.withAlpha(alpha ~/ 2)
+        ..style = PaintingStyle.fill
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+      canvas.drawCircle(screenPos, pointSize, glowPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant McpPainter oldDelegate) {
+    return oldDelegate.pattern != pattern ||
+        oldDelegate.rotationX != rotationX ||
+        oldDelegate.rotationY != rotationY ||
+        oldDelegate.focalLength != focalLength ||
+        oldDelegate.showRing != showRing;
+  }
+}
+
+class _ProjectedWithIndex {
+  final _ProjectedPoint point;
+
+  final int index;
+
+  _ProjectedWithIndex(this.point, this.index);
+}
+
+class _ProjectedPoint {
   final double x;
   final double y;
   final double z;

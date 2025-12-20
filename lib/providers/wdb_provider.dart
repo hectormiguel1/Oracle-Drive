@@ -1,12 +1,12 @@
-import 'package:ff13_mod_resource/models/app_game_code.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/schema_registry.dart'
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/schema_registry.dart'
     as xiii_registry;
-import 'package:ff13_mod_resource/models/wdb_entities/xiii-2/schema_registry.dart'
+import 'package:oracle_drive/models/wdb_entities/xiii-2/schema_registry.dart'
     as xiii2_registry;
-import 'package:ff13_mod_resource/models/wdb_model.dart';
-import 'package:ff13_mod_resource/src/services/app_database.dart';
-import 'package:ff13_mod_resource/src/utils/ztr_text_renderer.dart';
+import 'package:oracle_drive/models/wdb_model.dart';
+import 'package:oracle_drive/src/services/app_database.dart';
+import 'package:oracle_drive/src/utils/ztr_text_renderer.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

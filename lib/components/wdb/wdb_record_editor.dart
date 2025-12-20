@@ -1,18 +1,18 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_background.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_badge.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_checkbox.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_dropdowns.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_panel.dart';
-import 'package:ff13_mod_resource/components/widgets/crystal_text_field.dart';
-import 'package:ff13_mod_resource/models/app_game_code.dart';
-import 'package:ff13_mod_resource/models/shared_lookups.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/wdb_entity.dart';
-import 'package:ff13_mod_resource/models/wdb_model.dart';
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/schema_registry.dart';
-import 'package:ff13_mod_resource/src/services/app_database.dart';
-import 'package:ff13_mod_resource/src/third_party/wdb/wdb.g.dart' as native;
-import 'package:ff13_mod_resource/src/utils/ztr_text_renderer.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/widgets/crystal_background.dart';
+import 'package:oracle_drive/components/widgets/crystal_badge.dart';
+import 'package:oracle_drive/components/widgets/crystal_checkbox.dart';
+import 'package:oracle_drive/components/widgets/crystal_dropdowns.dart';
+import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/components/widgets/crystal_text_field.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/models/shared_lookups.dart';
+import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/models/wdb_model.dart';
+import 'package:oracle_drive/models/wdb_entities/xiii/schema_registry.dart';
+import 'package:oracle_drive/src/services/app_database.dart';
+import 'package:oracle_drive/src/third_party/wdb/wdb.g.dart' as native;
+import 'package:oracle_drive/src/utils/ztr_text_renderer.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -429,10 +429,7 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
                           ),
                           Text(
                             widget.sheetName,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: accentColor,
-                            ),
+                            style: TextStyle(fontSize: 12, color: accentColor),
                           ),
                         ],
                       ),
@@ -450,10 +447,7 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
                           ? "Previous: $prevName"
                           : "No Previous Record",
                       child: IconButton(
-                        icon: Icon(
-                          Icons.arrow_upward,
-                          color: accentColor,
-                        ),
+                        icon: Icon(Icons.arrow_upward, color: accentColor),
                         onPressed: _currentIndex > 0 ? _prevRecord : null,
                       ),
                     ),
@@ -462,10 +456,7 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
                           ? "Next: $nextName"
                           : "No Next Record",
                       child: IconButton(
-                        icon: Icon(
-                          Icons.arrow_downward,
-                          color: accentColor,
-                        ),
+                        icon: Icon(Icons.arrow_downward, color: accentColor),
                         onPressed: _currentIndex < widget.rows.length - 1
                             ? _nextRecord
                             : null,

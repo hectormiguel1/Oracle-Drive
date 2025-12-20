@@ -1,6 +1,6 @@
-import 'package:ff13_mod_resource/components/widgets/crystal_container.dart';
-import 'package:ff13_mod_resource/components/widgets/style.dart';
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/components/widgets/crystal_container.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 
 class CrystalButton extends StatefulWidget {
@@ -34,8 +34,9 @@ class _CrystalButtonState extends State<CrystalButton> {
         ? Colors.white
         : CrystalColors.panelBackground.withValues(alpha: 0.7);
     final Color targetContentColor = isWhiteBg ? Colors.black : Colors.white;
-    final Color targetBorderColor =
-        widget.isPrimary || _isHovered ? accentColor : Colors.white24;
+    final Color targetBorderColor = widget.isPrimary || _isHovered
+        ? accentColor
+        : Colors.white24;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -66,18 +67,10 @@ class _CrystalButtonState extends State<CrystalButton> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (widget.icon != null) ...[
-                          Icon(
-                            widget.icon,
-                            color: contentColor,
-                            size: 16,
-                          ),
+                          Icon(widget.icon, color: contentColor, size: 16),
                           const SizedBox(width: 4),
                         ] else if (widget.isPrimary) ...[
-                          Icon(
-                            Icons.play_arrow,
-                            color: contentColor,
-                            size: 16,
-                          ),
+                          Icon(Icons.play_arrow, color: contentColor, size: 16),
                           const SizedBox(width: 4),
                         ],
                         Text(

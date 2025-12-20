@@ -1,13 +1,12 @@
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/mission.dart'
+import 'package:oracle_drive/models/wdb_entities/xiii/mission.dart'
     as wdb_mission;
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/shop.dart'
-    as wdb_shop;
-import 'package:ff13_mod_resource/models/wdb_entities/xiii/special_ability.dart'
+import 'package:oracle_drive/models/wdb_entities/xiii/shop.dart' as wdb_shop;
+import 'package:oracle_drive/models/wdb_entities/xiii/special_ability.dart'
     as wdb_special_ability;
-import 'package:ff13_mod_resource/src/isar/update_sepc.dart';
-import 'package:ff13_mod_resource/src/isar/xiii/mission.dart' as isar_mission;
-import 'package:ff13_mod_resource/src/isar/xiii/shop.dart' as isar_shop;
-import 'package:ff13_mod_resource/src/isar/xiii/special_ability.dart'
+import 'package:oracle_drive/src/isar/update_sepc.dart';
+import 'package:oracle_drive/src/isar/xiii/mission.dart' as isar_mission;
+import 'package:oracle_drive/src/isar/xiii/shop.dart' as isar_shop;
+import 'package:oracle_drive/src/isar/xiii/special_ability.dart'
     as isar_special_ability;
 
 IsarUpsertSpec<T>? xiiiIsarEntityMappers<T>(String sheetName) {

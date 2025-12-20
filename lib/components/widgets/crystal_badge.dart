@@ -1,19 +1,16 @@
-import 'package:ff13_mod_resource/theme/crystal_theme.dart';
+import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 
 class CrystalBadge extends StatelessWidget {
   final String label;
   final Color? color;
 
-  const CrystalBadge({
-    super.key,
-    required this.label,
-    this.color,
-  });
+  const CrystalBadge({super.key, required this.label, this.color});
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = color ?? Theme.of(context).extension<CrystalTheme>()!.accent;
+    final themeColor =
+        color ?? Theme.of(context).extension<CrystalTheme>()!.accent;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(

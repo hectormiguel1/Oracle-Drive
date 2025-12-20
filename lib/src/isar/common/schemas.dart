@@ -1,4 +1,4 @@
-import 'package:ff13_mod_resource/src/isar/common/models.dart';
+import 'package:oracle_drive/src/isar/common/models.dart';
 import 'package:isar_plus/isar_plus.dart';
 
 final List<IsarGeneratedSchema> schemas = [

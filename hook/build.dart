@@ -27,7 +27,7 @@ Future<void> main(List<String> args) async {
       void addAssetWithPdb(Uri libPath, String assetName) {
         output.assets.code.add(
           CodeAsset(
-            package: 'ff13_mod_resource',
+            package: 'oracle_drive',
             name: assetName,
             linkMode: DynamicLoadingBundled(),
             file: libPath,
@@ -42,7 +42,7 @@ Future<void> main(List<String> args) async {
         if (pdbFile.existsSync()) {
           output.assets.code.add(
             CodeAsset(
-              package: 'ff13_mod_resource',
+              package: 'oracle_drive',
               name: assetName.replaceAll('.g.dart', '.pdb'),
               linkMode: DynamicLoadingBundled(),
               file: pdbPath,
