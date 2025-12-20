@@ -52,6 +52,33 @@ static void my_application_activate(GApplication* application) {
     gtk_window_set_title(window, "Oracle Drive");
   }
 
+  // Set the window icon
+  g_autoptr(GError) icon_error = nullptr;
+  
+  // Resolve the actual path of the executable by reading the link
+  g_autofree gchar* exe_path = g_file_read_link("/proc/self/exe", nullptr);
+  g_autoptr(GFile) exe_file = nullptr;
+  
+  if (exe_path != nullptr) {
+      exe_file = g_file_new_for_path(exe_path);
+  } else {
+      // Fallback (unlikely to work if /proc isn't mounted, but safe)
+      exe_file = g_file_new_for_path("/proc/self/exe");
+  }
+
+  g_autoptr(GFile) exe_dir = g_file_get_parent(exe_file);
+  g_autoptr(GFile) icon_file = g_file_resolve_relative_path(
+      exe_dir, "data/flutter_assets/assets/app_icon.png");
+  g_autofree gchar* icon_path = g_file_get_path(icon_file);
+
+  g_printerr("Debug: Trying to load icon from: %s\n", icon_path);
+
+  if (!gtk_window_set_icon_from_file(window, icon_path, &icon_error)) {
+    g_warning("Could not set icon from %s: %s", icon_path, icon_error->message);
+  } else {
+    g_printerr("Debug: Successfully set icon.\n");
+  }
+
   gtk_window_set_default_size(window, 1280, 720);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
