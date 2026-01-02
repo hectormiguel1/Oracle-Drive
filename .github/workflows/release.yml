@@ -11,7 +11,7 @@ on:
         required: true
 
 env:
-  FLUTTER_VERSION: '3.29.3'
+  FLUTTER_CHANNEL: 'master'
   RUST_VERSION: '1.91.1'
 
 jobs:
@@ -24,8 +24,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Setup Rust
@@ -80,8 +79,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Setup Rust
@@ -123,8 +121,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
+          channel: ${{ env.FLUTTER_CHANNEL }}
           cache: true
 
       - name: Setup Rust
