@@ -86,6 +86,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ env.RUST_VERSION }}
+          targets: x86_64-unknown-linux-gnu
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -128,6 +129,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ env.RUST_VERSION }}
+          targets: x86_64-pc-windows-msvc
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
