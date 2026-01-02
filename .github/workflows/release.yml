@@ -47,6 +47,9 @@ jobs:
       - name: Run build_runner
         run: dart run build_runner build --delete-conflicting-outputs
 
+      - name: Build Rust library (release)
+        run: cargo build --release --manifest-path rust/fabula_nova_sdk/Cargo.toml
+
       - name: Build macOS app
         run: flutter build macos --release
 
@@ -99,6 +102,9 @@ jobs:
       - name: Run build_runner
         run: dart run build_runner build --delete-conflicting-outputs
 
+      - name: Build Rust library (release)
+        run: cargo build --release --manifest-path rust/fabula_nova_sdk/Cargo.toml --target x86_64-unknown-linux-gnu
+
       - name: Build Linux app
         run: flutter build linux --release
 
@@ -141,6 +147,9 @@ jobs:
 
       - name: Run build_runner
         run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build Rust library (release)
+        run: cargo build --release --manifest-path rust/fabula_nova_sdk/Cargo.toml --target x86_64-pc-windows-msvc
 
       - name: Build Windows app
         run: flutter build windows --release
