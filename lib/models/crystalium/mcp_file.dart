@@ -1,3 +1,6 @@
+import 'package:fabula_nova_sdk/bridge_generated/modules/crystalium/structs.dart'
+    as sdk;
+
 class Vector3 {
   final double x;
   final double y;
@@ -7,9 +10,15 @@ class Vector3 {
 
   Vector3 operator +(Vector3 other) => Vector3(x + other.x, y + other.y, z + other.z);
   Vector3 operator *(double scale) => Vector3(x * scale, y * scale, z * scale);
-  
+
   @override
   String toString() => 'Vector3($x, $y, $z)';
+
+  /// Convert from SDK Vec3
+  static Vector3 fromSdk(sdk.Vec3 v) => Vector3(v.x, v.y, v.z);
+
+  /// Convert to SDK Vec3
+  sdk.Vec3 toSdk() => sdk.Vec3(x: x, y: y, z: z);
 }
 
 class McpPattern {
@@ -45,4 +54,28 @@ class McpFile {
 
   /// Get a pattern by name
   McpPattern? getPattern(String name) => patternsMap[name];
+
+  /// Convert from SDK type
+  static McpFile fromSdk(sdk.McpFile sdkMcp) {
+    final patternsMap = <String, McpPattern>{};
+    for (final entry in sdkMcp.patterns.entries) {
+      patternsMap[entry.key] = McpPatternConversion.fromSdk(entry.value);
+    }
+    return McpFile(
+      version: sdkMcp.version,
+      patternCount: sdkMcp.patternCount,
+      reserved: sdkMcp.reserved,
+      patternsMap: patternsMap,
+    );
+  }
+}
+
+extension McpPatternConversion on McpPattern {
+  static McpPattern fromSdk(sdk.McpPattern sdkPattern) {
+    return McpPattern(
+      name: sdkPattern.name,
+      nodes: sdkPattern.nodes.map((v) => Vector3.fromSdk(v)).toList(),
+      count: sdkPattern.count.toInt(),
+    );
+  }
 }

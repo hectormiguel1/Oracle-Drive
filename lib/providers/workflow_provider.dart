@@ -1,15 +1,14 @@
 import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:isar_plus/isar_plus.dart';
 import 'package:logging/logging.dart';
 import 'package:uuid/uuid.dart';
 import '../models/app_game_code.dart';
 import '../models/workflow/node_status.dart';
 import '../models/workflow/workflow_models.dart';
 import '../providers/settings_provider.dart';
-import '../src/isar/workflow/workflow_repository.dart';
-import '../src/isar/workflow/workflow_schemas.dart';
+import '../src/isar/generic_repository.dart';
+import '../src/services/app_database.dart';
 import '../src/workflow/execution/workflow_engine.dart';
 
 import '../models/wdb_model.dart';
@@ -18,36 +17,25 @@ import '../src/services/native_service.dart';
 final _logger = Logger('WorkflowProvider');
 
 // ============================================================
-// Database Provider
+// Game Repository Provider (for workflow operations)
 // ============================================================
 
-final _workflowDatabaseProvider = Provider<Isar>((ref) {
-  final db = Isar.open(
-    schemas: workflowSchemas,
-    directory: './',
-    inspector: false,
-    name: 'workflows',
-  );
-  ref.onDispose(() => db.close());
-  return db;
-});
-
-final workflowRepositoryProvider = Provider<WorkflowRepository>((ref) {
-  final db = ref.watch(_workflowDatabaseProvider);
-  return WorkflowRepository(db);
+/// Provider to get the game repository for a specific game code.
+/// Workflows are now stored in game-specific databases.
+final gameRepositoryProvider = Provider.family<GameRepository, AppGameCode>((ref, gameCode) {
+  return AppDatabase.instance.getRepositoryForGame(gameCode);
 });
 
 // ============================================================
 // Workflow List Provider
 // ============================================================
 
+/// Provider for listing workflows for a specific game.
+/// Since workflows are now stored per-game-database, a game code is required.
 final workflowListProvider =
-    FutureProvider.family<List<Workflow>, AppGameCode?>((ref, gameCode) async {
-      final repo = ref.watch(workflowRepositoryProvider);
-      if (gameCode != null) {
-        return repo.getAllWorkflows(gameCode);
-      }
-      return repo.getAllWorkflowsAllGames();
+    FutureProvider.family<List<Workflow>, AppGameCode>((ref, gameCode) async {
+      final repo = ref.watch(gameRepositoryProvider(gameCode));
+      return repo.getAllWorkflows();
     });
 
 // ============================================================
@@ -160,7 +148,9 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
 
   WorkflowEditorNotifier(this._ref) : super(const WorkflowEditorState());
 
-  WorkflowRepository get _repo => _ref.read(workflowRepositoryProvider);
+  /// Get the game repository for a specific game code.
+  GameRepository _getRepo(AppGameCode gameCode) =>
+      _ref.read(gameRepositoryProvider(gameCode));
 
   /// Get the default workspace path for a game code from settings.
   String? _getDefaultWorkspace(AppGameCode gameCode) {
@@ -192,8 +182,11 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     _logger.info('Created new workflow: $name (workspace: ${workflow.workspacePath})');
   }
 
-  Future<void> load(String workflowId) async {
-    final workflow = await _repo.getWorkflow(workflowId);
+  /// Load a workflow from the game-specific database.
+  /// [gameCode] specifies which game's database to load from.
+  Future<void> load(String workflowId, AppGameCode gameCode) async {
+    final repo = _getRepo(gameCode);
+    final workflow = await repo.getWorkflow(workflowId);
     if (workflow != null) {
       // If workflow doesn't have a workspace path, use default from settings
       if (workflow.workspacePath == null || workflow.workspacePath!.isEmpty) {
@@ -217,9 +210,10 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     if (workflow == null) return;
 
     workflow.modifiedAt = DateTime.now();
-    await _repo.saveWorkflow(workflow);
+    final repo = _getRepo(workflow.gameCode);
+    await repo.saveWorkflow(workflow);
     state = state.copyWith(isDirty: false);
-    _ref.invalidate(workflowListProvider);
+    _ref.invalidate(workflowListProvider(workflow.gameCode));
     _logger.info('Saved workflow: ${workflow.name}');
   }
 

@@ -21,7 +21,7 @@ class WorkflowConnection {
     String targetNodeId,
     String targetPort,
   ) {
-    return '${sourceNodeId}:$sourcePort->${targetNodeId}:$targetPort';
+    return '$sourceNodeId:$sourcePort->$targetNodeId:$targetPort';
   }
 
   WorkflowConnection copyWith({

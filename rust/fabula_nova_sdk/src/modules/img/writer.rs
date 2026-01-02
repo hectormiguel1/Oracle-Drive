@@ -129,7 +129,7 @@ impl<W: Write + Seek> ImgWriter<W> {
             // Uncompressed RGBA (formats 3, 4)
             3 | 4 => {
                 // Pitch = bytes per row = (width * bits + 7) / 8
-                dds.pitch_or_linear_size = (width * 32 + 7) / 8;
+                dds.pitch_or_linear_size = (width * 32).div_ceil(8);
 
                 // RGB | ALPHA flags for uncompressed RGBA
                 dds.pixel_format.flags = 0x41;
@@ -149,8 +149,8 @@ impl<W: Write + Seek> ImgWriter<W> {
             24 => {
                 let block_size = 8;  // 8 bytes per 4x4 block
                 // Linear size = number of blocks * block size
-                dds.pitch_or_linear_size = std::cmp::max(1, (width + 3) / 4)
-                    * std::cmp::max(1, (height + 3) / 4)
+                dds.pitch_or_linear_size = std::cmp::max(1, width.div_ceil(4))
+                    * std::cmp::max(1, height.div_ceil(4))
                     * block_size;
 
                 dds.pixel_format.flags = 0x04;  // FOURCC flag
@@ -162,8 +162,8 @@ impl<W: Write + Seek> ImgWriter<W> {
             // DXT3 / BC2 (format 25) - explicit alpha
             25 => {
                 let block_size = 16;  // 16 bytes per 4x4 block
-                dds.pitch_or_linear_size = std::cmp::max(1, (width + 3) / 4)
-                    * std::cmp::max(1, (height + 3) / 4)
+                dds.pitch_or_linear_size = std::cmp::max(1, width.div_ceil(4))
+                    * std::cmp::max(1, height.div_ceil(4))
                     * block_size;
 
                 dds.pixel_format.flags = 0x04;
@@ -174,8 +174,8 @@ impl<W: Write + Seek> ImgWriter<W> {
             // DXT5 / BC3 (format 26) - interpolated alpha
             26 => {
                 let block_size = 16;  // 16 bytes per 4x4 block
-                dds.pitch_or_linear_size = std::cmp::max(1, (width + 3) / 4)
-                    * std::cmp::max(1, (height + 3) / 4)
+                dds.pitch_or_linear_size = std::cmp::max(1, width.div_ceil(4))
+                    * std::cmp::max(1, height.div_ceil(4))
                     * block_size;
 
                 dds.pixel_format.flags = 0x04;

@@ -247,7 +247,7 @@ pub fn clb_to_java(clb_data: &[u8]) -> Result<Vec<u8>> {
                     let old_idx = u16::from_le_bytes([clb_data[cp_addr+8], clb_data[cp_addr+9]]);
                     java_data.extend_from_slice(&clb_idx_to_java_idx.get(&old_idx).copied().unwrap_or(0).to_be_bytes());
                 }
-                9 | 10 | 11 | 12 => {
+                9..=12 => {
                     // Tags 9-12: Both indices are packed at +0x08 as two consecutive u16 LE
                     let old_idx1 = u16::from_le_bytes([clb_data[cp_addr+8], clb_data[cp_addr+9]]);
                     let old_idx2 = u16::from_le_bytes([clb_data[cp_addr+10], clb_data[cp_addr+11]]);
@@ -817,7 +817,7 @@ fn java_bytes_to_clb(java_data: &[u8]) -> Result<Vec<u8>> {
     pos += 2;
     let mut fields: Vec<JavaField> = Vec::new();
     for _ in 0..fields_count {
-        let (field, new_pos) = parse_java_field(&java_data, pos)?;
+        let (field, new_pos) = parse_java_field(java_data, pos)?;
         fields.push(field);
         pos = new_pos;
     }
@@ -827,7 +827,7 @@ fn java_bytes_to_clb(java_data: &[u8]) -> Result<Vec<u8>> {
     pos += 2;
     let mut methods: Vec<JavaMethod> = Vec::new();
     for _ in 0..methods_count {
-        let (method, new_pos) = parse_java_method(&java_data, pos)?;
+        let (method, new_pos) = parse_java_method(java_data, pos)?;
         methods.push(method);
         pos = new_pos;
     }
@@ -837,7 +837,7 @@ fn java_bytes_to_clb(java_data: &[u8]) -> Result<Vec<u8>> {
     pos += 2;
     let mut class_attributes: Vec<JavaAttribute> = Vec::new();
     for _ in 0..class_attr_count {
-        let (attr, new_pos) = parse_java_attribute(&java_data, pos)?;
+        let (attr, new_pos) = parse_java_attribute(java_data, pos)?;
         class_attributes.push(attr);
         pos = new_pos;
     }
@@ -937,6 +937,7 @@ fn parse_java_attribute(data: &[u8], mut pos: usize) -> Result<(JavaAttribute, u
 /// - Entries 2+: actual data
 ///
 /// Long and Double entries in Java take 2 slots but only 1 in CLB.
+#[allow(clippy::too_many_arguments)]
 fn build_clb_from_parsed(
     minor: u16,
     major: u16,
@@ -1289,7 +1290,7 @@ fn build_clb_from_parsed(
         .copy_from_slice(&method_code_data);
 
     // Write footer (checksum + size indicator)
-    let body_size = (total_size - 16) as u32;
+    let body_size = total_size - 16;
     clb_data[footer_addr as usize..footer_addr as usize + 4].copy_from_slice(&body_size.to_le_bytes());
     // The last 4 bytes are often zeros or a secondary checksum
 

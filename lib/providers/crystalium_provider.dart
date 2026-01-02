@@ -5,10 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:oracle_drive/models/crystalium/cgt_file.dart';
 import 'package:oracle_drive/models/crystalium/mcp_file.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
 import 'package:oracle_drive/src/utils/crystalium/cgt_modifier.dart';
-import 'package:oracle_drive/src/utils/crystalium/cgt_parser.dart';
-import 'package:oracle_drive/src/utils/crystalium/cgt_writer.dart';
-import 'package:oracle_drive/src/utils/crystalium/mcp_parser.dart';
 import 'package:path/path.dart' as p;
 
 enum CrystaliumViewMode { mcp, cgt }
@@ -129,7 +127,10 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
   }
 
   Future<void> _loadMcpFile(Uint8List bytes) async {
-    final mcp = McpParser.parse(bytes);
+    // Use NativeService to parse MCP via Rust
+    final sdkMcp = await NativeService.instance.parseMcpFromMemory(bytes);
+    final mcp = McpFile.fromSdk(sdkMcp);
+
     state = state.copyWith(
       mcpFile: mcp,
       viewMode: CrystaliumViewMode.mcp,
@@ -138,14 +139,17 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
   }
 
   Future<void> _loadCgtFile(String filePath, Uint8List bytes) async {
-    final cgt = CgtParser.parse(bytes);
+    // Use NativeService to parse CGT via Rust
+    final sdkCgt = await NativeService.instance.parseCgtFromMemory(bytes);
+    final cgt = CgtFile.fromSdk(sdkCgt);
 
     // Try to load patterns file from same directory
     McpFile? patterns;
     final patternsPath = p.join(p.dirname(filePath), 'patterns.mcp');
     if (await File(patternsPath).exists()) {
       final pBytes = await File(patternsPath).readAsBytes();
-      patterns = McpParser.parse(pBytes);
+      final sdkPatterns = await NativeService.instance.parseMcpFromMemory(pBytes);
+      patterns = McpFile.fromSdk(sdkPatterns);
     }
 
     // Build children map
@@ -198,7 +202,8 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
     if (state.cgtFile == null) return;
 
     final fileToSave = _modifier != null ? _modifier!.build() : state.cgtFile!;
-    final bytes = CgtWriter.write(fileToSave);
+    // Use NativeService to write CGT via Rust
+    final bytes = await NativeService.instance.writeCgtToMemory(fileToSave.toSdk());
     await File(outputPath).writeAsBytes(bytes);
 
     state = state.copyWith(
@@ -327,12 +332,14 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
     final updatedCgt = _modifier!.build();
     final childrenMap = _buildChildrenMap(updatedCgt);
 
+    // NOTE: Do NOT increment visualizerKey here - that destroys the widget
+    // and loses all camera/walker state. Let didUpdateWidget handle the update
+    // instead, which properly preserves state.
     if (selectNewEntry && newEntry != null) {
       state = state.copyWith(
         cgtFile: updatedCgt,
         childrenMap: childrenMap,
         hasUnsavedChanges: true,
-        visualizerKey: state.visualizerKey + 1,
         selectedEntry: newEntry,
         selectedNodeIdx: newEntry.nodeIds.isNotEmpty ? newEntry.nodeIds.first : null,
       );

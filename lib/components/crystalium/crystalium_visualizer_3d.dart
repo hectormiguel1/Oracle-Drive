@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:oracle_drive/components/crystalium/crystalium_painter.dart';
 import 'package:oracle_drive/components/widgets/crystal_button.dart';
 import 'package:oracle_drive/components/widgets/crystal_checkbox.dart';
 import 'package:oracle_drive/components/widgets/crystal_container.dart';
@@ -63,10 +64,11 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
   int _currentStage = 10;
 
   // Walk mode camera state
-  double _walkZoom = 18.0; // Very zoomed in for walking
-  double _walkRotationX = 0.5;
-  double _walkRotationY = 0.0;
-  double _targetWalkRotationX = 0.5;
+  // FF13 style: camera behind walker, looking forward along the path
+  double _walkZoom = 12.0; // Closer zoom for immersive walking
+  double _walkRotationX = 0.15; // Slight downward tilt (eye-level)
+  double _walkRotationY = 0.0; // Rotates to face direction of travel
+  double _targetWalkRotationX = 0.15;
   double _targetWalkRotationY = 0.0;
 
   // Smooth camera following
@@ -85,7 +87,7 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
   late AnimationController _animController;
 
   // Click detection for direction arrows
-  List<_ClickableDirection> _clickableDirections = [];
+  final List<_ClickableDirection> _clickableDirections = [];
   Size _lastSize = Size.zero;
 
   // Focus node for keyboard input
@@ -116,10 +118,22 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.cgtFile != widget.cgtFile ||
         oldWidget.mcpPatterns != widget.mcpPatterns) {
-      // Preserve walker state before rebuilding
+      // Preserve ALL state before rebuilding
       final previousNodeId = _walker?.currentNodeId ?? 0;
       final previousVisitedNodes = _walker?.visitedNodes.toSet() ?? <int>{};
       final wasInWalkMode = _mode == VisualizerMode.walk;
+
+      // Save camera state
+      final savedCameraPos = _currentCameraPos;
+      final savedCameraTarget = _cameraTarget;
+      final savedWalkRotationX = _walkRotationX;
+      final savedWalkRotationY = _walkRotationY;
+      final savedTargetRotationX = _targetWalkRotationX;
+      final savedTargetRotationY = _targetWalkRotationY;
+      final savedWalkZoom = _walkZoom;
+      final savedOrbitRotationX = _rotationX;
+      final savedOrbitRotationY = _rotationY;
+      final savedOrbitZoom = _zoom;
 
       _renderer = CrystariumRenderer(
         cgtFile: widget.cgtFile,
@@ -127,9 +141,8 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
       );
       _walker = CrystariumWalker(_renderer);
 
-      // Restore walker position if we were in walk mode and the node still exists
-      if (wasInWalkMode &&
-          _renderer.nodeWorldPositions.containsKey(previousNodeId)) {
+      // Restore walker position if the node still exists
+      if (_renderer.nodeWorldPositions.containsKey(previousNodeId)) {
         _walker!.jumpToNode(previousNodeId);
         // Restore visited nodes that still exist
         for (final nodeId in previousVisitedNodes) {
@@ -137,8 +150,23 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
             _walker!.visitedNodes.add(nodeId);
           }
         }
-        // Keep camera at same position
-        _currentCameraPos = _walker!.currentPosition;
+      }
+
+      // Restore ALL camera state (regardless of mode)
+      _currentCameraPos = savedCameraPos;
+      _cameraTarget = savedCameraTarget;
+      _walkRotationX = savedWalkRotationX;
+      _walkRotationY = savedWalkRotationY;
+      _targetWalkRotationX = savedTargetRotationX;
+      _targetWalkRotationY = savedTargetRotationY;
+      _walkZoom = savedWalkZoom;
+      _rotationX = savedOrbitRotationX;
+      _rotationY = savedOrbitRotationY;
+      _zoom = savedOrbitZoom;
+
+      // Ensure animation continues if in walk mode
+      if (wasInWalkMode && !_animController.isAnimating) {
+        _animController.repeat();
       }
     }
   }
@@ -150,40 +178,73 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
     super.dispose();
   }
 
+  /// Wrap angle difference to [-π, π] to prevent 360° swings
+  double _wrapAngleDifference(double current, double target) {
+    double diff = target - current;
+    while (diff > math.pi) {
+      diff -= 2 * math.pi;
+    }
+    while (diff < -math.pi) {
+      diff += 2 * math.pi;
+    }
+    return current + diff;
+  }
+
   void _onAnimationTick() {
     if (_mode == VisualizerMode.walk && _walker != null) {
       _walker!.update(0.016); // ~60fps
 
-      // Smooth camera follow
+      // Smooth camera follow - unified smoothing factor
       final targetPos = _walker!.currentPosition;
       _cameraTarget = targetPos;
 
       // Lerp camera position for smooth following
-      const smoothing = 0.1;
+      const smoothing = 0.08; // Unified smoothing for position and rotation
       _currentCameraPos = Vector3(
         _currentCameraPos.x + (targetPos.x - _currentCameraPos.x) * smoothing,
         _currentCameraPos.y + (targetPos.y - _currentCameraPos.y) * smoothing,
         _currentCameraPos.z + (targetPos.z - _currentCameraPos.z) * smoothing,
       );
 
-      // Auto-rotate camera to face the stage plane
-      // Calculate target rotation based on movement direction
-      if (_walker!.state == WalkerState.moving) {
-        final from = _renderer.nodeWorldPositions[_walker!.currentNodeId];
-        final to = _renderer.nodeWorldPositions[_walker!.targetNodeId];
-        if (from != null && to != null) {
-          final dx = to.x - from.x;
-          final dz = to.z - from.z;
-          if (dx.abs() > 0.01 || dz.abs() > 0.01) {
-            _targetWalkRotationY = math.atan2(dx, dz);
+      // FF13 style: Camera faces the SELECTED DIRECTION (where we're going)
+      // When selecting between directions, camera rotates to show that path
+      final directions = _walker!.availableDirections;
+      final selectedIdx = _walker!.selectedDirectionIndex;
+
+      if (directions.isNotEmpty && selectedIdx >= 0 && selectedIdx < directions.length) {
+        final selectedDir = directions[selectedIdx];
+        final currentPos = _walker!.currentPosition;
+
+        // Calculate angle from current position to selected direction
+        final dx = selectedDir.position.x - currentPos.x;
+        final dz = selectedDir.position.z - currentPos.z;
+
+        if (dx.abs() > 0.1 || dz.abs() > 0.1) {
+          // Camera looks TOWARD the selected direction (add PI to look from behind)
+          final newRotation = math.atan2(dx, dz);
+          _targetWalkRotationY = _wrapAngleDifference(_walkRotationY, newRotation);
+        }
+      } else if (_walker!.state == WalkerState.idle && directions.isEmpty) {
+        // At a leaf node with no directions - face back toward parent
+        final currentNodePos = _renderer.nodeWorldPositions[_walker!.currentNodeId];
+        final parentNode = _renderer.cgtFile.getNode(_walker!.currentNodeId);
+        if (parentNode != null && currentNodePos != null) {
+          final parentPos = _renderer.nodeWorldPositions[parentNode.parentIndex];
+          if (parentPos != null) {
+            final dx = parentPos.x - currentNodePos.x;
+            final dz = parentPos.z - currentNodePos.z;
+            if (dx.abs() > 0.1 || dz.abs() > 0.1) {
+              final newRotation = math.atan2(dx, dz);
+              _targetWalkRotationY = _wrapAngleDifference(_walkRotationY, newRotation);
+            }
           }
         }
       }
 
-      // Smoothly interpolate camera rotation
-      const rotSmoothing = 0.05;
-      _walkRotationY += (_targetWalkRotationY - _walkRotationY) * rotSmoothing;
-      _walkRotationX += (_targetWalkRotationX - _walkRotationX) * rotSmoothing;
+      // Smoothly interpolate camera rotation with angle wrapping
+      _walkRotationY = _wrapAngleDifference(_walkRotationY, _targetWalkRotationY);
+      _walkRotationY += (_targetWalkRotationY - _walkRotationY) * smoothing;
+      _walkRotationX += (_targetWalkRotationX - _walkRotationX) * smoothing;
 
       setState(() {});
     }
@@ -283,10 +344,6 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
         return;
       }
     }
-  }
-
-  void _updateClickableDirections(List<_ClickableDirection> directions) {
-    _clickableDirections = directions;
   }
 
   List<Widget> _buildDirectionButtons(
@@ -501,10 +558,9 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                     // Walk mode - allow rotation and zoom adjustment
                     _walkRotationY += details.focalPointDelta.dx * 0.01;
                     _walkRotationX -= details.focalPointDelta.dy * 0.01;
-                    _walkRotationX = _walkRotationX.clamp(
-                      -math.pi / 2,
-                      math.pi / 2,
-                    );
+                    // Allow mostly horizontal view with slight up/down tilt
+                    _walkRotationX = _walkRotationX.clamp(-0.3, 0.5);
+                    _targetWalkRotationX = _targetWalkRotationX.clamp(-0.3, 0.5);
                     _walkZoom = (_previousZoom * details.scale).clamp(
                       4.0,
                       25.0,
@@ -1141,547 +1197,9 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
   }
 }
 
-/// Custom painter for rendering the Crystarium in 3D.
-class CrystariumPainter extends CustomPainter {
-  final CrystariumRenderer renderer;
-  final double rotationX;
-  final double rotationY;
-  final double zoom;
-  final int currentStage;
-  final CrystariumEntry? selectedEntry;
-  final int? selectedNodeIdx;
-  final Color accentColor;
-  final CrystariumWalker? walker;
-  final Set<int> visitedNodes;
-  final Set<int> enabledRoles;
-  final Vector3? cameraOffset;
-  final bool isWalkMode;
-  final bool showNodeNames;
+// CrystariumPainter is now in a separate file: crystalium_painter.dart
 
-  CrystariumPainter({
-    required this.renderer,
-    required this.rotationX,
-    required this.rotationY,
-    required this.zoom,
-    required this.currentStage,
-    this.selectedEntry,
-    this.selectedNodeIdx,
-    required this.accentColor,
-    this.walker,
-    this.visitedNodes = const {},
-    this.enabledRoles = const {0, 1, 2, 3, 4, 5},
-    this.cameraOffset,
-    this.isWalkMode = false,
-    this.showNodeNames = false,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
-
-    // Get filtered data
-    final connections = renderer.getConnectionsForStage(currentStage);
-    final nodePositions = renderer.getNodesForStage(currentStage);
-
-    // Calculate scale based on bounding box and zoom
-    final bounds = renderer.getBoundingBox();
-    final sceneSize = math.max(
-      bounds.max.x - bounds.min.x,
-      math.max(bounds.max.y - bounds.min.y, bounds.max.z - bounds.min.z),
-    );
-    final baseScale = math.min(size.width, size.height) / (sceneSize + 50);
-    final scale = baseScale * zoom;
-
-    // Camera offset for walking mode (smooth following)
-    Vector3 camOffset = Vector3(0, 0, 0);
-    if (cameraOffset != null) {
-      camOffset = Vector3(-cameraOffset!.x, -cameraOffset!.y, -cameraOffset!.z);
-    }
-
-    // Filter and project connections by depth
-    final projectedConnections = <_ProjectedConnection>[];
-    for (final conn in connections) {
-      // Check if both ends are in enabled roles
-      final fromInfo = renderer.nodeInfo[conn.fromNodeId];
-      final toInfo = renderer.nodeInfo[conn.toNodeId];
-      final fromRole = fromInfo?.roleId ?? 0;
-      final toRole = toInfo?.roleId ?? 0;
-
-      // Show connection if either end is in enabled roles (or it's the root)
-      final showConnection =
-          enabledRoles.contains(fromRole) ||
-          enabledRoles.contains(toRole) ||
-          conn.fromNodeId == 0 ||
-          conn.toNodeId == 0;
-
-      if (!showConnection) continue;
-
-      final fromPos = _applyOffset(conn.fromPosition, camOffset);
-      final toPos = _applyOffset(conn.toPosition, camOffset);
-      final from = _project(fromPos, scale);
-      final to = _project(toPos, scale);
-      if (from.isVisible && to.isVisible) {
-        final isVisited =
-            visitedNodes.contains(conn.fromNodeId) &&
-            visitedNodes.contains(conn.toNodeId);
-        final isFiltered =
-            !enabledRoles.contains(fromRole) && !enabledRoles.contains(toRole);
-        projectedConnections.add(
-          _ProjectedConnection(
-            from: from,
-            to: to,
-            depth: (from.z + to.z) / 2,
-            roleId: conn.roleId,
-            isVisited: isVisited,
-            isFiltered: isFiltered,
-          ),
-        );
-      }
-    }
-    projectedConnections.sort((a, b) => b.depth.compareTo(a.depth));
-
-    // Draw connections
-    for (final conn in projectedConnections) {
-      _drawConnection(
-        canvas,
-        Offset(centerX + conn.from.x, centerY - conn.from.y),
-        Offset(centerX + conn.to.x, centerY - conn.to.y),
-        _getRoleColor(conn.roleId),
-        conn.depth,
-        isVisited: conn.isVisited,
-        isFiltered: conn.isFiltered,
-      );
-    }
-
-    // Filter and project nodes by depth
-    final projectedNodes = <_ProjectedNode>[];
-    for (final entry in nodePositions.entries) {
-      final nodeId = entry.key;
-      final info = renderer.nodeInfo[nodeId];
-      final roleId = info?.roleId ?? 0;
-
-      // Show node if it's in enabled roles or is the root
-      final showNode = enabledRoles.contains(roleId) || nodeId == 0;
-      if (!showNode) continue;
-
-      final pos = _applyOffset(entry.value, camOffset);
-      final projected = _project(pos, scale);
-      if (projected.isVisible) {
-        // Get node name from CGT file
-        String? nodeName;
-        if (showNodeNames) {
-          final cgtNode = renderer.cgtFile.getNode(nodeId);
-          nodeName = cgtNode?.name;
-        }
-
-        projectedNodes.add(
-          _ProjectedNode(
-            nodeId: nodeId,
-            screen: projected,
-            roleId: roleId,
-            stage: info?.stage ?? 1,
-            isVisited: visitedNodes.contains(nodeId),
-            nodeName: nodeName,
-          ),
-        );
-      }
-    }
-    projectedNodes.sort((a, b) => b.screen.z.compareTo(a.screen.z));
-
-    // Draw available direction indicators in walk mode
-    if (walker != null && walker!.availableDirections.isNotEmpty) {
-      final selectedIdx = walker!.selectedDirectionIndex;
-      for (var i = 0; i < walker!.availableDirections.length; i++) {
-        final dir = walker!.availableDirections[i];
-
-        // Only show directions for enabled roles
-        if (!enabledRoles.contains(dir.roleId)) continue;
-
-        final pos = _applyOffset(dir.position, camOffset);
-        final projected = _project(pos, scale);
-        if (projected.isVisible) {
-          final isSelected = i == selectedIdx;
-          _drawDirectionIndicator(
-            canvas,
-            Offset(centerX + projected.x, centerY - projected.y),
-            _getRoleColor(dir.roleId),
-            isSelected,
-          );
-        }
-      }
-    }
-
-    // Draw nodes
-    for (final node in projectedNodes) {
-      final isCurrentWalkerNode =
-          walker != null && node.nodeId == walker!.currentNodeId;
-      final isSelected = node.nodeId == selectedNodeIdx || isCurrentWalkerNode;
-      final isInSelectedEntry =
-          selectedEntry?.nodeIds.contains(node.nodeId) ?? false;
-
-      _drawNode(
-        canvas,
-        Offset(centerX + node.screen.x, centerY - node.screen.y),
-        node.screen.z,
-        _getRoleColor(node.roleId),
-        isSelected: isSelected,
-        isHighlighted: isInSelectedEntry,
-        isVisited: node.isVisited,
-        isCurrentWalker: isCurrentWalkerNode,
-        nodeName: node.nodeName,
-      );
-    }
-
-    // Draw crosshair in walk mode
-    if (isWalkMode) {
-      _drawCrosshair(canvas, Offset(centerX, centerY));
-    }
-  }
-
-  void _drawCrosshair(Canvas canvas, Offset center) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
-      ..strokeWidth = 1.0;
-
-    const size = 15.0;
-    const gap = 5.0;
-
-    // Horizontal lines
-    canvas.drawLine(
-      Offset(center.dx - size, center.dy),
-      Offset(center.dx - gap, center.dy),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(center.dx + gap, center.dy),
-      Offset(center.dx + size, center.dy),
-      paint,
-    );
-
-    // Vertical lines
-    canvas.drawLine(
-      Offset(center.dx, center.dy - size),
-      Offset(center.dx, center.dy - gap),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(center.dx, center.dy + gap),
-      Offset(center.dx, center.dy + size),
-      paint,
-    );
-  }
-
-  Vector3 _applyOffset(Vector3 pos, Vector3 offset) {
-    return Vector3(pos.x + offset.x, pos.y + offset.y, pos.z + offset.z);
-  }
-
-  _Projected3D _project(Vector3 pos, double scale) {
-    final cosY = math.cos(rotationY);
-    final sinY = math.sin(rotationY);
-    final cosX = math.cos(rotationX);
-    final sinX = math.sin(rotationX);
-
-    final xAfterY = pos.x * cosY + pos.z * sinY;
-    final yAfterY = pos.y;
-    final zAfterY = -pos.x * sinY + pos.z * cosY;
-
-    final xFinal = xAfterY;
-    final yFinal = yAfterY * cosX - zAfterY * sinX;
-    final zFinal = yAfterY * sinX + zAfterY * cosX;
-
-    final focalLength = 500.0;
-    if (focalLength + zFinal <= 0) {
-      return _Projected3D(x: 0, y: 0, z: zFinal, isVisible: false);
-    }
-
-    final perspectiveFactor = focalLength / (focalLength + zFinal);
-    return _Projected3D(
-      x: xFinal * scale * perspectiveFactor,
-      y: yFinal * scale * perspectiveFactor,
-      z: zFinal,
-      isVisible: true,
-    );
-  }
-
-  void _drawConnection(
-    Canvas canvas,
-    Offset from,
-    Offset to,
-    Color color,
-    double depth, {
-    bool isVisited = false,
-    bool isFiltered = false,
-  }) {
-    final opacity = (1.0 - (depth / 500).clamp(0.0, 0.7)).clamp(0.3, 1.0);
-    final visitedMultiplier = isVisited ? 1.0 : 0.5;
-    final filteredMultiplier = isFiltered ? 0.2 : 1.0;
-
-    final glowPaint = Paint()
-      ..color = color.withValues(
-        alpha: opacity * 0.3 * visitedMultiplier * filteredMultiplier,
-      )
-      ..strokeWidth = isVisited ? 8.0 : 4.0
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-    canvas.drawLine(from, to, glowPaint);
-
-    final linePaint = Paint()
-      ..color = color.withValues(
-        alpha: opacity * 0.7 * visitedMultiplier * filteredMultiplier,
-      )
-      ..strokeWidth = isVisited ? 3.0 : 1.5
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(from, to, linePaint);
-  }
-
-  void _drawDirectionIndicator(
-    Canvas canvas,
-    Offset position,
-    Color color,
-    bool isSelected,
-  ) {
-    final size = isSelected ? 24.0 : 16.0;
-
-    // Outer glow
-    if (isSelected) {
-      final glowPaint = Paint()
-        ..color = color.withValues(alpha: 0.4)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-      canvas.drawCircle(position, size + 5, glowPaint);
-    }
-
-    // Ring
-    final ringPaint = Paint()
-      ..color = isSelected ? Colors.white : color.withValues(alpha: 0.7)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = isSelected ? 3.0 : 2.0;
-    canvas.drawCircle(position, size, ringPaint);
-
-    if (isSelected) {
-      // Arrow indicator pointing up
-      final arrowPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill;
-
-      final path = Path()
-        ..moveTo(position.dx, position.dy - size - 12)
-        ..lineTo(position.dx - 8, position.dy - size - 4)
-        ..lineTo(position.dx + 8, position.dy - size - 4)
-        ..close();
-      canvas.drawPath(path, arrowPaint);
-
-      // "GO" text or similar indicator
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: 'GO',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          position.dx - textPainter.width / 2,
-          position.dy - textPainter.height / 2,
-        ),
-      );
-    }
-  }
-
-  void _drawNode(
-    Canvas canvas,
-    Offset position,
-    double depth,
-    Color color, {
-    bool isSelected = false,
-    bool isHighlighted = false,
-    bool isVisited = false,
-    bool isCurrentWalker = false,
-    String? nodeName,
-  }) {
-    final depthFactor = (500 / (500 + depth)).clamp(0.5, 1.5);
-    final baseSize = 6.0 * depthFactor;
-    final opacity = (1.0 - (depth / 500).clamp(0.0, 0.7)).clamp(0.4, 1.0);
-    final visitedMultiplier = isVisited ? 1.0 : 0.4;
-
-    if (isCurrentWalker) {
-      // Current walker position - large pulsing indicator
-      final walkerGlow = Paint()
-        ..color = Colors.white.withValues(alpha: 0.6)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
-      canvas.drawCircle(position, baseSize + 20, walkerGlow);
-
-      final walkerRing = Paint()
-        ..color = accentColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4.0;
-      canvas.drawCircle(position, baseSize + 12, walkerRing);
-
-      final innerRing = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
-      canvas.drawCircle(position, baseSize + 6, innerRing);
-    } else if (isSelected) {
-      final selectPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.0;
-      canvas.drawCircle(position, baseSize + 6, selectPaint);
-
-      final selectGlow = Paint()
-        ..color = Colors.white.withValues(alpha: 0.4)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-      canvas.drawCircle(position, baseSize + 10, selectGlow);
-    }
-
-    if (isHighlighted && !isSelected && !isCurrentWalker) {
-      final highlightPaint = Paint()
-        ..color = accentColor.withValues(alpha: 0.5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
-      canvas.drawCircle(position, baseSize + 4, highlightPaint);
-    }
-
-    // Glow
-    final glowPaint = Paint()
-      ..color = color.withValues(alpha: opacity * 0.4 * visitedMultiplier)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-    canvas.drawCircle(position, baseSize * 2, glowPaint);
-
-    // Main node
-    final nodePaint = Paint()
-      ..color = color.withValues(alpha: opacity * visitedMultiplier)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(position, baseSize, nodePaint);
-
-    // Inner highlight
-    final innerPaint = Paint()
-      ..color = Colors.white.withValues(
-        alpha: opacity * 0.7 * visitedMultiplier,
-      )
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(position, baseSize * 0.4, innerPaint);
-
-    // Draw node name if provided
-    if (nodeName != null && nodeName.isNotEmpty) {
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: nodeName,
-          style: TextStyle(
-            color: Colors.white.withValues(
-              alpha: opacity * visitedMultiplier * 0.9,
-            ),
-            fontSize: 9.0 * depthFactor,
-            fontWeight: FontWeight.w500,
-            shadows: [
-              Shadow(color: Colors.black.withValues(alpha: 0.8), blurRadius: 3),
-            ],
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(position.dx - textPainter.width / 2, position.dy + baseSize + 4),
-      );
-    }
-  }
-
-  Color _getRoleColor(int roleId) {
-    switch (roleId) {
-      case 1:
-        return const Color(0xFFFF4444);
-      case 5:
-        return const Color(0xFF44FF44);
-      case 2:
-        return const Color(0xFF4444FF);
-      case 3:
-        return const Color(0xFFFF44FF);
-      case 0:
-        return const Color(0xFFFFFF44);
-      case 4:
-        return const Color(0xFF44FFFF);
-      default:
-        return Colors.white;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CrystariumPainter oldDelegate) {
-    return oldDelegate.rotationX != rotationX ||
-        oldDelegate.rotationY != rotationY ||
-        oldDelegate.zoom != zoom ||
-        oldDelegate.currentStage != currentStage ||
-        oldDelegate.selectedEntry != selectedEntry ||
-        oldDelegate.selectedNodeIdx != selectedNodeIdx ||
-        oldDelegate.walker?.currentNodeId != walker?.currentNodeId ||
-        oldDelegate.walker?.transitionProgress != walker?.transitionProgress ||
-        oldDelegate.walker?.selectedDirectionIndex !=
-            walker?.selectedDirectionIndex ||
-        oldDelegate.enabledRoles != enabledRoles ||
-        oldDelegate.cameraOffset != cameraOffset ||
-        oldDelegate.showNodeNames != showNodeNames;
-  }
-}
-
-class _Projected3D {
-  final double x;
-  final double y;
-  final double z;
-  final bool isVisible;
-
-  _Projected3D({
-    required this.x,
-    required this.y,
-    required this.z,
-    required this.isVisible,
-  });
-}
-
-class _ProjectedConnection {
-  final _Projected3D from;
-  final _Projected3D to;
-  final double depth;
-  final int roleId;
-  final bool isVisited;
-  final bool isFiltered;
-
-  _ProjectedConnection({
-    required this.from,
-    required this.to,
-    required this.depth,
-    required this.roleId,
-    this.isVisited = false,
-    this.isFiltered = false,
-  });
-}
-
-class _ProjectedNode {
-  final int nodeId;
-  final _Projected3D screen;
-  final int roleId;
-  final int stage;
-  final bool isVisited;
-  final String? nodeName;
-
-  _ProjectedNode({
-    required this.nodeId,
-    required this.screen,
-    required this.roleId,
-    required this.stage,
-    this.isVisited = false,
-    this.nodeName,
-  });
-}
-
+/// Clickable direction for tap detection
 class _ClickableDirection {
   final int nodeId;
   final Offset screenPosition;

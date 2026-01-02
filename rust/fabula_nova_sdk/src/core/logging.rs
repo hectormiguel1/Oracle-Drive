@@ -75,10 +75,13 @@ use std::sync::{Mutex, RwLock};
 /// the `log::Log` trait. Rust's logging facade requires a static logger.
 static LOGGER: FabulaLogger = FabulaLogger;
 
+/// Type alias for the log callback function to reduce type complexity.
+type LogCallback = Box<dyn Fn(String) + Send + Sync>;
+
 /// Optional callback function for real-time log streaming.
 /// Wrapped in RwLock for thread-safe read/write access.
 /// Set to None to disable callback-based logging (e.g., during hot reload).
-static LOG_CALLBACK: Lazy<RwLock<Option<Box<dyn Fn(String) + Send + Sync>>>> =
+static LOG_CALLBACK: Lazy<RwLock<Option<LogCallback>>> =
     Lazy::new(|| RwLock::new(None));
 
 // =============================================================================
@@ -204,12 +207,9 @@ impl log::Log for FabulaLogger {
 
             // Attempt to send to callback if one is registered
             // Using read() lock since we're only reading the callback reference
-            // The `sent` variable is unused but kept for potential future metrics
-            let mut sent = false;
             if let Ok(guard) = LOG_CALLBACK.read() {
                 if let Some(cb) = guard.as_ref() {
                     cb(message.clone());
-                    sent = true;
                 }
             }
         }

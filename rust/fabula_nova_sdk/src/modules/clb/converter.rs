@@ -178,7 +178,7 @@ pub fn clb_to_java(input_path: &Path, output_path: &Path) -> Result<()> {
 
     let mut i = 1;
     while i < cp_count {
-        addr_to_index.insert(current_cp_offset as u32, i as u16);
+        addr_to_index.insert(current_cp_offset as u32, i);
         cursor.set_position(current_cp_offset);
         let tag = match cursor.read_u32::<LittleEndian>() {
             Ok(t) => t,
@@ -193,7 +193,7 @@ pub fn clb_to_java(input_path: &Path, output_path: &Path) -> Result<()> {
             let str_addr = addr_val;
             
             // Map the string data address itself to this index (Tag 7 pointers)
-            addr_to_index.insert(str_addr, i as u16);
+            addr_to_index.insert(str_addr, i);
 
             if (str_addr as u64 + length as u64) > max_heap_addr {
                 max_heap_addr = str_addr as u64 + length as u64;
@@ -204,7 +204,7 @@ pub fn clb_to_java(input_path: &Path, output_path: &Path) -> Result<()> {
             let mut str_bytes = vec![0u8; length as usize];
             if str_cursor.read_exact(&mut str_bytes).is_ok() {
                 if let Ok(s) = String::from_utf8(str_bytes) {
-                    cp_strings.insert(i as u16, s);
+                    cp_strings.insert(i, s);
                 }
             }
         } else if tag == TAG_LONG || tag == TAG_DOUBLE {
@@ -521,10 +521,9 @@ pub fn java_to_clb(input_path: &Path, output_path: &Path) -> Result<()> {
     let cp_entries_size = (cp_count as u32) * 16;
     let mut current_heap_offset = cp_array_offset + cp_entries_size;
 
-    clb_cp_bytes.write_all(&vec![0u8; 16])?;
+    clb_cp_bytes.write_all(&[0u8; 16])?;
 
-    for idx in 1..java_cp.len() {
-        let entry = &java_cp[idx];
+    for entry in java_cp.iter().skip(1) {
         let mut clb_entry = vec![0u8; 16];
         let mut cursor_entry = Cursor::new(&mut clb_entry);
         cursor_entry.write_u32::<LittleEndian>(entry.tag as u32)?;
@@ -619,9 +618,9 @@ pub fn java_to_clb(input_path: &Path, output_path: &Path) -> Result<()> {
     output_file.write_u16::<LittleEndian>(minor_version)?;
     output_file.write_u16::<LittleEndian>(major_version)?;
     output_file.write_u16::<LittleEndian>(cp_count)?;
-    output_file.write_all(&vec![0u8; 10])?;
+    output_file.write_all(&[0u8; 10])?;
     output_file.write_u16::<LittleEndian>(fields_count)?;
-    output_file.write_all(&vec![0u8; 8])?;
+    output_file.write_all(&[0u8; 8])?;
     output_file.write_u32::<LittleEndian>(cp_array_offset)?;
     output_file.write_u32::<LittleEndian>(this_class_addr)?;
     output_file.write_u32::<LittleEndian>(0)?;

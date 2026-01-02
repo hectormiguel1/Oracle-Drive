@@ -86,8 +86,8 @@ pub fn generate_xor_table(mut seed: [u8; 8]) -> [u8; 264] {
 
     // C#: seedHalfA = (seedHalfA << 0x08) | (seedHalfA >> 0x18);
     //     seedHalfB = (seedHalfB >> 0x10) | (seedHalfB << 0x10);
-    let seed_half_a = (seed_half_a << 8) | (seed_half_a >> 24);
-    let seed_half_b = (seed_half_b >> 16) | (seed_half_b << 16);
+    let seed_half_a = seed_half_a.rotate_left(8);
+    let seed_half_b = seed_half_b.rotate_left(16);
 
     // C#: var xorBlock = BitConverter.GetBytes(seedHalfB).Concat(BitConverter.GetBytes(seedHalfA)).ToArray();
     let mut xor_block = [0u8; 8];
@@ -131,7 +131,7 @@ pub fn generate_xor_table(mut seed: [u8; 8]) -> [u8; 264] {
 
         // C#: ulong tmpBlockHalfA = (uint)(blockHalfA ^ a);
         //     ulong tmpBlockHalfB = (uint)(a >> 32);
-        let tmp_block_half_a = (block_half_a ^ (a as u32)) as u32;
+        let tmp_block_half_a = block_half_a ^ (a as u32);
         let mut tmp_block_half_b = (a >> 32) as u32;
 
         // C#: a = blockHalfA | (a & 0xFFFFFFFF00000000);
@@ -618,8 +618,8 @@ pub fn encrypt_blocks(
 
         // C#: var bytesToEncryptHigherValUInt = (uint)bytesToEncryptHigherVal & 0xFFFFFFFF;
         //     var bytesToEncryptLowerValUInt = (uint)bytesToEncryptLowerVal & 0xFFFFFFFF;
-        let bytes_to_encrypt_higher_val_uint = (bytes_to_encrypt_higher_val as u32) & 0xFFFFFFFF;
-        let bytes_to_encrypt_lower_val_uint = (bytes_to_encrypt_lower_val as u32) & 0xFFFFFFFF;
+        let bytes_to_encrypt_higher_val_uint = bytes_to_encrypt_higher_val as u32;
+        let bytes_to_encrypt_lower_val_uint = bytes_to_encrypt_lower_val as u32;
 
         // C#: var computedBytesArray = new byte[8];
         //     Array.ConstrainedCopy(BitConverter.GetBytes(bytesToEncryptLowerValUInt), 0, computedBytesArray, 0, 4);
@@ -633,35 +633,35 @@ pub fn encrypt_blocks(
         //     encryptedByte1 = ((currentBlockId ^ 69) & 255) ^ encryptedByte1;
         let mut encrypted_byte1 =
             loop_a_byte_reverse(computed_bytes_array[0], xor_table, table_offset) as u32;
-        encrypted_byte1 = ((current_block_id ^ 69) & 255) ^ encrypted_byte1;
+        encrypted_byte1 ^= (current_block_id ^ 69) & 255;
 
         let mut encrypted_byte2 =
             loop_a_byte_reverse(computed_bytes_array[1], xor_table, table_offset) as u32;
-        encrypted_byte2 = encrypted_byte1 ^ encrypted_byte2;
+        encrypted_byte2 ^= encrypted_byte1;
 
         let mut encrypted_byte3 =
             loop_a_byte_reverse(computed_bytes_array[2], xor_table, table_offset) as u32;
-        encrypted_byte3 = encrypted_byte2 ^ encrypted_byte3;
+        encrypted_byte3 ^= encrypted_byte2;
 
         let mut encrypted_byte4 =
             loop_a_byte_reverse(computed_bytes_array[3], xor_table, table_offset) as u32;
-        encrypted_byte4 = encrypted_byte3 ^ encrypted_byte4;
+        encrypted_byte4 ^= encrypted_byte3;
 
         let mut encrypted_byte5 =
             loop_a_byte_reverse(computed_bytes_array[4], xor_table, table_offset) as u32;
-        encrypted_byte5 = encrypted_byte4 ^ encrypted_byte5;
+        encrypted_byte5 ^= encrypted_byte4;
 
         let mut encrypted_byte6 =
             loop_a_byte_reverse(computed_bytes_array[5], xor_table, table_offset) as u32;
-        encrypted_byte6 = encrypted_byte5 ^ encrypted_byte6;
+        encrypted_byte6 ^= encrypted_byte5;
 
         let mut encrypted_byte7 =
             loop_a_byte_reverse(computed_bytes_array[6], xor_table, table_offset) as u32;
-        encrypted_byte7 = encrypted_byte6 ^ encrypted_byte7;
+        encrypted_byte7 ^= encrypted_byte6;
 
         let mut encrypted_byte8 =
             loop_a_byte_reverse(computed_bytes_array[7], xor_table, table_offset) as u32;
-        encrypted_byte8 = encrypted_byte7 ^ encrypted_byte8;
+        encrypted_byte8 ^= encrypted_byte7;
 
         // C#: byte[] encryptedByteArray = [
         //         (byte)encryptedByte1, (byte)encryptedByte2, (byte)encryptedByte3,

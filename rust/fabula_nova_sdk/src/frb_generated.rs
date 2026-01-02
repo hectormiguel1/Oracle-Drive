@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -888955645;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 401158804;
 
 // Section: executor
 
@@ -45,6 +45,254 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
+fn wire__crate__api__cgt_from_json_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "cgt_from_json",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_json = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::cgt_from_json(api_json)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__cgt_parse_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "cgt_parse",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::cgt_parse(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__cgt_parse_from_memory_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "cgt_parse_from_memory",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_data = <Vec<u8>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::cgt_parse_from_memory(api_data)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__cgt_to_json_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "cgt_to_json",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_cgt =
+                <crate::modules::crystalium::structs::CgtFile>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::cgt_to_json(api_cgt)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__cgt_validate_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "cgt_validate",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_cgt =
+                <crate::modules::crystalium::structs::CgtFile>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Result::<_, ()>::Ok(crate::api::cgt_validate(api_cgt))?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__cgt_write_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "cgt_write",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_cgt =
+                <crate::modules::crystalium::structs::CgtFile>::sse_decode(&mut deserializer);
+            let api_out_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::cgt_write(api_cgt, api_out_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__cgt_write_to_memory_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "cgt_write_to_memory",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_cgt =
+                <crate::modules::crystalium::structs::CgtFile>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::cgt_write_to_memory(api_cgt)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__clear_log_callback_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -359,6 +607,147 @@ fn wire__crate__api__init_app_impl(
                     })?;
                     Ok(output_ok)
                 })())
+            }
+        },
+    )
+}
+fn wire__crate__api__mcp_from_json_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "mcp_from_json",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_json = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::mcp_from_json(api_json)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__mcp_parse_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "mcp_parse",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::mcp_parse(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__mcp_parse_from_memory_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "mcp_parse_from_memory",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_data = <Vec<u8>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::mcp_parse_from_memory(api_data)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__mcp_to_json_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "mcp_to_json",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_mcp =
+                <crate::modules::crystalium::structs::McpFile>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::mcp_to_json(api_mcp)?;
+                        Ok(output_ok)
+                    })(),
+                )
             }
         },
     )
@@ -1428,6 +1817,19 @@ impl SseDecode for flutter_rust_bridge::for_generated::anyhow::Error {
     }
 }
 
+impl SseDecode
+    for std::collections::HashMap<String, crate::modules::crystalium::structs::McpPattern>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner =
+            <Vec<(String, crate::modules::crystalium::structs::McpPattern)>>::sse_decode(
+                deserializer,
+            );
+        return inner.into_iter().collect();
+    }
+}
+
 impl SseDecode for std::collections::HashMap<String, crate::modules::wdb::structs::WdbValue> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1487,6 +1889,28 @@ impl SseDecode for bool {
     }
 }
 
+impl SseDecode for crate::modules::crystalium::structs::CgtFile {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_version = <u32>::sse_decode(deserializer);
+        let mut var_entryCount = <u32>::sse_decode(deserializer);
+        let mut var_totalNodes = <u32>::sse_decode(deserializer);
+        let mut var_reserved = <u32>::sse_decode(deserializer);
+        let mut var_entries =
+            <Vec<crate::modules::crystalium::structs::CrystariumEntry>>::sse_decode(deserializer);
+        let mut var_nodes =
+            <Vec<crate::modules::crystalium::structs::CrystariumNode>>::sse_decode(deserializer);
+        return crate::modules::crystalium::structs::CgtFile {
+            version: var_version,
+            entry_count: var_entryCount,
+            total_nodes: var_totalNodes,
+            reserved: var_reserved,
+            entries: var_entries,
+            nodes: var_nodes,
+        };
+    }
+}
+
 impl SseDecode for crate::modules::wdb::enums::CrystalNodeType {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1522,10 +1946,75 @@ impl SseDecode for crate::modules::wdb::enums::CrystalRole {
     }
 }
 
+impl SseDecode for crate::modules::crystalium::structs::CrystariumEntry {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_index = <u32>::sse_decode(deserializer);
+        let mut var_patternName = <String>::sse_decode(deserializer);
+        let mut var_position =
+            <crate::modules::crystalium::structs::Vec3>::sse_decode(deserializer);
+        let mut var_scale = <f32>::sse_decode(deserializer);
+        let mut var_rotation =
+            <crate::modules::crystalium::structs::Vec3>::sse_decode(deserializer);
+        let mut var_rotationW = <f32>::sse_decode(deserializer);
+        let mut var_nodeScale = <f32>::sse_decode(deserializer);
+        let mut var_roleId = <u8>::sse_decode(deserializer);
+        let mut var_stage = <u8>::sse_decode(deserializer);
+        let mut var_entryType = <u8>::sse_decode(deserializer);
+        let mut var_reserved = <u8>::sse_decode(deserializer);
+        let mut var_nodeIds = <Vec<u32>>::sse_decode(deserializer);
+        let mut var_linkPosition =
+            <crate::modules::crystalium::structs::Vec3>::sse_decode(deserializer);
+        let mut var_linkW = <f32>::sse_decode(deserializer);
+        return crate::modules::crystalium::structs::CrystariumEntry {
+            index: var_index,
+            pattern_name: var_patternName,
+            position: var_position,
+            scale: var_scale,
+            rotation: var_rotation,
+            rotation_w: var_rotationW,
+            node_scale: var_nodeScale,
+            role_id: var_roleId,
+            stage: var_stage,
+            entry_type: var_entryType,
+            reserved: var_reserved,
+            node_ids: var_nodeIds,
+            link_position: var_linkPosition,
+            link_w: var_linkW,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::crystalium::structs::CrystariumNode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_index = <u32>::sse_decode(deserializer);
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_parentIndex = <i32>::sse_decode(deserializer);
+        let mut var_unknown = <[u32; 4]>::sse_decode(deserializer);
+        let mut var_scales = <[f32; 4]>::sse_decode(deserializer);
+        return crate::modules::crystalium::structs::CrystariumNode {
+            index: var_index,
+            name: var_name,
+            parent_index: var_parentIndex,
+            unknown: var_unknown,
+            scales: var_scales,
+        };
+    }
+}
+
 impl SseDecode for f32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_f32::<NativeEndian>().unwrap()
+    }
+}
+
+impl SseDecode for [f32; 4] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <Vec<f32>>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::from_vec_to_array(inner);
     }
 }
 
@@ -1579,6 +2068,46 @@ impl SseDecode for Vec<String> {
     }
 }
 
+impl SseDecode for Vec<crate::modules::crystalium::structs::CrystariumEntry> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(
+                <crate::modules::crystalium::structs::CrystariumEntry>::sse_decode(deserializer),
+            );
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::crystalium::structs::CrystariumNode> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(
+                <crate::modules::crystalium::structs::CrystariumNode>::sse_decode(deserializer),
+            );
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<f32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<f32>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<i32> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1627,6 +2156,22 @@ impl SseDecode for Vec<usize> {
     }
 }
 
+impl SseDecode for Vec<(String, crate::modules::crystalium::structs::McpPattern)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(
+                <(String, crate::modules::crystalium::structs::McpPattern)>::sse_decode(
+                    deserializer,
+                ),
+            );
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<(String, String)> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1646,6 +2191,20 @@ impl SseDecode for Vec<(String, crate::modules::wdb::structs::WdbValue)> {
         let mut ans_ = vec![];
         for idx_ in 0..len_ {
             ans_.push(<(String, crate::modules::wdb::structs::WdbValue)>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::crystalium::structs::Vec3> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::crystalium::structs::Vec3>::sse_decode(
+                deserializer,
+            ));
         }
         return ans_;
     }
@@ -1731,11 +2290,55 @@ impl SseDecode for Vec<crate::modules::ztr::structs::ZtrMapEntry> {
     }
 }
 
+impl SseDecode for crate::modules::crystalium::structs::McpFile {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_version = <u32>::sse_decode(deserializer);
+        let mut var_patternCount = <u32>::sse_decode(deserializer);
+        let mut var_reserved = <u32>::sse_decode(deserializer);
+        let mut var_patterns = <std::collections::HashMap<
+            String,
+            crate::modules::crystalium::structs::McpPattern,
+        >>::sse_decode(deserializer);
+        return crate::modules::crystalium::structs::McpFile {
+            version: var_version,
+            pattern_count: var_patternCount,
+            reserved: var_reserved,
+            patterns: var_patterns,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::crystalium::structs::McpPattern {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_nodes =
+            <Vec<crate::modules::crystalium::structs::Vec3>>::sse_decode(deserializer);
+        let mut var_count = <usize>::sse_decode(deserializer);
+        return crate::modules::crystalium::structs::McpPattern {
+            name: var_name,
+            nodes: var_nodes,
+            count: var_count,
+        };
+    }
+}
+
 impl SseDecode for (crate::modules::img::structs::ImgData, Vec<u8>) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_field0 = <crate::modules::img::structs::ImgData>::sse_decode(deserializer);
         let mut var_field1 = <Vec<u8>>::sse_decode(deserializer);
+        return (var_field0, var_field1);
+    }
+}
+
+impl SseDecode for (String, crate::modules::crystalium::structs::McpPattern) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field0 = <String>::sse_decode(deserializer);
+        let mut var_field1 =
+            <crate::modules::crystalium::structs::McpPattern>::sse_decode(deserializer);
         return (var_field0, var_field1);
     }
 }
@@ -1784,6 +2387,14 @@ impl SseDecode for u32 {
     }
 }
 
+impl SseDecode for [u32; 4] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <Vec<u32>>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::from_vec_to_array(inner);
+    }
+}
+
 impl SseDecode for u64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1807,6 +2418,20 @@ impl SseDecode for usize {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_u64::<NativeEndian>().unwrap() as _
+    }
+}
+
+impl SseDecode for crate::modules::crystalium::structs::Vec3 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_x = <f32>::sse_decode(deserializer);
+        let mut var_y = <f32>::sse_decode(deserializer);
+        let mut var_z = <f32>::sse_decode(deserializer);
+        return crate::modules::crystalium::structs::Vec3 {
+            x: var_x,
+            y: var_y,
+            z: var_z,
+        };
     }
 }
 
@@ -2042,44 +2667,55 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        1 => wire__crate__api__clear_log_callback_impl(port, ptr, rust_vec_len, data_len),
-        2 => wire__crate__api__create_log_stream_impl(port, ptr, rust_vec_len, data_len),
-        3 => wire__crate__api__fetch_logs_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__get_all_buffered_logs_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__get_log_level_impl(port, ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__img_repack_strict_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__img_unpack_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__img_unpack_to_memory_impl(port, ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__reset_log_read_index_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__set_log_level_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__test_log_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
-        16 => {
+        1 => wire__crate__api__cgt_from_json_impl(port, ptr, rust_vec_len, data_len),
+        2 => wire__crate__api__cgt_parse_impl(port, ptr, rust_vec_len, data_len),
+        3 => wire__crate__api__cgt_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__cgt_to_json_impl(port, ptr, rust_vec_len, data_len),
+        5 => wire__crate__api__cgt_validate_impl(port, ptr, rust_vec_len, data_len),
+        6 => wire__crate__api__cgt_write_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__cgt_write_to_memory_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__clear_log_callback_impl(port, ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__create_log_stream_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__fetch_logs_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__get_all_buffered_logs_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__get_log_level_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__img_repack_strict_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__img_unpack_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__img_unpack_to_memory_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__mcp_from_json_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__mcp_parse_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__mcp_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__mcp_to_json_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__reset_log_read_index_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__set_log_level_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__test_log_impl(port, ptr, rust_vec_len, data_len),
+        24 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
+        27 => {
             wire__crate__api__wbt_extract_files_by_indices_impl(port, ptr, rust_vec_len, data_len)
         }
-        17 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
-        22 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
+        44 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2115,6 +2751,31 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::wct::Action>
     for crate::modules::wct::Action
 {
     fn into_into_dart(self) -> crate::modules::wct::Action {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::crystalium::structs::CgtFile {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.version.into_into_dart().into_dart(),
+            self.entry_count.into_into_dart().into_dart(),
+            self.total_nodes.into_into_dart().into_dart(),
+            self.reserved.into_into_dart().into_dart(),
+            self.entries.into_into_dart().into_dart(),
+            self.nodes.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::crystalium::structs::CgtFile
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::CgtFile>
+    for crate::modules::crystalium::structs::CgtFile
+{
+    fn into_into_dart(self) -> crate::modules::crystalium::structs::CgtFile {
         self
     }
 }
@@ -2172,6 +2833,63 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::wdb::enums::CrystalRole>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::crystalium::structs::CrystariumEntry {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.index.into_into_dart().into_dart(),
+            self.pattern_name.into_into_dart().into_dart(),
+            self.position.into_into_dart().into_dart(),
+            self.scale.into_into_dart().into_dart(),
+            self.rotation.into_into_dart().into_dart(),
+            self.rotation_w.into_into_dart().into_dart(),
+            self.node_scale.into_into_dart().into_dart(),
+            self.role_id.into_into_dart().into_dart(),
+            self.stage.into_into_dart().into_dart(),
+            self.entry_type.into_into_dart().into_dart(),
+            self.reserved.into_into_dart().into_dart(),
+            self.node_ids.into_into_dart().into_dart(),
+            self.link_position.into_into_dart().into_dart(),
+            self.link_w.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::crystalium::structs::CrystariumEntry
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::CrystariumEntry>
+    for crate::modules::crystalium::structs::CrystariumEntry
+{
+    fn into_into_dart(self) -> crate::modules::crystalium::structs::CrystariumEntry {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::crystalium::structs::CrystariumNode {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.index.into_into_dart().into_dart(),
+            self.name.into_into_dart().into_dart(),
+            self.parent_index.into_into_dart().into_dart(),
+            self.unknown.into_into_dart().into_dart(),
+            self.scales.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::crystalium::structs::CrystariumNode
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::CrystariumNode>
+    for crate::modules::crystalium::structs::CrystariumNode
+{
+    fn into_into_dart(self) -> crate::modules::crystalium::structs::CrystariumNode {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::modules::img::structs::ImgData {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -2195,6 +2913,51 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::img::structs::ImgData>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::crystalium::structs::McpFile {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.version.into_into_dart().into_dart(),
+            self.pattern_count.into_into_dart().into_dart(),
+            self.reserved.into_into_dart().into_dart(),
+            self.patterns.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::crystalium::structs::McpFile
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::McpFile>
+    for crate::modules::crystalium::structs::McpFile
+{
+    fn into_into_dart(self) -> crate::modules::crystalium::structs::McpFile {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::crystalium::structs::McpPattern {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.nodes.into_into_dart().into_dart(),
+            self.count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::crystalium::structs::McpPattern
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::McpPattern>
+    for crate::modules::crystalium::structs::McpPattern
+{
+    fn into_into_dart(self) -> crate::modules::crystalium::structs::McpPattern {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::modules::wct::TargetType {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -2212,6 +2975,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::wct::TargetType>
     for crate::modules::wct::TargetType
 {
     fn into_into_dart(self) -> crate::modules::wct::TargetType {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::crystalium::structs::Vec3 {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.x.into_into_dart().into_dart(),
+            self.y.into_into_dart().into_dart(),
+            self.z.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::crystalium::structs::Vec3
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::Vec3>
+    for crate::modules::crystalium::structs::Vec3
+{
+    fn into_into_dart(self) -> crate::modules::crystalium::structs::Vec3 {
         self
     }
 }
@@ -2511,6 +3296,18 @@ impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
     }
 }
 
+impl SseEncode
+    for std::collections::HashMap<String, crate::modules::crystalium::structs::McpPattern>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<(String, crate::modules::crystalium::structs::McpPattern)>>::sse_encode(
+            self.into_iter().collect(),
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for std::collections::HashMap<String, crate::modules::wdb::structs::WdbValue> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2572,6 +3369,23 @@ impl SseEncode for bool {
     }
 }
 
+impl SseEncode for crate::modules::crystalium::structs::CgtFile {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.version, serializer);
+        <u32>::sse_encode(self.entry_count, serializer);
+        <u32>::sse_encode(self.total_nodes, serializer);
+        <u32>::sse_encode(self.reserved, serializer);
+        <Vec<crate::modules::crystalium::structs::CrystariumEntry>>::sse_encode(
+            self.entries,
+            serializer,
+        );
+        <Vec<crate::modules::crystalium::structs::CrystariumNode>>::sse_encode(
+            self.nodes, serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::modules::wdb::enums::CrystalNodeType {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2615,10 +3429,54 @@ impl SseEncode for crate::modules::wdb::enums::CrystalRole {
     }
 }
 
+impl SseEncode for crate::modules::crystalium::structs::CrystariumEntry {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.index, serializer);
+        <String>::sse_encode(self.pattern_name, serializer);
+        <crate::modules::crystalium::structs::Vec3>::sse_encode(self.position, serializer);
+        <f32>::sse_encode(self.scale, serializer);
+        <crate::modules::crystalium::structs::Vec3>::sse_encode(self.rotation, serializer);
+        <f32>::sse_encode(self.rotation_w, serializer);
+        <f32>::sse_encode(self.node_scale, serializer);
+        <u8>::sse_encode(self.role_id, serializer);
+        <u8>::sse_encode(self.stage, serializer);
+        <u8>::sse_encode(self.entry_type, serializer);
+        <u8>::sse_encode(self.reserved, serializer);
+        <Vec<u32>>::sse_encode(self.node_ids, serializer);
+        <crate::modules::crystalium::structs::Vec3>::sse_encode(self.link_position, serializer);
+        <f32>::sse_encode(self.link_w, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::crystalium::structs::CrystariumNode {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.index, serializer);
+        <String>::sse_encode(self.name, serializer);
+        <i32>::sse_encode(self.parent_index, serializer);
+        <[u32; 4]>::sse_encode(self.unknown, serializer);
+        <[f32; 4]>::sse_encode(self.scales, serializer);
+    }
+}
+
 impl SseEncode for f32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_f32::<NativeEndian>(self).unwrap();
+    }
+}
+
+impl SseEncode for [f32; 4] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<f32>>::sse_encode(
+            {
+                let boxed: Box<[_]> = Box::new(self);
+                boxed.into_vec()
+            },
+            serializer,
+        );
     }
 }
 
@@ -2657,6 +3515,36 @@ impl SseEncode for Vec<String> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <String>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::crystalium::structs::CrystariumEntry> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::crystalium::structs::CrystariumEntry>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::crystalium::structs::CrystariumNode> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::crystalium::structs::CrystariumNode>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<f32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <f32>::sse_encode(item, serializer);
         }
     }
 }
@@ -2701,6 +3589,18 @@ impl SseEncode for Vec<usize> {
     }
 }
 
+impl SseEncode for Vec<(String, crate::modules::crystalium::structs::McpPattern)> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <(String, crate::modules::crystalium::structs::McpPattern)>::sse_encode(
+                item, serializer,
+            );
+        }
+    }
+}
+
 impl SseEncode for Vec<(String, String)> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2717,6 +3617,16 @@ impl SseEncode for Vec<(String, crate::modules::wdb::structs::WdbValue)> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <(String, crate::modules::wdb::structs::WdbValue)>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::crystalium::structs::Vec3> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::crystalium::structs::Vec3>::sse_encode(item, serializer);
         }
     }
 }
@@ -2781,11 +3691,38 @@ impl SseEncode for Vec<crate::modules::ztr::structs::ZtrMapEntry> {
     }
 }
 
+impl SseEncode for crate::modules::crystalium::structs::McpFile {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.version, serializer);
+        <u32>::sse_encode(self.pattern_count, serializer);
+        <u32>::sse_encode(self.reserved, serializer);
+        <std::collections::HashMap<String, crate::modules::crystalium::structs::McpPattern>>::sse_encode(self.patterns, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::crystalium::structs::McpPattern {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <Vec<crate::modules::crystalium::structs::Vec3>>::sse_encode(self.nodes, serializer);
+        <usize>::sse_encode(self.count, serializer);
+    }
+}
+
 impl SseEncode for (crate::modules::img::structs::ImgData, Vec<u8>) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <crate::modules::img::structs::ImgData>::sse_encode(self.0, serializer);
         <Vec<u8>>::sse_encode(self.1, serializer);
+    }
+}
+
+impl SseEncode for (String, crate::modules::crystalium::structs::McpPattern) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.0, serializer);
+        <crate::modules::crystalium::structs::McpPattern>::sse_encode(self.1, serializer);
     }
 }
 
@@ -2835,6 +3772,19 @@ impl SseEncode for u32 {
     }
 }
 
+impl SseEncode for [u32; 4] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<u32>>::sse_encode(
+            {
+                let boxed: Box<[_]> = Box::new(self);
+                boxed.into_vec()
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for u64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2861,6 +3811,15 @@ impl SseEncode for usize {
             .cursor
             .write_u64::<NativeEndian>(self as _)
             .unwrap();
+    }
+}
+
+impl SseEncode for crate::modules::crystalium::structs::Vec3 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <f32>::sse_encode(self.x, serializer);
+        <f32>::sse_encode(self.y, serializer);
+        <f32>::sse_encode(self.z, serializer);
     }
 }
 

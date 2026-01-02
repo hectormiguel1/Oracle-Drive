@@ -199,10 +199,8 @@ class WdbPasteRecordExecutor extends NodeExecutor {
 
     // Try to get record from variable first, fall back to clipboard for backwards compatibility
     var recordData = context.getVariable(recordVarName);
-    if (recordData == null) {
-      // Fallback to clipboard for backwards compatibility
-      recordData = context.clipboard;
-    }
+    // Fallback to clipboard for backwards compatibility
+    recordData ??= context.clipboard;
 
     if (recordData == null) {
       return NodeExecutionResult.error(

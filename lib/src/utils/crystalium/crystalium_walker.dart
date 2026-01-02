@@ -186,6 +186,12 @@ class CrystariumWalker {
     final currentPos =
         renderer.nodeWorldPositions[_currentNodeId] ?? Vector3(0, 0, 0);
 
+    // Get parent node ID for prioritization
+    final currentNode = renderer.cgtFile.getNode(_currentNodeId);
+    final parentId = currentNode?.parentIndex ?? -1;
+
+    WalkerDirection? parentDirection;
+
     for (final neighborId in neighbors) {
       final neighborPos = renderer.nodeWorldPositions[neighborId];
       if (neighborPos == null) continue;
@@ -197,19 +203,38 @@ class CrystariumWalker {
       final dz = neighborPos.z - currentPos.z;
       final angle = math.atan2(dz, dx);
 
-      _availableDirections.add(
-        WalkerDirection(
-          nodeId: neighborId,
-          position: neighborPos,
-          stage: info?.stage ?? 1,
-          roleId: info?.roleId ?? 0,
-          angle: angle,
-        ),
+      final direction = WalkerDirection(
+        nodeId: neighborId,
+        position: neighborPos,
+        stage: info?.stage ?? 1,
+        roleId: info?.roleId ?? 0,
+        angle: angle,
       );
+
+      // Separate parent direction from children
+      if (neighborId == parentId) {
+        parentDirection = direction;
+      } else {
+        _availableDirections.add(direction);
+      }
     }
 
-    // Sort by angle for consistent ordering
-    _availableDirections.sort((a, b) => a.angle.compareTo(b.angle));
+    // Sort children by angle using circular sorting (clockwise from top)
+    // Normalize angles to [0, 2π] with 0 at top (-Z direction)
+    double normalizeAngle(double a) {
+      // Shift so that forward (-Z, angle = -π/2) becomes 0
+      // Then normalize to [0, 2π]
+      return (a + math.pi * 1.5) % (2 * math.pi);
+    }
+
+    _availableDirections.sort((a, b) {
+      return normalizeAngle(a.angle).compareTo(normalizeAngle(b.angle));
+    });
+
+    // Put parent direction first (if exists) for easy back navigation
+    if (parentDirection != null) {
+      _availableDirections.insert(0, parentDirection);
+    }
   }
 
   /// Move to the next node in the given direction index.

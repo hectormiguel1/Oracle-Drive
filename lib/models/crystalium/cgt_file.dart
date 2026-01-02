@@ -1,4 +1,8 @@
+import 'dart:typed_data';
 import 'package:oracle_drive/models/crystalium/mcp_file.dart';
+import 'package:fabula_nova_sdk/bridge_generated/modules/crystalium/structs.dart'
+    as sdk;
+import 'package:fabula_nova_sdk/bridge_generated/lib.dart' show U32Array4, F32Array4;
 
 /// Represents a Crystarium role (combat class)
 enum CrystariumRole {
@@ -193,5 +197,107 @@ class CgtFile {
       }
     }
     return childrenMap;
+  }
+
+  /// Convert from SDK type
+  static CgtFile fromSdk(sdk.CgtFile sdkCgt) {
+    return CgtFile(
+      version: sdkCgt.version,
+      entryCount: sdkCgt.entryCount,
+      totalNodes: sdkCgt.totalNodes,
+      reserved: sdkCgt.reserved,
+      entries: sdkCgt.entries.map((e) => CrystariumEntryConversion.fromSdk(e)).toList(),
+      nodes: sdkCgt.nodes.map((n) => CrystariumNodeConversion.fromSdk(n)).toList(),
+    );
+  }
+
+  /// Convert to SDK type
+  sdk.CgtFile toSdk() {
+    return sdk.CgtFile(
+      version: version,
+      entryCount: entryCount,
+      totalNodes: totalNodes,
+      reserved: reserved,
+      entries: entries.map((e) => e.toSdk()).toList(),
+      nodes: nodes.map((n) => n.toSdk()).toList(),
+    );
+  }
+}
+
+// ============================================================
+// SDK Conversion Extensions
+// ============================================================
+
+extension CrystariumEntryConversion on CrystariumEntry {
+  static CrystariumEntry fromSdk(sdk.CrystariumEntry sdkEntry) {
+    return CrystariumEntry(
+      index: sdkEntry.index,
+      patternName: sdkEntry.patternName,
+      position: Vector3(
+        sdkEntry.position.x,
+        sdkEntry.position.y,
+        sdkEntry.position.z,
+      ),
+      scale: sdkEntry.scale,
+      rotation: Vector3(
+        sdkEntry.rotation.x,
+        sdkEntry.rotation.y,
+        sdkEntry.rotation.z,
+      ),
+      rotationW: sdkEntry.rotationW,
+      nodeScale: sdkEntry.nodeScale,
+      roleId: sdkEntry.roleId,
+      stage: sdkEntry.stage,
+      entryType: sdkEntry.entryType,
+      reserved: sdkEntry.reserved,
+      nodeIds: sdkEntry.nodeIds.toList(),
+      linkPosition: Vector3(
+        sdkEntry.linkPosition.x,
+        sdkEntry.linkPosition.y,
+        sdkEntry.linkPosition.z,
+      ),
+      linkW: sdkEntry.linkW,
+    );
+  }
+
+  sdk.CrystariumEntry toSdk() {
+    return sdk.CrystariumEntry(
+      index: index,
+      patternName: patternName,
+      position: sdk.Vec3(x: position.x, y: position.y, z: position.z),
+      scale: scale,
+      rotation: sdk.Vec3(x: rotation.x, y: rotation.y, z: rotation.z),
+      rotationW: rotationW,
+      nodeScale: nodeScale,
+      roleId: roleId,
+      stage: stage,
+      entryType: entryType,
+      reserved: reserved,
+      nodeIds: Uint32List.fromList(nodeIds),
+      linkPosition: sdk.Vec3(x: linkPosition.x, y: linkPosition.y, z: linkPosition.z),
+      linkW: linkW,
+    );
+  }
+}
+
+extension CrystariumNodeConversion on CrystariumNode {
+  static CrystariumNode fromSdk(sdk.CrystariumNode sdkNode) {
+    return CrystariumNode(
+      index: sdkNode.index,
+      name: sdkNode.name,
+      parentIndex: sdkNode.parentIndex,
+      unknown: sdkNode.unknown.toList(),
+      scales: sdkNode.scales.toList(),
+    );
+  }
+
+  sdk.CrystariumNode toSdk() {
+    return sdk.CrystariumNode(
+      index: index,
+      name: name,
+      parentIndex: parentIndex,
+      unknown: U32Array4(Uint32List.fromList(unknown)),
+      scales: F32Array4(Float32List.fromList(scales)),
+    );
   }
 }

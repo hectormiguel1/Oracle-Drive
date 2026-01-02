@@ -1,4 +1,6 @@
 import 'package:oracle_drive/src/isar/common/models.dart';
+import 'package:oracle_drive/src/isar/workflow/workflow_models.dart';
+import 'package:oracle_drive/models/workflow/workflow.dart';
 
 abstract class GameRepository {
   // --- Read (Sync - Fast Isolate access) ---
@@ -40,4 +42,46 @@ abstract class GameRepository {
 
   /// Get all distinct source files in the database.
   List<String> getDistinctSourceFiles();
+
+  // --- Workflow Operations ---
+  /// Get all workflows in this game's database.
+  Future<List<Workflow>> getAllWorkflows();
+
+  /// Get a workflow by ID.
+  Future<Workflow?> getWorkflow(String id);
+
+  /// Save a workflow (insert or update).
+  Future<void> saveWorkflow(Workflow workflow);
+
+  /// Delete a workflow by ID.
+  Future<void> deleteWorkflow(String id);
+
+  /// Check if a workflow exists.
+  Future<bool> workflowExists(String id);
+
+  /// Export a workflow to JSON string.
+  Future<String?> exportWorkflowToJson(String id);
+
+  /// Import a workflow from JSON string.
+  Future<Workflow> importWorkflowFromJson(String json, {bool generateNewId = true});
+
+  /// Log a workflow execution.
+  Future<void> logWorkflowExecution({
+    required String workflowId,
+    required int durationMs,
+    required String status,
+    String? errorMessage,
+    required int nodesExecuted,
+    required int totalNodes,
+    String? detailsJson,
+  });
+
+  /// Get execution history for a workflow.
+  Future<List<WorkflowExecutionLog>> getWorkflowExecutionHistory(String workflowId, {int limit = 50});
+
+  /// Get recent workflow executions.
+  Future<List<WorkflowExecutionLog>> getRecentWorkflowExecutions({int limit = 20});
+
+  /// Clear execution history for a workflow.
+  Future<void> clearWorkflowExecutionHistory(String workflowId);
 }

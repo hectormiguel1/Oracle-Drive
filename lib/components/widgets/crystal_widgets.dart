@@ -6,6 +6,7 @@
 /// - Accent color theming (per-game colors)
 /// - Subtle gradients and glow effects
 /// - Skewed/angular design elements
+library;
 
 // Core styling
 export 'style.dart';

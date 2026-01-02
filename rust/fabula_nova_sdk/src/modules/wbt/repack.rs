@@ -27,7 +27,7 @@
 //! Files are aligned to 2048-byte sectors. The path string
 //! stores `offset / 2048` rather than raw byte offset.
 
-use std::io::{Write, BufReader, Seek, SeekFrom, Read};
+use std::io::{Write, BufReader, Seek, SeekFrom};
 use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
@@ -142,7 +142,7 @@ impl WbtRepacker {
         let mut files_written = 0;
 
         for (_i, path, uncompressed_size, compressed_size, packed_data, chunk_number) in entries_with_data {
-            if current_offset % 2048 != 0 {
+            if !current_offset.is_multiple_of(2048) {
                 let pad = 2048 - (current_offset % 2048);
                 new_container.write_all(&vec![0u8; pad as usize])?;
                 current_offset += pad;
@@ -470,6 +470,7 @@ impl WbtRepacker {
     ///
     /// Re-encrypts the filelist using the original encryption header
     /// to preserve the same seed.
+    #[allow(clippy::too_many_arguments)]
     fn build_encrypted_filelist(
         &self,
         filelist: &Filelist,
@@ -556,7 +557,7 @@ impl WbtRepacker {
         final_data.extend_from_slice(&encryption_header[0..16]);
 
         // Write cryptBodySize at position 16 (big-endian)
-        final_data.extend_from_slice(&(filelist_data_size as u32).to_be_bytes());
+        final_data.extend_from_slice(&filelist_data_size.to_be_bytes());
 
         // Write encryption marker at position 20
         final_data.extend_from_slice(&501232760u32.to_le_bytes()); // 0x1DE03478

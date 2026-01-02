@@ -260,7 +260,7 @@ impl<W: Write + Seek> ZtrWriter<W> {
             info.write_be(&mut self.writer)?;
         }
 
-        let pos = self.writer.stream_position()?;
+        let _pos = self.writer.stream_position()?;
 
         // Write IDs
         self.writer.write_all(packed_ids)?;

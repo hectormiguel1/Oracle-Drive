@@ -70,6 +70,12 @@ pub struct BitWriter {
     pub bits_consumed: usize,
 }
 
+impl Default for BitWriter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BitWriter {
     /// Creates a new BitWriter with zero value.
     pub fn new() -> Self {

@@ -10,6 +10,8 @@ import 'api.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
+import 'lib.dart';
+import 'modules/crystalium/structs.dart';
 import 'modules/img/structs.dart';
 import 'modules/wct.dart';
 import 'modules/wdb/enums.dart';
@@ -28,6 +30,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  Map<String, McpPattern> dco_decode_Map_String_mcp_pattern_None(dynamic raw);
 
   @protected
   Map<String, WdbValue> dco_decode_Map_String_wdb_value_None(dynamic raw);
@@ -49,10 +54,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  CgtFile dco_decode_box_autoadd_cgt_file(dynamic raw);
+
+  @protected
+  McpFile dco_decode_box_autoadd_mcp_file(dynamic raw);
+
+  @protected
   WdbData dco_decode_box_autoadd_wdb_data(dynamic raw);
 
   @protected
   ZtrData dco_decode_box_autoadd_ztr_data(dynamic raw);
+
+  @protected
+  CgtFile dco_decode_cgt_file(dynamic raw);
 
   @protected
   CrystalNodeType dco_decode_crystal_node_type(dynamic raw);
@@ -61,7 +75,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CrystalRole dco_decode_crystal_role(dynamic raw);
 
   @protected
+  CrystariumEntry dco_decode_crystarium_entry(dynamic raw);
+
+  @protected
+  CrystariumNode dco_decode_crystarium_node(dynamic raw);
+
+  @protected
   double dco_decode_f_32(dynamic raw);
+
+  @protected
+  F32Array4 dco_decode_f_32_array_4(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -75,6 +98,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<String> dco_decode_list_String(dynamic raw);
+
+  @protected
+  List<CrystariumEntry> dco_decode_list_crystarium_entry(dynamic raw);
+
+  @protected
+  List<CrystariumNode> dco_decode_list_crystarium_node(dynamic raw);
+
+  @protected
+  Float32List dco_decode_list_prim_f_32_strict(dynamic raw);
 
   @protected
   Int32List dco_decode_list_prim_i_32_strict(dynamic raw);
@@ -92,10 +124,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint64List dco_decode_list_prim_usize_strict(dynamic raw);
 
   @protected
+  List<(String, McpPattern)> dco_decode_list_record_string_mcp_pattern(
+      dynamic raw);
+
+  @protected
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw);
 
   @protected
   List<(String, WdbValue)> dco_decode_list_record_string_wdb_value(dynamic raw);
+
+  @protected
+  List<Vec3> dco_decode_list_vec_3(dynamic raw);
 
   @protected
   List<WbtFileEntry> dco_decode_list_wbt_file_entry(dynamic raw);
@@ -116,8 +155,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ZtrMapEntry> dco_decode_list_ztr_map_entry(dynamic raw);
 
   @protected
+  McpFile dco_decode_mcp_file(dynamic raw);
+
+  @protected
+  McpPattern dco_decode_mcp_pattern(dynamic raw);
+
+  @protected
   (ImgData, Uint8List) dco_decode_record_img_data_list_prim_u_8_strict(
       dynamic raw);
+
+  @protected
+  (String, McpPattern) dco_decode_record_string_mcp_pattern(dynamic raw);
 
   @protected
   (String, String) dco_decode_record_string_string(dynamic raw);
@@ -135,6 +183,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_u_32(dynamic raw);
 
   @protected
+  U32Array4 dco_decode_u_32_array_4(dynamic raw);
+
+  @protected
   BigInt dco_decode_u_64(dynamic raw);
 
   @protected
@@ -145,6 +196,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt dco_decode_usize(dynamic raw);
+
+  @protected
+  Vec3 dco_decode_vec_3(dynamic raw);
 
   @protected
   WbtFileEntry dco_decode_wbt_file_entry(dynamic raw);
@@ -186,6 +240,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
+  Map<String, McpPattern> sse_decode_Map_String_mcp_pattern_None(
+      SseDeserializer deserializer);
+
+  @protected
   Map<String, WdbValue> sse_decode_Map_String_wdb_value_None(
       SseDeserializer deserializer);
 
@@ -207,10 +265,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  CgtFile sse_decode_box_autoadd_cgt_file(SseDeserializer deserializer);
+
+  @protected
+  McpFile sse_decode_box_autoadd_mcp_file(SseDeserializer deserializer);
+
+  @protected
   WdbData sse_decode_box_autoadd_wdb_data(SseDeserializer deserializer);
 
   @protected
   ZtrData sse_decode_box_autoadd_ztr_data(SseDeserializer deserializer);
+
+  @protected
+  CgtFile sse_decode_cgt_file(SseDeserializer deserializer);
 
   @protected
   CrystalNodeType sse_decode_crystal_node_type(SseDeserializer deserializer);
@@ -219,7 +286,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   CrystalRole sse_decode_crystal_role(SseDeserializer deserializer);
 
   @protected
+  CrystariumEntry sse_decode_crystarium_entry(SseDeserializer deserializer);
+
+  @protected
+  CrystariumNode sse_decode_crystarium_node(SseDeserializer deserializer);
+
+  @protected
   double sse_decode_f_32(SseDeserializer deserializer);
+
+  @protected
+  F32Array4 sse_decode_f_32_array_4(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -233,6 +309,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+  @protected
+  List<CrystariumEntry> sse_decode_list_crystarium_entry(
+      SseDeserializer deserializer);
+
+  @protected
+  List<CrystariumNode> sse_decode_list_crystarium_node(
+      SseDeserializer deserializer);
+
+  @protected
+  Float32List sse_decode_list_prim_f_32_strict(SseDeserializer deserializer);
 
   @protected
   Int32List sse_decode_list_prim_i_32_strict(SseDeserializer deserializer);
@@ -250,12 +337,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint64List sse_decode_list_prim_usize_strict(SseDeserializer deserializer);
 
   @protected
+  List<(String, McpPattern)> sse_decode_list_record_string_mcp_pattern(
+      SseDeserializer deserializer);
+
+  @protected
   List<(String, String)> sse_decode_list_record_string_string(
       SseDeserializer deserializer);
 
   @protected
   List<(String, WdbValue)> sse_decode_list_record_string_wdb_value(
       SseDeserializer deserializer);
+
+  @protected
+  List<Vec3> sse_decode_list_vec_3(SseDeserializer deserializer);
 
   @protected
   List<WbtFileEntry> sse_decode_list_wbt_file_entry(
@@ -279,7 +373,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ZtrMapEntry> sse_decode_list_ztr_map_entry(SseDeserializer deserializer);
 
   @protected
+  McpFile sse_decode_mcp_file(SseDeserializer deserializer);
+
+  @protected
+  McpPattern sse_decode_mcp_pattern(SseDeserializer deserializer);
+
+  @protected
   (ImgData, Uint8List) sse_decode_record_img_data_list_prim_u_8_strict(
+      SseDeserializer deserializer);
+
+  @protected
+  (String, McpPattern) sse_decode_record_string_mcp_pattern(
       SseDeserializer deserializer);
 
   @protected
@@ -300,6 +404,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_u_32(SseDeserializer deserializer);
 
   @protected
+  U32Array4 sse_decode_u_32_array_4(SseDeserializer deserializer);
+
+  @protected
   BigInt sse_decode_u_64(SseDeserializer deserializer);
 
   @protected
@@ -310,6 +417,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
+
+  @protected
+  Vec3 sse_decode_vec_3(SseDeserializer deserializer);
 
   @protected
   WbtFileEntry sse_decode_wbt_file_entry(SseDeserializer deserializer);
@@ -354,6 +464,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       AnyhowException self, SseSerializer serializer);
 
   @protected
+  void sse_encode_Map_String_mcp_pattern_None(
+      Map<String, McpPattern> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_Map_String_wdb_value_None(
       Map<String, WdbValue> self, SseSerializer serializer);
 
@@ -375,10 +489,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_cgt_file(CgtFile self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_mcp_file(McpFile self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_wdb_data(WdbData self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_ztr_data(ZtrData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_cgt_file(CgtFile self, SseSerializer serializer);
 
   @protected
   void sse_encode_crystal_node_type(
@@ -388,7 +511,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_crystal_role(CrystalRole self, SseSerializer serializer);
 
   @protected
+  void sse_encode_crystarium_entry(
+      CrystariumEntry self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_crystarium_node(
+      CrystariumNode self, SseSerializer serializer);
+
+  @protected
   void sse_encode_f_32(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_32_array_4(F32Array4 self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -402,6 +536,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_crystarium_entry(
+      List<CrystariumEntry> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_crystarium_node(
+      List<CrystariumNode> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_prim_f_32_strict(
+      Float32List self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_i_32_strict(
@@ -423,12 +569,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       Uint64List self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_record_string_mcp_pattern(
+      List<(String, McpPattern)> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_record_string_string(
       List<(String, String)> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_record_string_wdb_value(
       List<(String, WdbValue)> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_vec_3(List<Vec3> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_wbt_file_entry(
@@ -454,8 +607,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       List<ZtrMapEntry> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_mcp_file(McpFile self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_mcp_pattern(McpPattern self, SseSerializer serializer);
+
+  @protected
   void sse_encode_record_img_data_list_prim_u_8_strict(
       (ImgData, Uint8List) self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_record_string_mcp_pattern(
+      (String, McpPattern) self, SseSerializer serializer);
 
   @protected
   void sse_encode_record_string_string(
@@ -475,6 +638,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_u_32(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_u_32_array_4(U32Array4 self, SseSerializer serializer);
+
+  @protected
   void sse_encode_u_64(BigInt self, SseSerializer serializer);
 
   @protected
@@ -485,6 +651,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_usize(BigInt self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vec_3(Vec3 self, SseSerializer serializer);
 
   @protected
   void sse_encode_wbt_file_entry(WbtFileEntry self, SseSerializer serializer);

@@ -4,6 +4,8 @@ import '../common/models.dart';
 part 'workflow_models.g.dart';
 
 /// Stored workflow in the database.
+/// Note: Workflows are now stored in game-specific databases, so gameCode
+/// is no longer needed as a field - the database itself determines the game.
 @Collection()
 class StoredWorkflow {
   /// Unique workflow ID (UUID).
@@ -15,10 +17,6 @@ class StoredWorkflow {
 
   /// Description of what the workflow does.
   String description;
-
-  /// Game code index (0=FF13, 1=FF13-2, 2=FF13-LR).
-  @Index()
-  int gameCode;
 
   /// When the workflow was created.
   DateTime createdAt;
@@ -36,7 +34,6 @@ class StoredWorkflow {
     required this.workflowId,
     required this.name,
     required this.description,
-    required this.gameCode,
     required this.createdAt,
     required this.modifiedAt,
     required this.jsonData,

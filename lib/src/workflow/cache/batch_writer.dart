@@ -1,6 +1,6 @@
 import 'dart:async';
 import '../../../models/workflow/workflow.dart';
-import '../../isar/workflow/workflow_repository.dart';
+import '../../isar/generic_repository.dart';
 
 /// Batches workflow writes with debouncing for auto-save scenarios.
 ///
@@ -10,7 +10,7 @@ import '../../isar/workflow/workflow_repository.dart';
 /// - Configurable debounce delay
 /// - Flush on demand or automatic flush on dispose
 class BatchWorkflowWriter {
-  final WorkflowRepository _repository;
+  final GameRepository _repository;
   final Duration _debounceDelay;
 
   Timer? _debounceTimer;
@@ -129,8 +129,8 @@ class BatchWorkflowWriter {
   }
 }
 
-/// Extension to add batch writing capability to WorkflowRepository.
-extension WorkflowRepositoryBatchExtension on WorkflowRepository {
+/// Extension to add batch writing capability to GameRepository.
+extension GameRepositoryBatchExtension on GameRepository {
   /// Create a batch writer for this repository.
   BatchWorkflowWriter createBatchWriter({
     Duration debounceDelay = const Duration(milliseconds: 500),

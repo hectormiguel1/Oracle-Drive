@@ -17,7 +17,7 @@ class ZtrGameConfig {
       case AppGameCode.ff13_2:
         return ff13_2Config;
       case AppGameCode.ff13_lr:
-        return ff13_lrConfig;
+        return ff13LrConfig;
     }
   }
 
@@ -225,7 +225,7 @@ class ZtrGameConfig {
   );
 
   // --- Lightning Returns Config ---
-  static const ZtrGameConfig ff13_lrConfig = ZtrGameConfig(
+  static const ZtrGameConfig ff13LrConfig = ZtrGameConfig(
     colorMap: {
       'White': Color(0XFFdcdcdc),
       'IceBlue': Color(0xFF88d5d2),

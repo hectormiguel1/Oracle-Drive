@@ -66,8 +66,8 @@ pub fn generate_xor_table(seed: &[u8; 8]) -> [u8; 264] {
     let val2 = u32::from_le_bytes([reversed_seed[4], reversed_seed[5], reversed_seed[6], reversed_seed[7]]);
     
     // Apply bit rotations
-    let val1 = (val1 << 8) | (val1 >> 24);  // Rotate left 8
-    let val2 = (val2 >> 16) | (val2 << 16); // Rotate by 16 (swap halves)
+    let val1 = val1.rotate_left(8);  // Rotate left 8
+    let val2 = val2.rotate_left(16); // Rotate by 16 (swap halves)
     
     // Create initial 8-byte block
     let mut block = [0u8; 8];
@@ -106,7 +106,7 @@ pub fn generate_xor_table(seed: &[u8; 8]) -> [u8; 264] {
         // Extract new values
         let new_low = ((low as u64) ^ result) as u32;
         let new_high_intermediate = (result >> 32) as u32;
-        let new_high = (new_high_intermediate ^ high) as u32;
+        let new_high = new_high_intermediate ^ high;
         
         let new_block_bytes: [u8; 8] = {
             let mut b = [0u8; 8];

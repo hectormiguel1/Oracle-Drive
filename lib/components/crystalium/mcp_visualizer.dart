@@ -77,7 +77,8 @@ class _McpVisualizerState extends State<McpVisualizer> {
               Switch(
                 value: _showRing,
                 onChanged: (val) => setState(() => _showRing = val),
-                activeColor: theme.accent,
+                activeTrackColor: theme.accent.withValues(alpha: 0.5),
+                activeThumbColor: theme.accent,
               ),
             ],
           ),
@@ -209,8 +210,9 @@ class McpPainter extends CustomPainter {
 
           final node2 = points[(i + 1) % allProjected.length];
 
-          if ((node1.x == 0 && node1.z == 0) || (node2.x == 0 && node2.z == 0))
+          if ((node1.x == 0 && node1.z == 0) || (node2.x == 0 && node2.z == 0)) {
             continue;
+          }
 
           final avgZ = (p1.z + p2.z) / 2.0;
 
@@ -250,8 +252,9 @@ class McpPainter extends CustomPainter {
 
       final originalNode = points[item.index];
 
-      if (originalNode.x == 0 && originalNode.z == 0 && originalNode.y == 0)
+      if (originalNode.x == 0 && originalNode.z == 0 && originalNode.y == 0) {
         continue;
+      }
 
       final screenPos = toScreen(p.x, p.y);
 

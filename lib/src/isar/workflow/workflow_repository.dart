@@ -1,7 +1,6 @@
 import 'package:isar_plus/isar_plus.dart';
 import 'package:logging/logging.dart';
 import 'package:uuid/uuid.dart';
-import '../../../models/app_game_code.dart';
 import '../../../models/workflow/workflow.dart';
 import 'workflow_models.dart';
 
@@ -9,39 +8,16 @@ final _logger = Logger('WorkflowRepository');
 const _uuid = Uuid();
 
 /// Repository for workflow persistence operations.
+/// Note: This repository is now instantiated per-game-database, so all methods
+/// operate on workflows for a single game (the database determines the game).
 class WorkflowRepository {
   final Isar _isar;
 
   WorkflowRepository(this._isar);
 
-  /// Get all workflows for a specific game.
+  /// Get all workflows in this database.
   /// Bug #31 fix: Add error handling for corrupt JSON data.
-  Future<List<Workflow>> getAllWorkflows(AppGameCode gameCode) async {
-    final stored = _isar.read((db) {
-      return db.storedWorkflows
-          .where()
-          .gameCodeEqualTo(gameCode.index)
-          .sortByModifiedAtDesc()
-          .findAll();
-    });
-
-    final workflows = <Workflow>[];
-    for (final s in stored) {
-      try {
-        final workflow = Workflow.fromJsonString(s.jsonData);
-        workflow.workspacePath = s.workspacePath;
-        workflows.add(workflow);
-      } catch (e) {
-        _logger.warning('Failed to parse workflow ${s.workflowId}: $e');
-        // Skip corrupt entry instead of failing entirely
-      }
-    }
-    return workflows;
-  }
-
-  /// Get all workflows across all games.
-  /// Bug #31 fix: Add error handling for corrupt JSON data.
-  Future<List<Workflow>> getAllWorkflowsAllGames() async {
+  Future<List<Workflow>> getAllWorkflows() async {
     final stored = _isar.read((db) {
       return db.storedWorkflows.where().sortByModifiedAtDesc().findAll();
     });
@@ -84,7 +60,6 @@ class WorkflowRepository {
       workflowId: workflow.id,
       name: workflow.name,
       description: workflow.description,
-      gameCode: workflow.gameCode.index,
       createdAt: workflow.createdAt,
       modifiedAt: workflow.modifiedAt,
       jsonData: workflow.toJsonString(),

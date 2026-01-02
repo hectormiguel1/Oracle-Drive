@@ -471,3 +471,104 @@ fn determine_wdb_game_code(data: &WdbData) -> GameCode {
         GameCode::FF13_1
     }
 }
+
+// ============================================================================
+// CGT/MCP API - Crystarium Data
+// ============================================================================
+
+use crate::modules::crystalium::{
+    api as cgt_api,
+    structs::{CgtFile, McpFile},
+};
+
+/// Parses a CGT (Crystal Graph Tree) file from disk.
+///
+/// # Arguments
+/// * `in_file` - Path to the CGT file
+///
+/// # Returns
+/// * `Ok(CgtFile)` - Parsed CGT data with entries and nodes
+pub fn cgt_parse(in_file: String) -> Result<CgtFile> {
+    cgt_api::parse_cgt(&in_file)
+}
+
+/// Parses a CGT file from memory.
+///
+/// # Arguments
+/// * `data` - Raw CGT file bytes
+///
+/// # Returns
+/// * `Ok(CgtFile)` - Parsed CGT data
+pub fn cgt_parse_from_memory(data: Vec<u8>) -> Result<CgtFile> {
+    cgt_api::parse_cgt_from_memory(data)
+}
+
+/// Writes a CGT file to disk.
+///
+/// # Arguments
+/// * `cgt` - The CGT data to write
+/// * `out_file` - Output file path
+pub fn cgt_write(cgt: CgtFile, out_file: String) -> Result<()> {
+    cgt_api::write_cgt(&cgt, &out_file)
+}
+
+/// Writes a CGT file to memory.
+///
+/// # Arguments
+/// * `cgt` - The CGT data to serialize
+///
+/// # Returns
+/// * `Ok(Vec<u8>)` - Serialized CGT bytes
+pub fn cgt_write_to_memory(cgt: CgtFile) -> Result<Vec<u8>> {
+    cgt_api::write_cgt_to_memory(&cgt)
+}
+
+/// Converts a CGT file to JSON string.
+pub fn cgt_to_json(cgt: CgtFile) -> Result<String> {
+    cgt_api::cgt_to_json(&cgt)
+}
+
+/// Parses a CGT file from JSON string.
+pub fn cgt_from_json(json: String) -> Result<CgtFile> {
+    cgt_api::cgt_from_json(&json)
+}
+
+/// Validates a CGT file structure and returns warnings.
+///
+/// # Returns
+/// * `Vec<String>` - List of validation warnings (empty if valid)
+pub fn cgt_validate(cgt: CgtFile) -> Vec<String> {
+    cgt_api::validate_cgt(&cgt)
+}
+
+/// Parses an MCP (Master Crystal Pattern) file from disk.
+///
+/// # Arguments
+/// * `in_file` - Path to the MCP file
+///
+/// # Returns
+/// * `Ok(McpFile)` - Parsed MCP data with patterns
+pub fn mcp_parse(in_file: String) -> Result<McpFile> {
+    cgt_api::parse_mcp(&in_file)
+}
+
+/// Parses an MCP file from memory.
+///
+/// # Arguments
+/// * `data` - Raw MCP file bytes
+///
+/// # Returns
+/// * `Ok(McpFile)` - Parsed MCP data
+pub fn mcp_parse_from_memory(data: Vec<u8>) -> Result<McpFile> {
+    cgt_api::parse_mcp_from_memory(data)
+}
+
+/// Converts an MCP file to JSON string.
+pub fn mcp_to_json(mcp: McpFile) -> Result<String> {
+    cgt_api::mcp_to_json(&mcp)
+}
+
+/// Parses an MCP file from JSON string.
+pub fn mcp_from_json(json: String) -> Result<McpFile> {
+    cgt_api::mcp_from_json(&json)
+}

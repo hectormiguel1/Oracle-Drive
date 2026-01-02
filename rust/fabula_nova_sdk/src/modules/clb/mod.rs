@@ -95,7 +95,7 @@ pub fn process_clb(action: Action, input_path: &Path) -> WctResult<()> {
     file.read_exact(&mut seed).map_err(WctError::Io)?;
 
     let crypt_body_size = (file_len - 8) as u32;
-    if crypt_body_size % 8 != 0 {
+    if !crypt_body_size.is_multiple_of(8) {
         return Err(WctError::Validation(
             "Length of the body is not valid".into(),
         ));

@@ -168,8 +168,11 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
       final focalPoint = event.localPosition;
 
       // Scale around focal point
+      // ignore: deprecated_member_use
       matrix.translate(focalPoint.dx, focalPoint.dy);
+      // ignore: deprecated_member_use
       matrix.scale(newScale / currentScale);
+      // ignore: deprecated_member_use
       matrix.translate(-focalPoint.dx, -focalPoint.dy);
 
       _transformController.value = matrix;

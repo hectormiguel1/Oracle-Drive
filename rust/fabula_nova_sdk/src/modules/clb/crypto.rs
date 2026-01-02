@@ -101,8 +101,8 @@ pub fn generate_xor_table(mut seed: [u8; 8]) -> [u8; 264] {
     let seed_half_b = u32::from_le_bytes([seed[4], seed[5], seed[6], seed[7]]);
 
     // Rotate: left 8 for A, word swap for B
-    let seed_half_a = (seed_half_a << 8) | (seed_half_a >> 24);
-    let seed_half_b = (seed_half_b >> 16) | (seed_half_b << 16);
+    let seed_half_a = seed_half_a.rotate_left(8);
+    let seed_half_b = seed_half_b.rotate_left(16);
 
     // Recombine halves (swapped order) and add magic to first byte
     let mut xor_block = [0u8; 8];
@@ -132,7 +132,7 @@ pub fn generate_xor_table(mut seed: [u8; 8]) -> [u8; 264] {
         let mut a = previous_xor_block.wrapping_mul(5);
         a ^= (block_half_b as u64) << 32;
 
-        let tmp_block_half_a = (block_half_a ^ (a as u32)) as u32;
+        let tmp_block_half_a = block_half_a ^ (a as u32);
         let mut tmp_block_half_b = (a >> 32) as u32;
 
         a = (block_half_a as u64) | (a & 0xFFFFFFFF00000000);

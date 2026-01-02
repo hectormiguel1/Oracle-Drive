@@ -234,7 +234,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                             if actual_field_num as i32 > field_bits_to_process {
                                 // Field doesn't fit, decrement f and exit loop
                                 // (f will be incremented at end of outer loop, so net effect is f stays same)
-                                if f > 0 { f -= 1; }
+                                f = f.saturating_sub(1);
                                 field_bits_to_process = 0;
                                 continue;
                             }
@@ -371,7 +371,7 @@ impl<W: Write + Seek> WdbWriter<W> {
 
                             if added_string {
                                 // C# uses UTF8.GetByteCount(stringVal + "\0")
-                                string_pos += string_val.as_bytes().len() as u32 + 1;
+                                string_pos += string_val.len() as u32 + 1;
                             }
                         }
                         // If string is empty, currentOutData stays 0 (points to offset 0 = empty string)
@@ -533,6 +533,7 @@ impl<W: Write + Seek> WdbWriter<W> {
     /// - `!!strArray`, `!!strArrayInfo`, `!!strArrayList` for indexed strings
     /// - `!structitem` and `!structitemnum` for field definitions
     /// - `!!strtypelistb` (byte-sized type codes) or `!!strtypelist`
+    #[allow(clippy::too_many_arguments)]
     fn write_xiii2lr(
         &mut self,
         header_map: &std::collections::HashMap<String, WdbValue>,
@@ -555,7 +556,7 @@ impl<W: Write + Seek> WdbWriter<W> {
         });
 
         // Check for string fields (type 2 in strtypelist)
-        let has_string_section = strtypelist_values.iter().any(|&t| t == 2);
+        let has_string_section = strtypelist_values.contains(&2);
 
         // Check for !!strtypelistb vs !!strtypelist
         let parse_strtypelist_as_v1 = !header_map.contains_key("!!strtypelistb");
@@ -635,7 +636,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                             _ => String::new(),
                         };
 
-                        let entry = str_array_data_dict.entry(field.clone()).or_insert_with(Vec::new);
+                        let entry = str_array_data_dict.entry(field.clone()).or_default();
                         if !entry.contains(&current_string) {
                             entry.push(current_string);
                         }
@@ -676,7 +677,7 @@ impl<W: Write + Seek> WdbWriter<W> {
 
                         if !processed_strings_dict.contains_key(current_string_item) {
                             processed_strings_dict.insert(current_string_item.clone(), string_pos);
-                            string_pos += current_string_item.as_bytes().len() as u32 + 1;
+                            string_pos += current_string_item.len() as u32 + 1;
                         }
 
                         let string_item_pos = *processed_strings_dict.get(current_string_item).unwrap();
@@ -745,7 +746,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                             let actual_field_num = if field_num == 0 { 32 } else { field_num };
 
                             if actual_field_num as i32 > field_bits_to_process {
-                                if f > 0 { f -= 1; }
+                                f = f.saturating_sub(1);
                                 field_bits_to_process = 0;
                                 continue;
                             }
@@ -871,7 +872,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                         if !string_val.is_empty() {
                             if !processed_strings_dict.contains_key(&string_val) {
                                 processed_strings_dict.insert(string_val.clone(), string_pos);
-                                string_pos += string_val.as_bytes().len() as u32 + 1;
+                                string_pos += string_val.len() as u32 + 1;
                             }
 
                             let offset = *processed_strings_dict.get(&string_val).unwrap();

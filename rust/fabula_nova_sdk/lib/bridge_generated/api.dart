@@ -4,6 +4,8 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import 'frb_generated.dart';
+import 'lib.dart';
+import 'modules/crystalium/structs.dart';
 import 'modules/img/structs.dart';
 import 'modules/wct.dart';
 import 'modules/wdb/enums.dart';
@@ -306,6 +308,87 @@ Future<String> wdbToJson({required WdbData data}) =>
 /// Parses JSON string into WDB memory structure.
 Future<WdbData> wdbFromJson({required String json}) =>
     RustLib.instance.api.crateApiWdbFromJson(json: json);
+
+/// Parses a CGT (Crystal Graph Tree) file from disk.
+///
+/// # Arguments
+/// * `in_file` - Path to the CGT file
+///
+/// # Returns
+/// * `Ok(CgtFile)` - Parsed CGT data with entries and nodes
+Future<CgtFile> cgtParse({required String inFile}) =>
+    RustLib.instance.api.crateApiCgtParse(inFile: inFile);
+
+/// Parses a CGT file from memory.
+///
+/// # Arguments
+/// * `data` - Raw CGT file bytes
+///
+/// # Returns
+/// * `Ok(CgtFile)` - Parsed CGT data
+Future<CgtFile> cgtParseFromMemory({required List<int> data}) =>
+    RustLib.instance.api.crateApiCgtParseFromMemory(data: data);
+
+/// Writes a CGT file to disk.
+///
+/// # Arguments
+/// * `cgt` - The CGT data to write
+/// * `out_file` - Output file path
+Future<void> cgtWrite({required CgtFile cgt, required String outFile}) =>
+    RustLib.instance.api.crateApiCgtWrite(cgt: cgt, outFile: outFile);
+
+/// Writes a CGT file to memory.
+///
+/// # Arguments
+/// * `cgt` - The CGT data to serialize
+///
+/// # Returns
+/// * `Ok(Vec<u8>)` - Serialized CGT bytes
+Future<Uint8List> cgtWriteToMemory({required CgtFile cgt}) =>
+    RustLib.instance.api.crateApiCgtWriteToMemory(cgt: cgt);
+
+/// Converts a CGT file to JSON string.
+Future<String> cgtToJson({required CgtFile cgt}) =>
+    RustLib.instance.api.crateApiCgtToJson(cgt: cgt);
+
+/// Parses a CGT file from JSON string.
+Future<CgtFile> cgtFromJson({required String json}) =>
+    RustLib.instance.api.crateApiCgtFromJson(json: json);
+
+/// Validates a CGT file structure and returns warnings.
+///
+/// # Returns
+/// * `Vec<String>` - List of validation warnings (empty if valid)
+Future<List<String>> cgtValidate({required CgtFile cgt}) =>
+    RustLib.instance.api.crateApiCgtValidate(cgt: cgt);
+
+/// Parses an MCP (Master Crystal Pattern) file from disk.
+///
+/// # Arguments
+/// * `in_file` - Path to the MCP file
+///
+/// # Returns
+/// * `Ok(McpFile)` - Parsed MCP data with patterns
+Future<McpFile> mcpParse({required String inFile}) =>
+    RustLib.instance.api.crateApiMcpParse(inFile: inFile);
+
+/// Parses an MCP file from memory.
+///
+/// # Arguments
+/// * `data` - Raw MCP file bytes
+///
+/// # Returns
+/// * `Ok(McpFile)` - Parsed MCP data
+Future<McpFile> mcpParseFromMemory({required List<int> data}) =>
+    RustLib.instance.api.crateApiMcpParseFromMemory(data: data);
+
+/// Converts an MCP file to JSON string.
+Future<String> mcpToJson({required McpFile mcp}) =>
+    RustLib.instance.api.crateApiMcpToJson(mcp: mcp);
+
+/// Parses an MCP file from JSON string.
+Future<McpFile> mcpFromJson({required String json}) =>
+    RustLib.instance.api.crateApiMcpFromJson(json: json);
 
 /// File metadata for a single entry in a WBT archive.
 /// Mirrors the Rust struct for flutter_rust_bridge serialization.

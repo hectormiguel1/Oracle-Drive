@@ -1,4 +1,5 @@
 pub mod clb;
+pub mod crystalium;
 pub mod img;
 pub mod wbt;
 pub mod wct;

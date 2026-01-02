@@ -23,7 +23,6 @@ final StoredWorkflowSchema = IsarGeneratedSchema(
       IsarPropertySchema(name: 'workflowId', type: IsarType.string),
       IsarPropertySchema(name: 'name', type: IsarType.string),
       IsarPropertySchema(name: 'description', type: IsarType.string),
-      IsarPropertySchema(name: 'gameCode', type: IsarType.long),
       IsarPropertySchema(name: 'createdAt', type: IsarType.dateTime),
       IsarPropertySchema(name: 'modifiedAt', type: IsarType.dateTime),
       IsarPropertySchema(name: 'jsonData', type: IsarType.string),
@@ -33,12 +32,6 @@ final StoredWorkflowSchema = IsarGeneratedSchema(
       IsarIndexSchema(
         name: 'workflowId',
         properties: ["workflowId"],
-        unique: false,
-        hash: false,
-      ),
-      IsarIndexSchema(
-        name: 'gameCode',
-        properties: ["gameCode"],
         unique: false,
         hash: false,
       ),
@@ -57,24 +50,23 @@ int serializeStoredWorkflow(IsarWriter writer, StoredWorkflow object) {
   IsarCore.writeString(writer, 1, object.workflowId);
   IsarCore.writeString(writer, 2, object.name);
   IsarCore.writeString(writer, 3, object.description);
-  IsarCore.writeLong(writer, 4, object.gameCode);
   IsarCore.writeLong(
     writer,
-    5,
+    4,
     object.createdAt.toUtc().microsecondsSinceEpoch,
   );
   IsarCore.writeLong(
     writer,
-    6,
+    5,
     object.modifiedAt.toUtc().microsecondsSinceEpoch,
   );
-  IsarCore.writeString(writer, 7, object.jsonData);
+  IsarCore.writeString(writer, 6, object.jsonData);
   {
     final value = object.workspacePath;
     if (value == null) {
-      IsarCore.writeNull(writer, 8);
+      IsarCore.writeNull(writer, 7);
     } else {
-      IsarCore.writeString(writer, 8, value);
+      IsarCore.writeString(writer, 7, value);
     }
   }
   return object.id;
@@ -88,11 +80,9 @@ StoredWorkflow deserializeStoredWorkflow(IsarReader reader) {
   _name = IsarCore.readString(reader, 2) ?? '';
   final String _description;
   _description = IsarCore.readString(reader, 3) ?? '';
-  final int _gameCode;
-  _gameCode = IsarCore.readLong(reader, 4);
   final DateTime _createdAt;
   {
-    final value = IsarCore.readLong(reader, 5);
+    final value = IsarCore.readLong(reader, 4);
     if (value == -9223372036854775808) {
       _createdAt = DateTime.fromMillisecondsSinceEpoch(
         0,
@@ -107,7 +97,7 @@ StoredWorkflow deserializeStoredWorkflow(IsarReader reader) {
   }
   final DateTime _modifiedAt;
   {
-    final value = IsarCore.readLong(reader, 6);
+    final value = IsarCore.readLong(reader, 5);
     if (value == -9223372036854775808) {
       _modifiedAt = DateTime.fromMillisecondsSinceEpoch(
         0,
@@ -121,14 +111,13 @@ StoredWorkflow deserializeStoredWorkflow(IsarReader reader) {
     }
   }
   final String _jsonData;
-  _jsonData = IsarCore.readString(reader, 7) ?? '';
+  _jsonData = IsarCore.readString(reader, 6) ?? '';
   final String? _workspacePath;
-  _workspacePath = IsarCore.readString(reader, 8);
+  _workspacePath = IsarCore.readString(reader, 7);
   final object = StoredWorkflow(
     workflowId: _workflowId,
     name: _name,
     description: _description,
-    gameCode: _gameCode,
     createdAt: _createdAt,
     modifiedAt: _modifiedAt,
     jsonData: _jsonData,
@@ -147,7 +136,17 @@ dynamic deserializeStoredWorkflowProp(IsarReader reader, int property) {
     case 3:
       return IsarCore.readString(reader, 3) ?? '';
     case 4:
-      return IsarCore.readLong(reader, 4);
+      {
+        final value = IsarCore.readLong(reader, 4);
+        if (value == -9223372036854775808) {
+          return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
+        } else {
+          return DateTime.fromMicrosecondsSinceEpoch(
+            value,
+            isUtc: true,
+          ).toLocal();
+        }
+      }
     case 5:
       {
         final value = IsarCore.readLong(reader, 5);
@@ -161,21 +160,9 @@ dynamic deserializeStoredWorkflowProp(IsarReader reader, int property) {
         }
       }
     case 6:
-      {
-        final value = IsarCore.readLong(reader, 6);
-        if (value == -9223372036854775808) {
-          return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true).toLocal();
-        } else {
-          return DateTime.fromMicrosecondsSinceEpoch(
-            value,
-            isUtc: true,
-          ).toLocal();
-        }
-      }
+      return IsarCore.readString(reader, 6) ?? '';
     case 7:
-      return IsarCore.readString(reader, 7) ?? '';
-    case 8:
-      return IsarCore.readString(reader, 8);
+      return IsarCore.readString(reader, 7);
     case 0:
       return IsarCore.readId(reader);
     default:
@@ -189,7 +176,6 @@ sealed class _StoredWorkflowUpdate {
     String? workflowId,
     String? name,
     String? description,
-    int? gameCode,
     DateTime? createdAt,
     DateTime? modifiedAt,
     String? jsonData,
@@ -208,7 +194,6 @@ class _StoredWorkflowUpdateImpl implements _StoredWorkflowUpdate {
     Object? workflowId = ignore,
     Object? name = ignore,
     Object? description = ignore,
-    Object? gameCode = ignore,
     Object? createdAt = ignore,
     Object? modifiedAt = ignore,
     Object? jsonData = ignore,
@@ -220,11 +205,10 @@ class _StoredWorkflowUpdateImpl implements _StoredWorkflowUpdate {
             if (workflowId != ignore) 1: workflowId as String?,
             if (name != ignore) 2: name as String?,
             if (description != ignore) 3: description as String?,
-            if (gameCode != ignore) 4: gameCode as int?,
-            if (createdAt != ignore) 5: createdAt as DateTime?,
-            if (modifiedAt != ignore) 6: modifiedAt as DateTime?,
-            if (jsonData != ignore) 7: jsonData as String?,
-            if (workspacePath != ignore) 8: workspacePath as String?,
+            if (createdAt != ignore) 4: createdAt as DateTime?,
+            if (modifiedAt != ignore) 5: modifiedAt as DateTime?,
+            if (jsonData != ignore) 6: jsonData as String?,
+            if (workspacePath != ignore) 7: workspacePath as String?,
           },
         ) >
         0;
@@ -237,7 +221,6 @@ sealed class _StoredWorkflowUpdateAll {
     String? workflowId,
     String? name,
     String? description,
-    int? gameCode,
     DateTime? createdAt,
     DateTime? modifiedAt,
     String? jsonData,
@@ -256,7 +239,6 @@ class _StoredWorkflowUpdateAllImpl implements _StoredWorkflowUpdateAll {
     Object? workflowId = ignore,
     Object? name = ignore,
     Object? description = ignore,
-    Object? gameCode = ignore,
     Object? createdAt = ignore,
     Object? modifiedAt = ignore,
     Object? jsonData = ignore,
@@ -266,11 +248,10 @@ class _StoredWorkflowUpdateAllImpl implements _StoredWorkflowUpdateAll {
       if (workflowId != ignore) 1: workflowId as String?,
       if (name != ignore) 2: name as String?,
       if (description != ignore) 3: description as String?,
-      if (gameCode != ignore) 4: gameCode as int?,
-      if (createdAt != ignore) 5: createdAt as DateTime?,
-      if (modifiedAt != ignore) 6: modifiedAt as DateTime?,
-      if (jsonData != ignore) 7: jsonData as String?,
-      if (workspacePath != ignore) 8: workspacePath as String?,
+      if (createdAt != ignore) 4: createdAt as DateTime?,
+      if (modifiedAt != ignore) 5: modifiedAt as DateTime?,
+      if (jsonData != ignore) 6: jsonData as String?,
+      if (workspacePath != ignore) 7: workspacePath as String?,
     });
   }
 }
@@ -286,7 +267,6 @@ sealed class _StoredWorkflowQueryUpdate {
     String? workflowId,
     String? name,
     String? description,
-    int? gameCode,
     DateTime? createdAt,
     DateTime? modifiedAt,
     String? jsonData,
@@ -305,7 +285,6 @@ class _StoredWorkflowQueryUpdateImpl implements _StoredWorkflowQueryUpdate {
     Object? workflowId = ignore,
     Object? name = ignore,
     Object? description = ignore,
-    Object? gameCode = ignore,
     Object? createdAt = ignore,
     Object? modifiedAt = ignore,
     Object? jsonData = ignore,
@@ -315,11 +294,10 @@ class _StoredWorkflowQueryUpdateImpl implements _StoredWorkflowQueryUpdate {
       if (workflowId != ignore) 1: workflowId as String?,
       if (name != ignore) 2: name as String?,
       if (description != ignore) 3: description as String?,
-      if (gameCode != ignore) 4: gameCode as int?,
-      if (createdAt != ignore) 5: createdAt as DateTime?,
-      if (modifiedAt != ignore) 6: modifiedAt as DateTime?,
-      if (jsonData != ignore) 7: jsonData as String?,
-      if (workspacePath != ignore) 8: workspacePath as String?,
+      if (createdAt != ignore) 4: createdAt as DateTime?,
+      if (modifiedAt != ignore) 5: modifiedAt as DateTime?,
+      if (jsonData != ignore) 6: jsonData as String?,
+      if (workspacePath != ignore) 7: workspacePath as String?,
     });
   }
 }
@@ -344,7 +322,6 @@ class _StoredWorkflowQueryBuilderUpdateImpl
     Object? workflowId = ignore,
     Object? name = ignore,
     Object? description = ignore,
-    Object? gameCode = ignore,
     Object? createdAt = ignore,
     Object? modifiedAt = ignore,
     Object? jsonData = ignore,
@@ -356,11 +333,10 @@ class _StoredWorkflowQueryBuilderUpdateImpl
         if (workflowId != ignore) 1: workflowId as String?,
         if (name != ignore) 2: name as String?,
         if (description != ignore) 3: description as String?,
-        if (gameCode != ignore) 4: gameCode as int?,
-        if (createdAt != ignore) 5: createdAt as DateTime?,
-        if (modifiedAt != ignore) 6: modifiedAt as DateTime?,
-        if (jsonData != ignore) 7: jsonData as String?,
-        if (workspacePath != ignore) 8: workspacePath as String?,
+        if (createdAt != ignore) 4: createdAt as DateTime?,
+        if (modifiedAt != ignore) 5: modifiedAt as DateTime?,
+        if (jsonData != ignore) 6: jsonData as String?,
+        if (workspacePath != ignore) 7: workspacePath as String?,
       });
     } finally {
       q.close();
@@ -803,7 +779,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  gameCodeEqualTo(int value) {
+  createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(property: 4, value: value),
@@ -812,7 +788,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  gameCodeGreaterThan(int value) {
+  createdAtGreaterThan(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(property: 4, value: value),
@@ -821,7 +797,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  gameCodeGreaterThanOrEqualTo(int value) {
+  createdAtGreaterThanOrEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(property: 4, value: value),
@@ -830,14 +806,14 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  gameCodeLessThan(int value) {
+  createdAtLessThan(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(LessCondition(property: 4, value: value));
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  gameCodeLessThanOrEqualTo(int value) {
+  createdAtLessThanOrEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(property: 4, value: value),
@@ -846,7 +822,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  gameCodeBetween(int lower, int upper) {
+  createdAtBetween(DateTime lower, DateTime upper) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(property: 4, lower: lower, upper: upper),
@@ -855,7 +831,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  createdAtEqualTo(DateTime value) {
+  modifiedAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(property: 5, value: value),
@@ -864,7 +840,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  createdAtGreaterThan(DateTime value) {
+  modifiedAtGreaterThan(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(property: 5, value: value),
@@ -873,7 +849,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  createdAtGreaterThanOrEqualTo(DateTime value) {
+  modifiedAtGreaterThanOrEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(property: 5, value: value),
@@ -882,14 +858,14 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  createdAtLessThan(DateTime value) {
+  modifiedAtLessThan(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(LessCondition(property: 5, value: value));
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  createdAtLessThanOrEqualTo(DateTime value) {
+  modifiedAtLessThanOrEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(property: 5, value: value),
@@ -898,7 +874,7 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  createdAtBetween(DateTime lower, DateTime upper) {
+  modifiedAtBetween(DateTime lower, DateTime upper) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(property: 5, lower: lower, upper: upper),
@@ -907,62 +883,10 @@ extension StoredWorkflowQueryFilter
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  modifiedAtEqualTo(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EqualCondition(property: 6, value: value),
-      );
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  modifiedAtGreaterThan(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterCondition(property: 6, value: value),
-      );
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  modifiedAtGreaterThanOrEqualTo(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterOrEqualCondition(property: 6, value: value),
-      );
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  modifiedAtLessThan(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(LessCondition(property: 6, value: value));
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  modifiedAtLessThanOrEqualTo(DateTime value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessOrEqualCondition(property: 6, value: value),
-      );
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
-  modifiedAtBetween(DateTime lower, DateTime upper) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        BetweenCondition(property: 6, lower: lower, upper: upper),
-      );
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
   jsonDataEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        EqualCondition(property: 7, value: value, caseSensitive: caseSensitive),
+        EqualCondition(property: 6, value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -972,7 +896,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -985,7 +909,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -997,7 +921,7 @@ extension StoredWorkflowQueryFilter
   jsonDataLessThan(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        LessCondition(property: 7, value: value, caseSensitive: caseSensitive),
+        LessCondition(property: 6, value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1007,7 +931,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1020,7 +944,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 7,
+          property: 6,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1034,7 +958,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1047,7 +971,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1060,7 +984,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 7,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1073,7 +997,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 7,
+          property: 6,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1085,7 +1009,7 @@ extension StoredWorkflowQueryFilter
   jsonDataIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const EqualCondition(property: 7, value: ''),
+        const EqualCondition(property: 6, value: ''),
       );
     });
   }
@@ -1094,7 +1018,7 @@ extension StoredWorkflowQueryFilter
   jsonDataIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterCondition(property: 7, value: ''),
+        const GreaterCondition(property: 6, value: ''),
       );
     });
   }
@@ -1102,14 +1026,14 @@ extension StoredWorkflowQueryFilter
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
   workspacePathIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 8));
+      return query.addFilterCondition(const IsNullCondition(property: 7));
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterFilterCondition>
   workspacePathIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 8));
+      return query.addFilterCondition(const IsNullCondition(property: 7));
     });
   }
 
@@ -1117,7 +1041,7 @@ extension StoredWorkflowQueryFilter
   workspacePathEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        EqualCondition(property: 8, value: value, caseSensitive: caseSensitive),
+        EqualCondition(property: 7, value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1127,7 +1051,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1143,7 +1067,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1155,7 +1079,7 @@ extension StoredWorkflowQueryFilter
   workspacePathLessThan(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        LessCondition(property: 8, value: value, caseSensitive: caseSensitive),
+        LessCondition(property: 7, value: value, caseSensitive: caseSensitive),
       );
     });
   }
@@ -1165,7 +1089,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1182,7 +1106,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 8,
+          property: 7,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -1196,7 +1120,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1209,7 +1133,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1222,7 +1146,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 8,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1235,7 +1159,7 @@ extension StoredWorkflowQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 8,
+          property: 7,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1247,7 +1171,7 @@ extension StoredWorkflowQueryFilter
   workspacePathIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const EqualCondition(property: 8, value: ''),
+        const EqualCondition(property: 7, value: ''),
       );
     });
   }
@@ -1256,7 +1180,7 @@ extension StoredWorkflowQueryFilter
   workspacePathIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterCondition(property: 8, value: ''),
+        const GreaterCondition(property: 7, value: ''),
       );
     });
   }
@@ -1368,43 +1292,30 @@ extension StoredWorkflowQuerySortBy
     });
   }
 
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy> sortByGameCode() {
+  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
-  sortByGameCodeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(4, sort: Sort.desc);
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy> sortByCreatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5);
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5, sort: Sort.desc);
+      return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   sortByModifiedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6);
+      return query.addSortBy(5);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   sortByModifiedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6, sort: Sort.desc);
+      return query.addSortBy(5, sort: Sort.desc);
     });
   }
 
@@ -1412,28 +1323,28 @@ extension StoredWorkflowQuerySortBy
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, caseSensitive: caseSensitive);
+      return query.addSortBy(6, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   sortByJsonDataDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   sortByWorkspacePath({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(8, caseSensitive: caseSensitive);
+      return query.addSortBy(7, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   sortByWorkspacePathDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
@@ -1498,43 +1409,30 @@ extension StoredWorkflowQuerySortThenBy
     });
   }
 
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy> thenByGameCode() {
+  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
-  thenByGameCodeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(4, sort: Sort.desc);
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy> thenByCreatedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5);
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(5, sort: Sort.desc);
+      return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   thenByModifiedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6);
+      return query.addSortBy(5);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   thenByModifiedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(6, sort: Sort.desc);
+      return query.addSortBy(5, sort: Sort.desc);
     });
   }
 
@@ -1542,28 +1440,28 @@ extension StoredWorkflowQuerySortThenBy
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, caseSensitive: caseSensitive);
+      return query.addSortBy(6, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   thenByJsonDataDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   thenByWorkspacePath({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(8, caseSensitive: caseSensitive);
+      return query.addSortBy(7, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterSortBy>
   thenByWorkspacePathDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
@@ -1605,37 +1503,30 @@ extension StoredWorkflowQueryWhereDistinct
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterDistinct>
-  distinctByGameCode() {
+  distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(4);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterDistinct>
-  distinctByCreatedAt() {
+  distinctByModifiedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(5);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterDistinct>
-  distinctByModifiedAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(6);
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterDistinct>
   distinctByJsonData({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(7, caseSensitive: caseSensitive);
+      return query.addDistinctBy(6, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<StoredWorkflow, StoredWorkflow, QAfterDistinct>
   distinctByWorkspacePath({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(8, caseSensitive: caseSensitive);
+      return query.addDistinctBy(7, caseSensitive: caseSensitive);
     });
   }
 }
@@ -1660,34 +1551,28 @@ extension StoredWorkflowQueryProperty1
     });
   }
 
-  QueryBuilder<StoredWorkflow, int, QAfterProperty> gameCodeProperty() {
+  QueryBuilder<StoredWorkflow, DateTime, QAfterProperty> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<StoredWorkflow, DateTime, QAfterProperty> createdAtProperty() {
+  QueryBuilder<StoredWorkflow, DateTime, QAfterProperty> modifiedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<StoredWorkflow, DateTime, QAfterProperty> modifiedAtProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(6);
-    });
-  }
-
   QueryBuilder<StoredWorkflow, String, QAfterProperty> jsonDataProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(7);
+      return query.addProperty(6);
     });
   }
 
   QueryBuilder<StoredWorkflow, String?, QAfterProperty>
   workspacePathProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(8);
+      return query.addProperty(7);
     });
   }
 
@@ -1720,36 +1605,30 @@ extension StoredWorkflowQueryProperty2<R>
     });
   }
 
-  QueryBuilder<StoredWorkflow, (R, int), QAfterProperty> gameCodeProperty() {
+  QueryBuilder<StoredWorkflow, (R, DateTime), QAfterProperty>
+  createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
   QueryBuilder<StoredWorkflow, (R, DateTime), QAfterProperty>
-  createdAtProperty() {
+  modifiedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<StoredWorkflow, (R, DateTime), QAfterProperty>
-  modifiedAtProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(6);
-    });
-  }
-
   QueryBuilder<StoredWorkflow, (R, String), QAfterProperty> jsonDataProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(7);
+      return query.addProperty(6);
     });
   }
 
   QueryBuilder<StoredWorkflow, (R, String?), QAfterProperty>
   workspacePathProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(8);
+      return query.addProperty(7);
     });
   }
 
@@ -1782,37 +1661,31 @@ extension StoredWorkflowQueryProperty3<R1, R2>
     });
   }
 
-  QueryBuilder<StoredWorkflow, (R1, R2, int), QOperations> gameCodeProperty() {
+  QueryBuilder<StoredWorkflow, (R1, R2, DateTime), QOperations>
+  createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
   QueryBuilder<StoredWorkflow, (R1, R2, DateTime), QOperations>
-  createdAtProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(5);
-    });
-  }
-
-  QueryBuilder<StoredWorkflow, (R1, R2, DateTime), QOperations>
   modifiedAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(6);
+      return query.addProperty(5);
     });
   }
 
   QueryBuilder<StoredWorkflow, (R1, R2, String), QOperations>
   jsonDataProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(7);
+      return query.addProperty(6);
     });
   }
 
   QueryBuilder<StoredWorkflow, (R1, R2, String?), QOperations>
   workspacePathProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(8);
+      return query.addProperty(7);
     });
   }
 

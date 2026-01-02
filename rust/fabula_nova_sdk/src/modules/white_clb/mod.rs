@@ -126,6 +126,7 @@ fn is_encrypted(file_data: &[u8]) -> bool {
     stored_checksum != expected_value
 }
 
+#[allow(dead_code)]
 fn decrypt_clb(data: &mut [u8]) {
     let file_len = data.len();
     if file_len < 16 {

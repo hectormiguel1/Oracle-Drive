@@ -99,7 +99,7 @@ class _FullscreenWorkflowPageState
                                 onOpen: (workflow) {
                                   ref
                                       .read(workflowEditorProvider.notifier)
-                                      .load(workflow.id);
+                                      .load(workflow.id, workflow.gameCode);
                                   setState(() => _showWorkflowList = false);
                                 },
                                 onCreate: () => _handleCreateNew(gameCode),
@@ -240,10 +240,11 @@ class _FullscreenWorkflowPageState
       try {
         final file = File(result.files.single.path!);
         final json = await file.readAsString();
-        final repo = ref.read(workflowRepositoryProvider);
-        final workflow = await repo.importFromJson(json);
-        ref.invalidate(workflowListProvider);
-        ref.read(workflowEditorProvider.notifier).load(workflow.id);
+        final gameCode = ref.read(selectedGameProvider);
+        final repo = ref.read(gameRepositoryProvider(gameCode));
+        final workflow = await repo.importWorkflowFromJson(json);
+        ref.invalidate(workflowListProvider(gameCode));
+        ref.read(workflowEditorProvider.notifier).load(workflow.id, workflow.gameCode);
         setState(() => _showWorkflowList = false);
         if (mounted) {
           showCrystalSnackBar(

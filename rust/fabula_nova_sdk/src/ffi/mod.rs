@@ -1,3 +1,4 @@
+#![allow(clippy::missing_safety_doc)]
 //! # Foreign Function Interface (FFI) Layer
 //!
 //! This module exposes Rust functionality to C-compatible consumers,

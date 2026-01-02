@@ -116,6 +116,7 @@ class _CrystaliumScreenState extends ConsumerState<CrystaliumScreen> {
       context,
       targetNodeId: targetNodeId,
       patternNames: state.availablePatternNames,
+      mcpFile: state.mcpFile,
       initialStage: stage,
       initialRoleId: roleId,
     );

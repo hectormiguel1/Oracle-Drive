@@ -71,18 +71,30 @@ class CgtModifier {
   }
 
   /// Find the best branch point for a given node.
-  /// Returns the node itself if valid, otherwise finds the center node of its entry.
+  /// Returns the node itself if it exists, prioritizing user's selection.
+  /// Falls back to valid branch points only if the node doesn't exist.
   int findBestBranchPoint(int nodeId) {
-    if (isValidBranchPoint(nodeId)) return nodeId;
+    // If node exists, use it (respect user's selection)
+    final nodeExists = _nodes.any((n) => n.index == nodeId) || nodeId == 0;
+    if (nodeExists) return nodeId;
 
-    // Find the entry containing this node and return its center node
+    // Node doesn't exist - try to find a valid branch point in the same entry
     final entry = getEntryForNode(nodeId);
     if (entry != null && entry.nodeIds.isNotEmpty) {
-      // Prefer the first node (usually the connection point)
-      return entry.nodeIds.first;
+      // Return the first valid node from the entry
+      for (final id in entry.nodeIds) {
+        if (_nodes.any((n) => n.index == id)) {
+          return id;
+        }
+      }
     }
 
     return nodeId; // Fallback
+  }
+
+  /// Count how many children a node has.
+  int getChildCount(int nodeId) {
+    return _nodes.where((n) => n.parentIndex == nodeId).length;
   }
 
   /// Add an offshoot (new branch) from an existing node.
@@ -108,8 +120,8 @@ class CgtModifier {
         ? findBestBranchPoint(parentNodeId)
         : parentNodeId;
 
-    // Validate parent node exists
-    final parentNode = _nodes.firstWhere(
+    // Validate parent node exists (variable intentionally unused - validation only)
+    final _ = _nodes.firstWhere(
       (n) => n.index == actualParentId,
       orElse: () =>
           throw ArgumentError('Parent node $actualParentId not found'),
@@ -149,13 +161,23 @@ class CgtModifier {
         basePos.z + positionOffset.z,
       );
     } else {
-      // Default: place slightly above and offset from parent
+      // Default: place above and offset from parent using golden ratio for unique angles
       final basePos = parentEntry?.position ?? Vector3(0, 0, 0);
-      final angle = (_entries.length * 0.5) % (2 * math.pi);
+
+      // Calculate unique angle based on parent node ID and existing sibling count
+      // Golden ratio ensures well-distributed angles even with many children
+      const goldenRatio = 0.618033988749895;
+      final siblingCount = getChildCount(actualParentId);
+      final baseAngle = (actualParentId * goldenRatio) * 2 * math.pi;
+      final angle = baseAngle + (siblingCount * math.pi / 3); // ~60° apart per sibling
+
+      // Distance varies slightly based on stage to prevent exact overlaps
+      final distance = 12.0 + (stage % 5) * 2.0;
+
       newPosition = Vector3(
-        basePos.x + math.cos(angle) * 15,
-        basePos.y + 10,
-        basePos.z + math.sin(angle) * 15,
+        basePos.x + math.cos(angle) * distance,
+        basePos.y + 8 + (siblingCount * 2), // Step up for each sibling
+        basePos.z + math.sin(angle) * distance,
       );
     }
 

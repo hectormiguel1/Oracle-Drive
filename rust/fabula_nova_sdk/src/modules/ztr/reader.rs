@@ -116,7 +116,7 @@ impl<R: Read + Seek> ZtrReader<R> {
 
         let mut ids_data = Vec::new();
 
-        for (idx, &chunk_decompressed_size) in id_chunk_sizes.iter().enumerate() {
+        for &chunk_decompressed_size in id_chunk_sizes.iter() {
             let compressed_size: u32 = self.reader.read_be()?;
             let chunk_start_pos = self.reader.stream_position()?;
 

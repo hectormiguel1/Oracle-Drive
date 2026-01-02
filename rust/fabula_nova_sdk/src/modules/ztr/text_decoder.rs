@@ -66,13 +66,12 @@ pub fn decode_ztr_line(
         
         // Single Key Check
         if let Some(key) = SINGLE_KEYS.get(&b1) {
-            if b1 == 0 {
-                if i + 1 < data.len() && data[i+1] == 0 {
+            if b1 == 0
+                && i + 1 < data.len() && data[i+1] == 0 {
                      // Terminator 00 00, skip both, emit nothing
                      i += 2;
                      continue;
                 }
-            }
             
             result.extend_from_slice(key.as_bytes());
             i += 1;

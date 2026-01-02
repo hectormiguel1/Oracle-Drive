@@ -62,9 +62,9 @@ class WorkflowListView extends ConsumerWidget {
                       workflow: workflow,
                       onTap: () => onOpen(workflow),
                       onDelete: () async {
-                        final repo = ref.read(workflowRepositoryProvider);
+                        final repo = ref.read(gameRepositoryProvider(workflow.gameCode));
                         await repo.deleteWorkflow(workflow.id);
-                        ref.invalidate(workflowListProvider);
+                        ref.invalidate(workflowListProvider(gameCode));
                       },
                     );
                   },

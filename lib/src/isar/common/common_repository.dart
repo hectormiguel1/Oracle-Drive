@@ -1,8 +1,13 @@
 import 'package:oracle_drive/src/isar/common/lookup_config.dart';
 import 'package:oracle_drive/src/isar/common/models.dart';
 import 'package:oracle_drive/src/isar/generic_repository.dart';
+import 'package:oracle_drive/src/isar/workflow/workflow_models.dart';
+import 'package:oracle_drive/models/workflow/workflow.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:logging/logging.dart';
+import 'package:uuid/uuid.dart';
+
+const _uuid = Uuid();
 
 /// A unified repository implementation for all games.
 /// Lookups are handled by LookupConfig, not entity mappers.
@@ -347,6 +352,170 @@ class CommonGameRepository implements GameRepository {
         }
       }
       return sourceFiles.toList()..sort();
+    });
+  }
+
+  // --- Workflow Operations ---
+
+  @override
+  Future<List<Workflow>> getAllWorkflows() async {
+    final stored = database.read((db) {
+      return db.storedWorkflows.where().sortByModifiedAtDesc().findAll();
+    });
+
+    final workflows = <Workflow>[];
+    for (final s in stored) {
+      try {
+        final workflow = Workflow.fromJsonString(s.jsonData);
+        workflow.workspacePath = s.workspacePath;
+        workflows.add(workflow);
+      } catch (e) {
+        _logger.warning('Failed to parse workflow ${s.workflowId}: $e');
+        // Skip corrupt entry instead of failing entirely
+      }
+    }
+    return workflows;
+  }
+
+  @override
+  Future<Workflow?> getWorkflow(String id) async {
+    final stored = database.read((db) {
+      return db.storedWorkflows.where().workflowIdEqualTo(id).findFirst();
+    });
+
+    if (stored == null) return null;
+    try {
+      final workflow = Workflow.fromJsonString(stored.jsonData);
+      workflow.workspacePath = stored.workspacePath;
+      return workflow;
+    } catch (e) {
+      _logger.warning('Failed to parse workflow $id: $e');
+      return null;
+    }
+  }
+
+  @override
+  Future<void> saveWorkflow(Workflow workflow) async {
+    final stored = StoredWorkflow(
+      workflowId: workflow.id,
+      name: workflow.name,
+      description: workflow.description,
+      createdAt: workflow.createdAt,
+      modifiedAt: workflow.modifiedAt,
+      jsonData: workflow.toJsonString(),
+      workspacePath: workflow.workspacePath,
+    );
+
+    database.write((db) {
+      db.storedWorkflows.put(stored);
+    });
+  }
+
+  @override
+  Future<void> deleteWorkflow(String id) async {
+    database.write((db) {
+      db.storedWorkflows.where().workflowIdEqualTo(id).deleteAll();
+    });
+  }
+
+  @override
+  Future<bool> workflowExists(String id) async {
+    return database.read((db) {
+      return db.storedWorkflows.where().workflowIdEqualTo(id).count() > 0;
+    });
+  }
+
+  @override
+  Future<String?> exportWorkflowToJson(String id) async {
+    final workflow = await getWorkflow(id);
+    return workflow?.toJsonString();
+  }
+
+  @override
+  Future<Workflow> importWorkflowFromJson(String json, {bool generateNewId = true}) async {
+    var workflow = Workflow.fromJsonString(json);
+
+    if (generateNewId) {
+      workflow = Workflow(
+        id: _uuid.v4(),
+        name: '${workflow.name} (Imported)',
+        description: workflow.description,
+        gameCode: workflow.gameCode,
+        createdAt: DateTime.now(),
+        modifiedAt: DateTime.now(),
+        nodes: workflow.nodes,
+        connections: workflow.connections,
+        variables: workflow.variables,
+      );
+    }
+
+    await saveWorkflow(workflow);
+    return workflow;
+  }
+
+  @override
+  Future<void> logWorkflowExecution({
+    required String workflowId,
+    required int durationMs,
+    required String status,
+    String? errorMessage,
+    required int nodesExecuted,
+    required int totalNodes,
+    String? detailsJson,
+  }) async {
+    final log = WorkflowExecutionLog(
+      workflowId: workflowId,
+      executedAt: DateTime.now(),
+      durationMs: durationMs,
+      status: status,
+      errorMessage: errorMessage,
+      nodesExecuted: nodesExecuted,
+      totalNodes: totalNodes,
+      detailsJson: detailsJson,
+    );
+
+    database.write((db) {
+      db.workflowExecutionLogs.put(log);
+    });
+  }
+
+  @override
+  Future<List<WorkflowExecutionLog>> getWorkflowExecutionHistory(
+    String workflowId, {
+    int limit = 50,
+  }) async {
+    return database.read((db) {
+      return db.workflowExecutionLogs
+          .where()
+          .workflowIdEqualTo(workflowId)
+          .sortByExecutedAtDesc()
+          .findAll()
+          .take(limit)
+          .toList();
+    });
+  }
+
+  @override
+  Future<List<WorkflowExecutionLog>> getRecentWorkflowExecutions({
+    int limit = 20,
+  }) async {
+    return database.read((db) {
+      return db.workflowExecutionLogs
+          .where()
+          .sortByExecutedAtDesc()
+          .findAll()
+          .take(limit)
+          .toList();
+    });
+  }
+
+  @override
+  Future<void> clearWorkflowExecutionHistory(String workflowId) async {
+    database.write((db) {
+      db.workflowExecutionLogs
+          .where()
+          .workflowIdEqualTo(workflowId)
+          .deleteAll();
     });
   }
 }

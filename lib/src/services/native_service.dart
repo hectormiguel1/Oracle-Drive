@@ -15,6 +15,8 @@ import 'package:fabula_nova_sdk/bridge_generated/modules/ztr/structs.dart'
     as ztr_sdk;
 import 'package:fabula_nova_sdk/bridge_generated/modules/wct.dart'
     as wct_sdk; // Import WCT enums
+import 'package:fabula_nova_sdk/bridge_generated/modules/crystalium/structs.dart'
+    as cgt_sdk;
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show Uint64List;
 
@@ -591,6 +593,80 @@ class NativeService {
     return AppDatabase.instance
         .getRepositoryForGame(game)
         .getDistinctSourceFiles();
+  }
+
+  // ============================================================
+  // Crystalium (CGT/MCP) Operations
+  // ============================================================
+
+  /// Parse a CGT file from memory
+  Future<cgt_sdk.CgtFile> parseCgtFromMemory(Uint8List bytes) async {
+    try {
+      return await sdk.cgtParseFromMemory(data: bytes);
+    } catch (e) {
+      _showErrorDialog("CGT Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Parse a CGT file from disk
+  Future<cgt_sdk.CgtFile> parseCgt(String filePath) async {
+    try {
+      return await sdk.cgtParse(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("CGT Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Write a CGT file to memory
+  Future<Uint8List> writeCgtToMemory(cgt_sdk.CgtFile cgt) async {
+    try {
+      return await sdk.cgtWriteToMemory(cgt: cgt);
+    } catch (e) {
+      _showErrorDialog("CGT Write Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Write a CGT file to disk
+  Future<void> writeCgt(cgt_sdk.CgtFile cgt, String filePath) async {
+    try {
+      await sdk.cgtWrite(cgt: cgt, outFile: filePath);
+    } catch (e) {
+      _showErrorDialog("CGT Write Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Parse an MCP file from memory
+  Future<cgt_sdk.McpFile> parseMcpFromMemory(Uint8List bytes) async {
+    try {
+      return await sdk.mcpParseFromMemory(data: bytes);
+    } catch (e) {
+      _showErrorDialog("MCP Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Parse an MCP file from disk
+  Future<cgt_sdk.McpFile> parseMcp(String filePath) async {
+    try {
+      return await sdk.mcpParse(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("MCP Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Validate a CGT file
+  Future<List<String>> validateCgt(cgt_sdk.CgtFile cgt) async {
+    try {
+      return await sdk.cgtValidate(cgt: cgt);
+    } catch (e) {
+      _showErrorDialog("CGT Validation Error", e.toString());
+      rethrow;
+    }
   }
 
   void _showErrorDialog(String title, String message) {

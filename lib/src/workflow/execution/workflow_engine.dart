@@ -5,7 +5,6 @@ import '../../../models/app_game_code.dart';
 import '../../../models/workflow/node_status.dart';
 import '../../../models/workflow/workflow_models.dart';
 import '../../../providers/workflow_provider.dart';
-import '../../../src/isar/workflow/workflow_repository.dart';
 import 'execution_context.dart';
 import 'node_executor.dart';
 import 'executors/control_executors.dart';
@@ -37,13 +36,12 @@ class _BranchResult {
 /// Engine for executing workflows.
 class WorkflowEngine {
   final Ref _ref;
-  final WorkflowRepository _repo;
   final Map<NodeType, NodeExecutor> _executors = {};
 
   bool _cancelRequested = false;
   bool _pauseRequested = false;
 
-  WorkflowEngine(this._ref, this._repo) {
+  WorkflowEngine(this._ref) {
     _registerExecutors();
   }
 
@@ -184,7 +182,8 @@ class WorkflowEngine {
       executedCount = completedNodes.length;
 
       // Log execution to repository
-      await _repo.logExecution(
+      final repo = _ref.read(gameRepositoryProvider(gameCode));
+      await repo.logWorkflowExecution(
         workflowId: workflow.id,
         durationMs: DateTime.now().difference(startTime).inMilliseconds,
         status: 'completed',
@@ -213,7 +212,8 @@ class WorkflowEngine {
     } catch (e, stack) {
       _logger.severe('Workflow execution error: $e', e, stack);
 
-      await _repo.logExecution(
+      final errorRepo = _ref.read(gameRepositoryProvider(gameCode));
+      await errorRepo.logWorkflowExecution(
         workflowId: workflow.id,
         durationMs: DateTime.now().difference(startTime).inMilliseconds,
         status: 'error',
@@ -584,6 +584,5 @@ class WorkflowExecutionResult {
 
 /// Provider for the workflow engine.
 final workflowEngineProvider = Provider<WorkflowEngine>((ref) {
-  final repo = ref.watch(workflowRepositoryProvider);
-  return WorkflowEngine(ref, repo);
+  return WorkflowEngine(ref);
 });

@@ -86,13 +86,21 @@ class WdbData {
       
       if (firstRow != null && firstRow.containsKey(name)) {
         final val = firstRow[name];
-        if (val is wdb_enums.CrystalRole) type = WdbColumnType.crystalRole;
-        else if (val is wdb_enums.CrystalNodeType) type = WdbColumnType.crystalNodeType;
-        else if (val is int) type = WdbColumnType.int;
-        else if (val is double) type = WdbColumnType.float;
-        else if (val is String) type = WdbColumnType.string;
-        else if (val is bool) type = WdbColumnType.bool;
-        else if (val is List) type = WdbColumnType.array;
+        if (val is wdb_enums.CrystalRole) {
+          type = WdbColumnType.crystalRole;
+        } else if (val is wdb_enums.CrystalNodeType) {
+          type = WdbColumnType.crystalNodeType;
+        } else if (val is int) {
+          type = WdbColumnType.int;
+        } else if (val is double) {
+          type = WdbColumnType.float;
+        } else if (val is String) {
+          type = WdbColumnType.string;
+        } else if (val is bool) {
+          type = WdbColumnType.bool;
+        } else if (val is List) {
+          type = WdbColumnType.array;
+        }
       } else if (name.startsWith('s')) {
         type = WdbColumnType.string;
       } else if (name.startsWith('f')) {

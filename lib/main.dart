@@ -43,9 +43,6 @@ void main() async {
       // Try to find the library in the project structure
       final possiblePaths = [
         '${Directory.current.path}/rust/fabula_nova_sdk/target/release/$libraryExtension',
-        '${Directory.current.path}/rust/fabula_nova_sdk/target/debug/$libraryExtension',
-        // If we are deep in build artifacts
-        '${Directory.current.parent.parent.parent.parent.path}/rust/fabula_nova_sdk/target/release/$libraryExtension',
       ];
 
       for (final path in possiblePaths) {
