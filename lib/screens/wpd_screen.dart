@@ -1,363 +1,267 @@
 import 'dart:io';
 
-import 'package:oracle_drive/components/widgets/crystal_button.dart';
-import 'package:oracle_drive/components/widgets/crystal_panel.dart';
-import 'package:oracle_drive/models/app_game_code.dart'; // Import AppGameCode
-import 'package:oracle_drive/providers/app_state_provider.dart';
-import 'package:oracle_drive/providers/wpd_provider.dart';
-import 'package:oracle_drive/src/third_party/wpdlib/wpd.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_fancy_tree_view2/flutter_fancy_tree_view2.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logging/logging.dart';
+import 'package:oracle_drive/components/batch_decompile_dialog.dart';
+import 'package:oracle_drive/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_dialog.dart';
+import 'package:oracle_drive/components/widgets/crystal_divider.dart';
+import 'package:oracle_drive/components/widgets/crystal_snackbar.dart';
+import 'package:oracle_drive/components/widgets/style.dart';
+import 'package:oracle_drive/components/wpd/wpd_archive_panel.dart';
+import 'package:oracle_drive/components/wpd/wpd_file_actions.dart';
+import 'package:oracle_drive/components/wpd/wpd_file_browser.dart';
+import 'package:oracle_drive/components/wpd/wpd_file_details.dart';
+import 'package:oracle_drive/components/wpd/wpd_processing_overlay.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/providers/app_state_provider.dart';
+import 'package:oracle_drive/providers/wpd_provider.dart';
+import 'package:oracle_drive/screens/java_source_screen.dart';
+import 'package:oracle_drive/src/services/java_decompiler_service.dart';
 import 'package:path/path.dart' as p;
 
 class WpdScreen extends ConsumerStatefulWidget {
   const WpdScreen({super.key});
-  static const wpdExtractExtensions = ['.bin', '.xgr'];
+
   @override
   ConsumerState<WpdScreen> createState() => _WpdScreenState();
 }
 
 class _WpdScreenState extends ConsumerState<WpdScreen>
     with AutomaticKeepAliveClientMixin {
-  final Logger _logger = Logger('WpdScreen');
-  TreeController<FileSystemEntity>? _treeController;
+  final GlobalKey<WpdFileBrowserState> _browserKey = GlobalKey();
 
   AppGameCode get _gameCode => ref.watch(selectedGameProvider);
 
   @override
   bool get wantKeepAlive => true;
 
+  // ============================================================
+  // UI Callbacks (require BuildContext or Navigator)
+  // ============================================================
+
   Future<void> _pickRootDir() async {
     String? dir = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Select Workspace Directory (extracted .bin content)',
+      dialogTitle: 'Select Workspace Directory',
     );
     if (dir != null) {
       ref.read(wpdProvider(_gameCode).notifier).setRootDirPath(dir);
-      _reloadTree(dir);
     }
   }
 
-  void _reloadTree(String? rootPath) {
-    if (rootPath == null) {
-      _treeController = null;
-      setState(() {});
-      return;
-    }
-
-    final rootDir = Directory(rootPath);
-    if (!rootDir.existsSync()) {
-      _treeController = null;
-      setState(() {});
-      return;
-    }
-
-    try {
-      final roots = [rootDir];
-
-      _treeController = TreeController<FileSystemEntity>(
-        roots: roots,
-        childrenProvider: (FileSystemEntity parent) {
-          if (parent is Directory) {
-            try {
-              final list = parent.listSync()
-                ..sort((a, b) {
-                  final aIsDir = a is Directory;
-                  final bIsDir = b is Directory;
-                  if (aIsDir && !bIsDir) return -1;
-                  if (!aIsDir && bIsDir) return 1;
-                  return a.path.compareTo(b.path);
-                });
-              return list;
-            } catch (e) {
-              return [];
-            }
-          }
-          return [];
-        },
-      );
-
-      _treeController!.expand(rootDir);
-      setState(() {});
-    } catch (e) {
-      _logger.severe("Error scanning directory: $e");
-    }
-  }
-
-  Future<void> _unpackWpd(File wpdFile) async {
-    try {
-      _logger.info("Unpacking ${p.basename(wpdFile.path)}...");
-      final status = await WpdTool.unpackFile(wpdFile.path);
-      _logger.info("Unpack finished with status: $status");
-      setState(() {
-        _treeController?.rebuild();
-      });
-    } catch (e) {
-      _logger.severe("Error unpacking: $e");
-    }
-  }
-
-  Future<void> _repackWpd(Directory dir) async {
-    try {
-      _logger.info("Repacking ${p.basename(dir.path)}...");
-      final status = await WpdTool.repackDir(dir.path);
-      _logger.info("Repack finished with status: $status");
-      setState(() {
-        _treeController?.rebuild();
-      });
-    } catch (e) {
-      _logger.severe("Error repacking: $e");
-    }
-  }
-
-  Future<void> _unpackWhiteBin(File binFile) async {
-    try {
-      final wbtGameCode = _gameCode.toWbtGameCode();
-      if (wbtGameCode == null) {
-        throw Exception(
-          "Unsupported game code for WBT operations: ${_gameCode.displayName}",
-        );
-      }
-
-      _logger.info("Unpacking .bin: ${binFile.path}");
-      String outputDir = p.join(
-        binFile.parent.path,
-        p.basenameWithoutExtension(binFile.path),
-      );
-      await Directory(outputDir).create(recursive: true);
-
-      await WpdTool.unpackFile(binFile.path);
-      _logger.info("Unpack complete.");
-      setState(() => _treeController?.rebuild());
-    } catch (e) {
-      _logger.severe("Error unpacking bin: $e");
-    }
-  }
-
-  Future<void> _repackWhiteBin(File binFile) async {
-    String? sourceDir = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Select Source Directory (Modded Files)',
-      initialDirectory: binFile.parent.path,
+  void _viewJavaSource(File javaFile) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => JavaSourceScreen(filePath: javaFile.path),
+      ),
     );
-    if (sourceDir == null) return;
+  }
+
+  Future<String?> _pickDdsFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      dialogTitle: 'Select Source DDS',
+      type: FileType.custom,
+      allowedExtensions: ['dds'],
+    );
+    return result?.files.single.path;
+  }
+
+  Future<void> _batchDecompile(Directory dir) async {
+    final config = await BatchDecompileDialog.show(context, dir.path);
+    if (config == null) return;
 
     try {
-      final wbtGameCode = _gameCode.toWbtGameCode();
-      if (wbtGameCode == null) {
-        throw Exception(
-          "Unsupported game code for WBT operations: ${_gameCode.displayName}",
-        );
-      }
+      final result = await ref
+          .read(wpdProvider(_gameCode).notifier)
+          .batchDecompileClbs(dir, config);
 
-      _logger.info("Repacking .bin from $sourceDir...");
-      await WpdTool.repackDir(sourceDir);
-      _logger.info("Repack complete.");
+      if (mounted) {
+        _browserKey.currentState?.rebuild();
+        await BatchDecompileResultDialog.show(context, result);
+      }
+    } on JavaNotFoundError {
+      if (mounted) _showJavaNotFoundDialog();
     } catch (e) {
-      _logger.severe("Error repacking bin: $e");
+      if (mounted) {
+        context.showErrorSnackBar('Batch decompilation failed: $e');
+      }
     }
   }
+
+  void _showJavaNotFoundDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => CrystalDialog(
+        title: 'Java Not Found',
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Java is required to decompile .class files.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Please install Java and ensure it is in your system PATH.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'You can download Java from:',
+              style: TextStyle(color: Colors.white54),
+            ),
+            SizedBox(height: 8),
+            SelectableText(
+              'https://adoptium.net/',
+              style: TextStyle(color: Colors.cyan),
+            ),
+          ],
+        ),
+        actions: [
+          CrystalButton(
+            label: 'OK',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _rebuildTree() {
+    _browserKey.currentState?.rebuild();
+  }
+
+  Future<void> _enterArchiveMode(File file) async {
+    final notifier = ref.read(wpdProvider(_gameCode).notifier);
+    final fileName = p.basename(file.path).toLowerCase();
+
+    // Check if it's a white*.bin or filelist
+    final isWhiteBin = fileName.startsWith('white') &&
+        fileName.endsWith('.bin') &&
+        !fileName.contains('filelist');
+    final isFileList = fileName.contains('filelist') && fileName.endsWith('.bin');
+
+    try {
+      if (isFileList) {
+        // Filelist selected - ask for the content bin
+        final contentBin = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['bin'],
+          dialogTitle: 'Select the content .bin (e.g. _white_img.bin)',
+        );
+
+        if (contentBin != null && contentBin.files.single.path != null) {
+          await notifier.enterArchiveModeWithFileList(file.path);
+          notifier.setArchiveBinPath(contentBin.files.single.path!);
+        }
+      } else if (isWhiteBin) {
+        // White*.bin selected - ask for the filelist
+        final filelistResult = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['bin'],
+          dialogTitle: 'Select the filelist (e.g. white_img.win32.bin)',
+        );
+
+        if (filelistResult != null && filelistResult.files.single.path != null) {
+          await notifier.enterArchiveModeWithWhiteBin(
+            file.path,
+            filelistResult.files.single.path!,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showErrorSnackBar('Failed to load archive: $e');
+      }
+    }
+  }
+
+  // ============================================================
+  // Build
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-
     final state = ref.watch(wpdProvider(_gameCode));
 
-    // Re-init tree if game changed and rootPath is different from what we show
-    // We can't easily compare the tree controller's root with state.rootDirPath
-    // So we might need to store the current tree root path in state too, or just check here.
-    if (state.rootDirPath != null &&
-        (_treeController == null ||
-            _treeController!.roots.first.path != state.rootDirPath)) {
-      // Need to defer this as it calls setState during build
-      Future.microtask(() => _reloadTree(state.rootDirPath));
-    } else if (state.rootDirPath == null && _treeController != null) {
-      Future.microtask(() => _reloadTree(null));
+    return Padding(
+      padding: const EdgeInsets.all(13.0),
+      child: Row(
+        children: [
+          // Left Pane: File Browser (always visible)
+          Expanded(
+            flex: 3,
+            child: WpdFileBrowser(
+              key: _browserKey,
+              gameCode: _gameCode,
+              onPickDirectory: _pickRootDir,
+            ),
+          ),
+          const CrystalVerticalDivider.subtle(width: 1),
+          // Right Pane: Content Area or Archive Panel
+          Expanded(
+            flex: 7,
+            child: state.archive.isActive
+                ? WpdArchivePanel(gameCode: _gameCode)
+                : Stack(
+                    children: [
+                      _buildMainContent(state),
+                      WpdProcessingOverlay(gameCode: _gameCode),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent(WpdState state) {
+    if (!state.hasSelection) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.touch_app, size: 64, color: Colors.white10),
+            const SizedBox(height: 16),
+            Text(
+              "Select a file to view actions",
+              style: CrystalStyles.title.copyWith(color: Colors.white24),
+            ),
+          ],
+        ),
+      );
     }
 
-    return Column(
-      children: [
-        // Toolbar
-        Container(
-          color: Colors.black.withValues(alpha: 0.4),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              CrystalButton(
-                onPressed: _pickRootDir,
-                icon: Icons.folder,
-                label: "Open Workspace",
-                isPrimary: true,
-              ),
-              if (state.rootDirPath != null) ...[
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    state.rootDirPath!,
-                    style: const TextStyle(color: Colors.white70),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ],
+    final node = state.selectedNode!;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(color: Colors.black26),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          WpdFileDetails(node: node),
+          const Divider(color: Colors.white24, height: 32),
+
+          // Actions
+          Text("ACTIONS", style: CrystalStyles.sectionHeader),
+          const SizedBox(height: 16),
+
+          WpdFileActions(
+            gameCode: _gameCode,
+            node: node,
+            onBatchDecompile: _batchDecompile,
+            onViewJavaSource: _viewJavaSource,
+            onPickDdsFile: _pickDdsFile,
+            onEnterArchiveMode: _enterArchiveMode,
+            onTreeRebuild: _rebuildTree,
           ),
-        ),
-
-        // Action Bar (Context Sensitive)
-        Container(
-          height: 50,
-          color: Colors.black.withValues(alpha: 0.3),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              if (state.selectedNode != null) ...[
-                // .WPD Actions
-                if (state.selectedNode is File &&
-                    p.extension(state.selectedNode!.path).toLowerCase() ==
-                        '.wpd')
-                  CrystalButton(
-                    onPressed: () => _unpackWpd(state.selectedNode as File),
-                    icon: Icons.folder_zip,
-                    label: "UNPACK WPD",
-                    isPrimary: true,
-                  ),
-
-                // .BIN Actions
-                if (state.selectedNode is File &&
-                    WpdScreen.wpdExtractExtensions.contains(
-                      p.extension(state.selectedNode!.path).toLowerCase(),
-                    )) ...[
-                  CrystalButton(
-                    onPressed: () =>
-                        _unpackWhiteBin(state.selectedNode as File),
-                    icon: Icons.download_for_offline,
-                    label: "UNPACK BIN",
-                  ),
-                  const SizedBox(width: 16),
-                  CrystalButton(
-                    onPressed: () =>
-                        _repackWhiteBin(state.selectedNode as File),
-                    icon: Icons.upload_file,
-                    label: "REPACK BIN",
-                  ),
-                ],
-
-                // Folder Actions
-                if (state.selectedNode is Directory)
-                  CrystalButton(
-                    onPressed: () =>
-                        _repackWpd(state.selectedNode as Directory),
-                    icon: Icons.inventory,
-                    label: "REPACK FOLDER",
-                  ),
-
-                const Spacer(),
-                Flexible(
-                  child: Text(
-                    p.basename(state.selectedNode!.path),
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ] else
-                const Text(
-                  "Select a file or folder to see actions",
-                  style: TextStyle(color: Colors.white24),
-                ),
-            ],
-          ),
-        ),
-
-        // Tree View
-        Expanded(
-          child: state.rootDirPath == null
-              ? const Center(
-                  child: Text(
-                    "Select a directory to browse",
-                    style: TextStyle(color: Colors.white24),
-                  ),
-                )
-              : _treeController == null
-              ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: CrystalPanel(
-                    child: AnimatedTreeView<FileSystemEntity>(
-                      treeController: _treeController!,
-                      nodeBuilder: (context, entry) {
-                        final node = entry.node;
-                        final isDir = node is Directory;
-                        final isSelected =
-                            state.selectedNode?.path == node.path;
-                        final name = p.basename(node.path);
-
-                        return TreeIndentation(
-                          entry: entry,
-                          guide: const IndentGuide.connectingLines(
-                            indent: 30,
-                            color: Colors.grey,
-                            thickness: 1.0,
-                            origin: 0.5,
-                            roundCorners: true,
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              ref
-                                  .read(wpdProvider(_gameCode).notifier)
-                                  .setSelectedNode(node);
-                              if (isDir) {
-                                _treeController!.toggleExpansion(node);
-                              }
-                            },
-                            child: Container(
-                              color: isSelected
-                                  ? Colors.cyan.withValues(alpha: 0.2)
-                                  : null,
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    isDir
-                                        ? (entry.isExpanded
-                                              ? Icons.folder_open
-                                              : Icons.folder)
-                                        : (name.endsWith('.wpd')
-                                              ? Icons.folder_zip
-                                              : Icons.description),
-                                    color: isDir
-                                        ? Colors.cyan
-                                        : (name.endsWith('.wpd')
-                                              ? Colors.cyan
-                                              : Colors.white54),
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      name,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

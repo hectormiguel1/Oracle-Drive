@@ -2,7 +2,7 @@ name: oracle_drive
 description: "Oracle Drive is a comprehensive, modern modding suite designed for the Final Fantasy XIII Trilogy (FF13, FF13-2, Lightning Returns). Built with Flutter and high-performance native C# AOT libraries, it provides a unified interface for exploring, extracting, and modifying game resources."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -30,8 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  hooks: ^1.0.0
-  code_assets: ^1.0.0
+  flutter_rust_bridge: ^2.11.1
+  fabula_nova_sdk:
+    path: ./rust/fabula_nova_sdk
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -50,6 +51,8 @@ dependencies:
   flutter_riverpod: ^3.0.3
   riverpod_annotation: ^3.0.3
   vector_math: ^2.1.4
+  flutter_highlight: ^0.7.0
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
@@ -70,11 +73,11 @@ flutter_launcher_icons:
   android: false
   ios: false
   image_path: "assets/app_icon.png"
-  windows: 
+  windows:
     generate: false
     image_path: "assets/app_icon.png"
-  macos: 
-    generate: false
+  macos:
+    generate: true
     image_path: "assets/app_icon.png"
   linux:
     generate: true
@@ -85,7 +88,6 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -96,15 +98,15 @@ flutter:
 
   assets:
     - assets/app_icon.png
+    - assets/cfr/cfr-0.152.jar
 
-  
   fonts:
     - family: FF13
       fonts:
         - asset: assets/fonts/ff13.ttf
     - family: FF13-2
       fonts:
-        - asset: assets/fonts/ff13_2.ttf    
+        - asset: assets/fonts/ff13_2.ttf
     - family: FF13-LR
       fonts:
         - asset: assets/fonts/ff13_lr.ttf

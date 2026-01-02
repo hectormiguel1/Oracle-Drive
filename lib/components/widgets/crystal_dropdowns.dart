@@ -64,54 +64,59 @@ class _CrystalDropdownState<T> extends State<CrystalDropdown<T>> {
                 color: Colors.transparent,
                 child: CrystalPanel(
                   padding: EdgeInsets.zero,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: widget.items.map((item) {
-                      final isSelected = item == widget.value;
-                      final displayLabel =
-                          widget.itemLabelBuilder?.call(item) ??
-                          item.toString();
-                      return InkWell(
-                        onTap: () {
-                          widget.onChanged(item);
-                          _closeDropdown();
-                        },
-                        hoverColor: accentColor.withValues(alpha: 0.2),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: Colors.white10),
-                            ),
-                            color: isSelected
-                                ? accentColor.withValues(alpha: 0.1)
-                                : null,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                displayLabel,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? accentColor
-                                      : Colors.white,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 300),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: widget.items.map((item) {
+                          final isSelected = item == widget.value;
+                          final displayLabel =
+                              widget.itemLabelBuilder?.call(item) ??
+                              item.toString();
+                          return InkWell(
+                            onTap: () {
+                              widget.onChanged(item);
+                              _closeDropdown();
+                            },
+                            hoverColor: accentColor.withValues(alpha: 0.2),
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
                               ),
-                              if (isSelected)
-                                Icon(Icons.check, size: 16, color: accentColor),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: Colors.white10),
+                                ),
+                                color: isSelected
+                                    ? accentColor.withValues(alpha: 0.1)
+                                    : null,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    displayLabel,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? accentColor
+                                          : Colors.white,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                  if (isSelected)
+                                    Icon(Icons.check, size: 16, color: accentColor),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -126,8 +131,22 @@ class _CrystalDropdownState<T> extends State<CrystalDropdown<T>> {
   }
 
   void _closeDropdown() {
-    _overlayEntry?.remove();
+    _removeOverlay();
     setState(() => _isOpen = false);
+  }
+
+  void _removeOverlay() {
+    final entry = _overlayEntry;
+    _overlayEntry = null;
+    if (entry != null) {
+      entry.remove();
+    }
+  }
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
   }
 
   @override

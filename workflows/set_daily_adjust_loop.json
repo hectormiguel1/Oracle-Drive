@@ -1,0 +1,162 @@
+{
+  "id": "loop-daily-adjust-001",
+  "name": "Set Daily Adjust (Loop Version)",
+  "description": "Adjusts the Daily scaling using a forEach loop instead of parallel nodes",
+  "gameCode": "ff13_lr",
+  "createdAt": "2025-12-29T22:30:00.000000",
+  "modifiedAt": "2025-12-29T22:30:00.000000",
+  "nodes": [
+    {
+      "id": "start-node",
+      "type": "start",
+      "position": {"x": 100, "y": 50},
+      "config": {}
+    },
+    {
+      "id": "unpack-wdbpack",
+      "type": "wpdUnpack",
+      "position": {"x": 100, "y": 150},
+      "config": {
+        "storeAs": "extractedDir",
+        "inputFile": "db/resident/wdbpack.bin"
+      },
+      "label": "Unpack wdbpack.bin"
+    },
+    {
+      "id": "open-wdb",
+      "type": "wdbOpen",
+      "position": {"x": 100, "y": 250},
+      "config": {
+        "storeAs": "wdb",
+        "filePath": "db/resident/wdbpack/r_btdailyadjust.wdb"
+      },
+      "label": "Open Daily Adjust Database"
+    },
+    {
+      "id": "set-day-data",
+      "type": "setVariable",
+      "position": {"x": 100, "y": 350},
+      "config": {
+        "name": "dayData",
+        "value": "[{\"day\":1,\"col\":\"i12Day1\",\"val\":\"100\"},{\"day\":2,\"col\":\"i12Day2\",\"val\":\"125\"},{\"day\":3,\"col\":\"i12Day3\",\"val\":\"150\"},{\"day\":4,\"col\":\"i12Day4\",\"val\":\"175\"},{\"day\":5,\"col\":\"i12Day5\",\"val\":\"200\"},{\"day\":6,\"col\":\"i12Day6\",\"val\":\"225\"},{\"day\":7,\"col\":\"i12Day7\",\"val\":\"250\"},{\"day\":8,\"col\":\"i12Day8\",\"val\":\"275\"},{\"day\":9,\"col\":\"i12Day9\",\"val\":\"300\"},{\"day\":10,\"col\":\"i12Day10\",\"val\":\"325\"},{\"day\":11,\"col\":\"i12Day11\",\"val\":\"350\"},{\"day\":12,\"col\":\"i12Day12\",\"val\":\"375\"},{\"day\":13,\"col\":\"i12Day13\",\"val\":\"400\"},{\"day\":14,\"col\":\"i12Day14\",\"val\":\"550\"}]"
+      },
+      "label": "Define Day Adjustments"
+    },
+    {
+      "id": "foreach-days",
+      "type": "forEach",
+      "position": {"x": 100, "y": 450},
+      "config": {
+        "collection": "${dayData}",
+        "itemVariable": "entry",
+        "indexVariable": "idx"
+      },
+      "label": "For Each Day"
+    },
+    {
+      "id": "bulk-update-day",
+      "type": "wdbBulkUpdate",
+      "position": {"x": 350, "y": 450},
+      "config": {
+        "wdbVariable": "wdb",
+        "operation": "set",
+        "column": "${entry.col}",
+        "value": "${entry.val}"
+      },
+      "label": "Set Day ${entry.day} Adjust"
+    },
+    {
+      "id": "save-wdb",
+      "type": "wdbSave",
+      "position": {"x": 100, "y": 550},
+      "config": {
+        "wdbVariable": "wdb",
+        "format": "wdb",
+        "outputPath": "db/resident/wdbpack/r_btdailyadjust.wdb"
+      },
+      "label": "Save Changes"
+    },
+    {
+      "id": "repack-wdbpack",
+      "type": "wpdRepack",
+      "position": {"x": 100, "y": 650},
+      "config": {
+        "storeAs": "packedFile",
+        "inputDir": "db/resident/wdbpack"
+      },
+      "label": "Repack wdbpack.bin"
+    },
+    {
+      "id": "end-node",
+      "type": "end",
+      "position": {"x": 100, "y": 750},
+      "config": {}
+    }
+  ],
+  "connections": [
+    {
+      "id": "start-to-unpack",
+      "sourceNodeId": "start-node",
+      "sourcePort": "output",
+      "targetNodeId": "unpack-wdbpack",
+      "targetPort": "input"
+    },
+    {
+      "id": "unpack-to-open",
+      "sourceNodeId": "unpack-wdbpack",
+      "sourcePort": "output",
+      "targetNodeId": "open-wdb",
+      "targetPort": "input"
+    },
+    {
+      "id": "open-to-setvar",
+      "sourceNodeId": "open-wdb",
+      "sourcePort": "output",
+      "targetNodeId": "set-day-data",
+      "targetPort": "input"
+    },
+    {
+      "id": "setvar-to-foreach",
+      "sourceNodeId": "set-day-data",
+      "sourcePort": "output",
+      "targetNodeId": "foreach-days",
+      "targetPort": "input"
+    },
+    {
+      "id": "foreach-body-to-update",
+      "sourceNodeId": "foreach-days",
+      "sourcePort": "body",
+      "targetNodeId": "bulk-update-day",
+      "targetPort": "input"
+    },
+    {
+      "id": "update-to-foreach-continue",
+      "sourceNodeId": "bulk-update-day",
+      "sourcePort": "output",
+      "targetNodeId": "foreach-days",
+      "targetPort": "continue"
+    },
+    {
+      "id": "foreach-done-to-save",
+      "sourceNodeId": "foreach-days",
+      "sourcePort": "done",
+      "targetNodeId": "save-wdb",
+      "targetPort": "input"
+    },
+    {
+      "id": "save-to-repack",
+      "sourceNodeId": "save-wdb",
+      "sourcePort": "output",
+      "targetNodeId": "repack-wdbpack",
+      "targetPort": "input"
+    },
+    {
+      "id": "repack-to-end",
+      "sourceNodeId": "repack-wdbpack",
+      "sourcePort": "output",
+      "targetNodeId": "end-node",
+      "targetPort": "input"
+    }
+  ],
+  "variables": {}
+}

@@ -16,12 +16,14 @@ class CrystalDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.of(context).size.height * 0.8;
+
     return Dialog(
       backgroundColor: Colors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.all(16),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 500),
+        constraints: BoxConstraints(maxWidth: 500, maxHeight: maxHeight),
         child: CrystalPanel(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -30,19 +32,23 @@ class CrystalDialog extends StatelessWidget {
             children: [
               Text(title, style: CrystalStyles.title.copyWith(fontSize: 20)),
               const SizedBox(height: 16),
-              DefaultTextStyle(
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black,
-                      offset: Offset(1, 1),
-                      blurRadius: 2,
+              Flexible(
+                child: SingleChildScrollView(
+                  child: DefaultTextStyle(
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          offset: Offset(1, 1),
+                          blurRadius: 2,
+                        ),
+                      ],
                     ),
-                  ],
+                    child: content,
+                  ),
                 ),
-                child: content,
               ),
               const SizedBox(height: 24),
               Row(

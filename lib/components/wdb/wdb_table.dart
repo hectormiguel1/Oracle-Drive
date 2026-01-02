@@ -1,12 +1,9 @@
 import 'package:oracle_drive/components/widgets/crystal_table.dart';
 import 'package:oracle_drive/models/app_game_code.dart';
 import 'package:oracle_drive/models/shared_lookups.dart';
-import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
 import 'package:oracle_drive/models/wdb_model.dart';
-import 'package:oracle_drive/models/wdb_entities/xiii/schema_registry.dart';
 import 'package:oracle_drive/src/services/app_database.dart';
 import 'package:oracle_drive/src/utils/ztr_text_renderer.dart';
-import 'package:oracle_drive/src/third_party/wdb/wdb.g.dart' as native;
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:logging/logging.dart';
@@ -44,7 +41,8 @@ class _WdbTableState extends State<WdbTable> {
   @override
   void didUpdateWidget(WdbTable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.data != oldWidget.data) {
+    if (widget.data != oldWidget.data ||
+        widget.gameCode != oldWidget.gameCode) {
       _initColumnWidths();
       _analyzeColumns();
     }
@@ -54,29 +52,34 @@ class _WdbTableState extends State<WdbTable> {
     _columnEnumCache.clear();
     _columnLookupCache.clear();
 
-    // Cache Enums
+    // Cache Enums based on column types
     for (var col in widget.data.columns) {
-      _columnEnumCache[col.originalName] = WdbSchemaRegistry.getEnumOptions(
-        widget.data.sheetName,
-        col.originalName,
-      );
+      _columnEnumCache[col.originalName] = _getEnumOptionsForColumn(col);
     }
     _logger.info(
       'Cached ${_columnEnumCache.length} enum columns for ${widget.data.sheetName}',
     );
-    // Cache Lookups (based on the first entity if available)
-    if (widget.data.entities != null && widget.data.entities!.isNotEmpty ||
-        sharedLookups.containsKey(widget.data.sheetName)) {
-      final firstEntity = widget.data.entities?.first;
-      final lookupKeys =
-          firstEntity?.getLookupKeys() ?? sharedLookups[widget.data.sheetName];
-      if (lookupKeys != null) {
-        for (var entry in lookupKeys.entries) {
-          for (var colName in entry.value) {
-            _columnLookupCache[colName] = entry.key;
-          }
+
+    // Use sharedLookups for lookup type resolution
+    final lookupKeys = sharedLookups[widget.data.sheetName];
+    if (lookupKeys != null) {
+      for (var entry in lookupKeys.entries) {
+        for (var colName in entry.value) {
+          _columnLookupCache[colName] = entry.key;
         }
       }
+    }
+  }
+
+  /// Get enum options for a column based on its type
+  List<String>? _getEnumOptionsForColumn(WdbColumn col) {
+    switch (col.type) {
+      case WdbColumnType.crystalRole:
+        return CrystalRole.values.map((e) => e.name).toList();
+      case WdbColumnType.crystalNodeType:
+        return CrystalNodeType.values.map((e) => e.name).toList();
+      default:
+        return null;
     }
   }
 
@@ -86,11 +89,10 @@ class _WdbTableState extends State<WdbTable> {
     for (var col in widget.data.columns) {
       if (!_columnWidths.containsKey(col.originalName)) {
         double width;
-        if (col.type == native.WDBValueType.WDB_VALUE_TYPE_BOOL) {
+        if (col.type == WdbColumnType.bool) {
           width = 60.0;
-        } else if (col.type == native.WDBValueType.WDB_VALUE_TYPE_INT ||
-            col.type == native.WDBValueType.WDB_VALUE_TYPE_UINT ||
-            col.type == native.WDBValueType.WDB_VALUE_TYPE_FLOAT) {
+        } else if (col.type == WdbColumnType.int ||
+            col.type == WdbColumnType.float) {
           width = 80.0;
         } else {
           width = 200.0;
@@ -104,7 +106,7 @@ class _WdbTableState extends State<WdbTable> {
   }
 
   Widget _buildCellContent(dynamic val, WdbColumn col) {
-    final bool isBoolType = col.type == native.WDBValueType.WDB_VALUE_TYPE_BOOL;
+    final bool isBoolType = col.type == WdbColumnType.bool;
     final double fontSize = 16;
     // Check for Enum
     final enumOptions = _columnEnumCache[col.originalName];

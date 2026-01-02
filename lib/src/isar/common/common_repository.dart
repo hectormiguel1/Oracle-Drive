@@ -1,23 +1,17 @@
-import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
-import 'package:oracle_drive/src/isar/common/entity_mapper.dart';
+import 'package:oracle_drive/src/isar/common/lookup_config.dart';
 import 'package:oracle_drive/src/isar/common/models.dart';
 import 'package:oracle_drive/src/isar/generic_repository.dart';
-import 'package:oracle_drive/src/isar/update_sepc.dart';
 import 'package:isar_plus/isar_plus.dart';
 import 'package:logging/logging.dart';
 
-/// A base repository implementation containing logic shared across all three games.
-/// specific game repositories should extend this class.
+/// A unified repository implementation for all games.
+/// Lookups are handled by LookupConfig, not entity mappers.
 class CommonGameRepository implements GameRepository {
   final Logger _logger;
   final Isar database;
 
   CommonGameRepository(this.database, String debugName)
     : _logger = Logger('${debugName}Repository');
-
-  IsarUpsertSpec<dynamic>? getEntityMapper(String sheetName) {
-    return commonIsarEntityMappers(sheetName);
-  }
 
   // --- Read Methods (Sync) ---
 
@@ -30,64 +24,53 @@ class CommonGameRepository implements GameRepository {
     return stringEntry?.value;
   }
 
-  String? _getItemString(
-    String itemId,
-    String Function(Item) stringIdSelector,
+  /// Get an entity lookup by category and record ID.
+  /// Uses the computed ID (hash of '$category:$record') for O(1) lookup.
+  EntityLookup? _getEntityLookup(String category, String record, [Isar? db]) {
+    final collection = GetEntityLookupCollection(db ?? database).entityLookups;
+    final id = fastHash('$category:$record');
+    return collection.get(id);
+  }
+
+  /// Get a string from an entity lookup by category and record ID.
+  String? _getEntityString(
+    String category,
+    String recordId,
+    String? Function(EntityLookup) stringIdSelector,
   ) {
     return database.read<String?>((db) {
-      final itemCollection = GetItemCollection(db).items;
-      final item = itemCollection.where().recordEqualTo(itemId).findFirst();
-      if (item == null) {
-        return null;
-      }
-      return _resolveStringById(stringIdSelector(item), db);
+      final entity = _getEntityLookup(category, recordId, db);
+      if (entity == null) return null;
+      final stringId = stringIdSelector(entity);
+      if (stringId == null) return null;
+      return _resolveStringById(stringId, db);
     });
   }
 
-  String? _getAbilityString(
-    String abilityId,
-    String Function(dynamic) stringIdSelector,
+  /// Get batch strings from entity lookups by category and record IDs.
+  /// Uses computed IDs for efficient batch lookup.
+  Map<String, String?> _getBatchEntityStrings(
+    String category,
+    List<String> recordIds,
+    String? Function(EntityLookup) stringIdSelector,
   ) {
-    return database.read<String?>((db) {
-      final abilityCollection = GetBattleAbilityCollection(db).battleAbilitys;
-      final autoAbilityCollection = GetBattleAutoAbilityCollection(
-        db,
-      ).battleAutoAbilitys;
-
-      final ability = abilityCollection
-          .where()
-          .recordEqualTo(abilityId)
-          .findFirst();
-      final autoAbility = autoAbilityCollection
-          .where()
-          .recordEqualTo(abilityId)
-          .findFirst();
-      if (ability == null && autoAbility == null) {
-        return null;
-      }
-      String stringResId = stringIdSelector(ability ?? autoAbility!);
-      return _resolveStringById(stringResId, db);
-    });
-  }
-
-  Map<String, String?> _getBatchItemStrings(
-    List<String> itemIds,
-    String Function(Item) stringIdSelector,
-  ) {
-    if (itemIds.isEmpty) return {};
+    if (recordIds.isEmpty) return {};
 
     return database.read((db) {
-      final itemCollection = GetItemCollection(db).items;
+      final entityCollection = GetEntityLookupCollection(db).entityLookups;
       final stringsCollection = GetStringsCollection(db).strings;
 
-      // 1. Fetch all items
-      final items = itemCollection
-          .where()
-          .anyOf(itemIds, (q, String id) => q.recordEqualTo(id))
-          .findAll();
+      // 1. Compute IDs and fetch all entities in one call
+      final ids = recordIds.map((r) => fastHash('$category:$r')).toList();
+      final entities = entityCollection.getAll(ids);
 
-      // 2. Extract string IDs
-      final stringIds = items.map(stringIdSelector).toSet().toList();
+      // 2. Extract string IDs (filter out nulls from getAll)
+      final stringIds = entities
+          .whereType<EntityLookup>()
+          .map(stringIdSelector)
+          .whereType<String>()
+          .toSet()
+          .toList();
 
       // 3. Fetch all strings
       final strings = stringsCollection
@@ -95,90 +78,21 @@ class CommonGameRepository implements GameRepository {
           .anyOf(stringIds, (q, String id) => q.strResourceIdEqualTo(id))
           .findAll();
 
-      // 4. Create lookup map
+      // 4. Create lookup maps
       final stringMap = {for (var s in strings) s.strResourceId: s.value};
-      final itemMap = {for (var i in items) i.record: i};
+      final entityMap = {
+        for (var e in entities.whereType<EntityLookup>()) e.record: e,
+      };
 
       final Map<String, String?> result = {};
 
-      for (final id in itemIds) {
-        final item = itemMap[id];
-        if (item == null) {
+      for (final id in recordIds) {
+        final entity = entityMap[id];
+        if (entity == null) {
           result[id] = null;
         } else {
-          result[id] = stringMap[stringIdSelector(item)];
-        }
-      }
-
-      return result;
-    });
-  }
-
-  Map<String, String?> _getBatchAbilityStrings(
-    List<String> abilityIds,
-    String Function(dynamic) stringIdSelector,
-  ) {
-    if (abilityIds.isEmpty) return {};
-
-    return database.read((db) {
-      final abilityCollection = GetBattleAbilityCollection(db).battleAbilitys;
-      final autoAbilityCollection = GetBattleAutoAbilityCollection(
-        db,
-      ).battleAutoAbilitys;
-      final stringsCollection = GetStringsCollection(db).strings;
-
-      // 1. Fetch abilities
-      final abilities = abilityCollection
-          .where()
-          .anyOf(abilityIds, (q, String id) => q.recordEqualTo(id))
-          .findAll();
-
-      final foundAbilityIds = abilities.map((e) => e.record).toSet();
-      final missingIds = abilityIds
-          .where((id) => !foundAbilityIds.contains(id))
-          .toList();
-
-      // 2. Fetch auto-abilities for missing IDs
-      final autoAbilities = missingIds.isEmpty
-          ? <BattleAutoAbility>[] // Type hint for safety
-          : autoAbilityCollection
-                .where()
-                .anyOf(missingIds, (q, String id) => q.recordEqualTo(id))
-                .findAll();
-
-      final stringIds = <String>{};
-      final Map<String, String> abilityToStringIdMap = {};
-
-      void processEntities(List<dynamic> entities) {
-        for (var e in entities) {
-          final sid = stringIdSelector(e);
-          stringIds.add(sid);
-          abilityToStringIdMap[e.record] = sid;
-        }
-      }
-
-      processEntities(abilities);
-      processEntities(autoAbilities);
-
-      // 3. Fetch Strings
-      final strings = stringsCollection
-          .where()
-          .anyOf(
-            stringIds.toList(),
-            (q, String id) => q.strResourceIdEqualTo(id),
-          )
-          .findAll();
-
-      final stringMap = {for (var s in strings) s.strResourceId: s.value};
-
-      // 4. Build Result
-      final Map<String, String?> result = {};
-      for (final id in abilityIds) {
-        final resId = abilityToStringIdMap[id];
-        if (resId == null) {
-          result[id] = null;
-        } else {
-          result[id] = stringMap[resId];
+          final stringId = stringIdSelector(entity);
+          result[id] = stringId != null ? stringMap[stringId] : null;
         }
       }
 
@@ -188,47 +102,73 @@ class CommonGameRepository implements GameRepository {
 
   @override
   String? getItemName(String itemId) {
-    return _getItemString(itemId, (item) => item.itemNameStringId);
+    return _getEntityString(
+      EntityCategory.item.value,
+      itemId,
+      (e) => e.nameStringId,
+    );
   }
 
   @override
   String? getItemDescription(String itemId) {
-    return _getItemString(itemId, (item) => item.helpStringId);
+    return _getEntityString(
+      EntityCategory.item.value,
+      itemId,
+      (e) => e.descriptionStringId,
+    );
   }
 
   @override
   String? getAbilityName(String abilityId) {
-    return _getAbilityString(abilityId, (ability) => ability.stringResId);
+    return _getEntityString(
+      EntityCategory.ability.value,
+      abilityId,
+      (e) => e.nameStringId,
+    );
   }
 
   @override
   String? getAbilityDescription(String abilityId) {
-    return _getAbilityString(abilityId, (ability) => ability.infoStResId);
+    return _getEntityString(
+      EntityCategory.ability.value,
+      abilityId,
+      (e) => e.descriptionStringId,
+    );
   }
 
   @override
   Map<String, String?> getBatchItemNames(List<String> itemIds) {
-    return _getBatchItemStrings(itemIds, (item) => item.itemNameStringId);
+    return _getBatchEntityStrings(
+      EntityCategory.item.value,
+      itemIds,
+      (e) => e.nameStringId,
+    );
   }
 
   @override
   Map<String, String?> getBatchItemDescriptions(List<String> itemIds) {
-    return _getBatchItemStrings(itemIds, (item) => item.helpStringId);
+    return _getBatchEntityStrings(
+      EntityCategory.item.value,
+      itemIds,
+      (e) => e.descriptionStringId,
+    );
   }
 
   @override
   Map<String, String?> getBatchAbilityNames(List<String> abilityIds) {
-    return _getBatchAbilityStrings(
+    return _getBatchEntityStrings(
+      EntityCategory.ability.value,
       abilityIds,
-      (ability) => ability.stringResId,
+      (e) => e.nameStringId,
     );
   }
 
   @override
   Map<String, String?> getBatchAbilityDescriptions(List<String> abilityIds) {
-    return _getBatchAbilityStrings(
+    return _getBatchEntityStrings(
+      EntityCategory.ability.value,
       abilityIds,
-      (ability) => ability.infoStResId,
+      (e) => e.descriptionStringId,
     );
   }
 
@@ -274,19 +214,6 @@ class CommonGameRepository implements GameRepository {
   // --- Write / Async Operations ---
 
   @override
-  Future<void> upsertWdbEntities(
-    String sheetName,
-    Map<String, WdbEntity> entities,
-  ) async {
-    final mapper = getEntityMapper(sheetName);
-    if (mapper != null) {
-      mapper.upsertEntities(database, entities);
-    } else {
-      _logger.warning('No mapper found for sheet: $sheetName');
-    }
-  }
-
-  @override
   int insertStringData(Map<String, String> strings) {
     return database.write((db) {
       final col = GetStringsCollection(db).strings;
@@ -328,8 +255,10 @@ class CommonGameRepository implements GameRepository {
 
   @override
   int getStringCount() {
-    final collection = GetStringsCollection(database).strings;
-    return collection.where().count();
+    return database.read((db) {
+      final collection = GetStringsCollection(db).strings;
+      return collection.where().count();
+    });
   }
 
   @override
@@ -349,6 +278,31 @@ class CommonGameRepository implements GameRepository {
   }
 
   @override
+  Stream<List<Strings>> getStringsWithSource() async* {
+    final List<Strings> allStrings = database.read((db) {
+      return GetStringsCollection(db).strings.where().findAll();
+    });
+
+    int offset = 0;
+    final int limit = 1000;
+
+    while (offset < allStrings.length) {
+      final chunk = allStrings.skip(offset).take(limit).toList();
+      yield chunk;
+      offset += limit;
+    }
+  }
+
+  @override
+  void upsertLookups(List<EntityLookup> lookups) {
+    if (lookups.isEmpty) return;
+    database.write((db) {
+      final collection = GetEntityLookupCollection(db).entityLookups;
+      collection.putAll(lookups);
+    });
+  }
+
+  @override
   void clearDatabase() =>
       database.write((db) => GetStringsCollection(db).strings.clear());
 
@@ -356,5 +310,43 @@ class CommonGameRepository implements GameRepository {
   void close() {
     // We typically close the database here if the repo owns it.
     database.close();
+  }
+
+  @override
+  void insertStringsWithSource(List<Strings> strings) {
+    if (strings.isEmpty) return;
+    database.write((db) {
+      final col = GetStringsCollection(db).strings;
+      col.putAll(strings);
+    });
+    _logger.info('Inserted ${strings.length} strings with source tracking');
+  }
+
+  @override
+  Map<String, String> getStringsBySourceFile(String sourceFile) {
+    return database.read((db) {
+      final stringsCollection = GetStringsCollection(db).strings;
+      final strings = stringsCollection
+          .where()
+          .sourceFileEqualTo(sourceFile)
+          .findAll();
+      return {for (var s in strings) s.strResourceId: s.value};
+    });
+  }
+
+  @override
+  List<String> getDistinctSourceFiles() {
+    return database.read((db) {
+      final stringsCollection = GetStringsCollection(db).strings;
+      // Get all strings and extract unique source files
+      final allStrings = stringsCollection.where().findAll();
+      final sourceFiles = <String>{};
+      for (final s in allStrings) {
+        if (s.sourceFile != null && s.sourceFile!.isNotEmpty) {
+          sourceFiles.add(s.sourceFile!);
+        }
+      }
+      return sourceFiles.toList()..sort();
+    });
   }
 }

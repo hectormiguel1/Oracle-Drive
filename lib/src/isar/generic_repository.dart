@@ -1,4 +1,4 @@
-import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
+import 'package:oracle_drive/src/isar/common/models.dart';
 
 abstract class GameRepository {
   // --- Read (Sync - Fast Isolate access) ---
@@ -23,10 +23,21 @@ abstract class GameRepository {
 
   void clearDatabase();
   void close();
-  //Will leverate a microtask instead of Isolate
-  Future<void> upsertWdbEntities(
-    String sheetName,
-    Map<String, WdbEntity> entities,
-  );
+
+  /// Upsert lookup entities to the database.
+  void upsertLookups(List<EntityLookup> lookups);
+
   Stream<Map<String, String>> getStrings();
+
+  /// Get all strings with source file information.
+  Stream<List<Strings>> getStringsWithSource();
+
+  /// Insert strings with source file tracking.
+  void insertStringsWithSource(List<Strings> strings);
+
+  /// Get strings filtered by source file path.
+  Map<String, String> getStringsBySourceFile(String sourceFile);
+
+  /// Get all distinct source files in the database.
+  List<String> getDistinctSourceFiles();
 }

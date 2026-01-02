@@ -47,21 +47,116 @@ class CrystalTable extends StatefulWidget {
 class _CrystalTableState extends State<CrystalTable> {
   int _selectedIndex = -1;
   final ScrollController _horizontalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
 
   @override
   void dispose() {
     _horizontalController.dispose();
+    _verticalController.dispose();
     super.dispose();
+  }
+
+  Widget _buildHeader(Color bg, Color accent, bool isFixed, double? width) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: CustomPaint(
+        painter: _HeaderPainter(
+          color: bg.withValues(alpha: 0.5),
+          borderColor: accent,
+        ),
+        child: Container(
+          width: isFixed ? width : null,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 12,
+          ),
+          child: Row(
+            children: List.generate(widget.headers.length, (index) {
+              final child = Text(
+                widget.headers[index],
+                style:
+                    widget.headerStyle ??
+                    TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      letterSpacing: 1.0,
+                    ),
+                overflow: TextOverflow.ellipsis,
+              );
+
+              if (isFixed) {
+                return SizedBox(
+                  width: widget.columnWidths![index],
+                  child: child,
+                );
+              } else {
+                return Expanded(
+                  flex: widget.columnFlex![index],
+                  child: child,
+                );
+              }
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRow(int row, Color accent, Color bg, bool isFixed, double? width) {
+    final isSelected = _selectedIndex == row;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: _CrystalTableRow(
+        isSelected: isSelected,
+        accentColor: accent,
+        backgroundColor: bg,
+        onTap: () {
+          setState(() => _selectedIndex = row);
+        },
+        child: SizedBox(
+          width: isFixed ? width : null,
+          child: Row(
+            children: List.generate(widget.headers.length, (col) {
+              final cellWidget = widget.cellBuilder(
+                context,
+                row,
+                col,
+              );
+
+              Widget tappableContent = GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  setState(() => _selectedIndex = row);
+                  widget.onCellTap?.call(row, col);
+                },
+                child: cellWidget,
+              );
+
+              if (isFixed) {
+                return SizedBox(
+                  width: widget.columnWidths![col],
+                  child: tappableContent,
+                );
+              } else {
+                return Expanded(
+                  flex: widget.columnFlex![col],
+                  child: tappableContent,
+                );
+              }
+            }),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Default to CrystalTheme accent
     final Color accent =
         widget.accentColor ??
         Theme.of(context).extension<CrystalTheme>()!.accent;
-    // Default to a dark semi-transparent blue/black if no background provided
-    // This ensures the glass effect works even if Theme.cardColor is opaque
     final Color bg = widget.backgroundColor ?? const Color(0xFF101015);
 
     final bool isFixed = widget.columnWidths != null;
@@ -69,149 +164,139 @@ class _CrystalTableState extends State<CrystalTable> {
         ? widget.columnWidths!.reduce((a, b) => a + b)
         : 0;
 
-    Widget content(double width) {
-      return SizedBox(
-        width: isFixed ? width : null,
-        child: Column(
-          children: [
-            // HEADER
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: CustomPaint(
-                painter: _HeaderPainter(
-                  color: bg.withValues(alpha: 0.5),
-                  borderColor: accent,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  child: Row(
-                    children: List.generate(widget.headers.length, (index) {
-                      final child = Text(
-                        widget.headers[index],
-                        style:
-                            widget.headerStyle ??
-                            TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              letterSpacing: 1.0,
-                            ),
-                        overflow: TextOverflow.ellipsis,
-                      );
-
-                      if (isFixed) {
-                        return SizedBox(
-                          width: widget.columnWidths![index],
-                          child: child,
-                        );
-                      } else {
-                        return Expanded(
-                          flex: widget.columnFlex![index],
-                          child: child,
-                        );
-                      }
-                    }),
-                  ),
-                ),
-              ),
-            ),
-
-            // ROWS
-            Expanded(
-              child: ListView.builder(
-                itemCount: widget.itemCount,
-                itemBuilder: (context, row) {
-                  final isSelected = _selectedIndex == row;
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4.0),
-                    child: _CrystalTableRow(
-                      isSelected: isSelected,
-                      accentColor: accent,
-                      backgroundColor: bg,
-                      onTap: () {
-                        setState(() => _selectedIndex = row);
-                      },
-                      child: Row(
-                        children: List.generate(widget.headers.length, (col) {
-                          final cellWidget = widget.cellBuilder(
-                            context,
-                            row,
-                            col,
-                          );
-
-                          // Wrap content with tap detector
-                          Widget tappableContent = GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTap: () {
-                              setState(() => _selectedIndex = row);
-                              widget.onCellTap?.call(row, col);
-                            },
-                            child: cellWidget,
-                          );
-
-                          if (isFixed) {
-                            return SizedBox(
-                              width: widget.columnWidths![col],
-                              child: tappableContent,
-                            );
-                          } else {
-                            return Expanded(
-                              flex: widget.columnFlex![col],
-                              child: tappableContent,
-                            );
-                          }
-                        }),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    final scrollBehavior = ScrollConfiguration.of(context).copyWith(
+      dragDevices: {
+        ui.PointerDeviceKind.touch,
+        ui.PointerDeviceKind.mouse,
+        ui.PointerDeviceKind.trackpad,
+      },
+      scrollbars: false,
+    );
 
     if (isFixed) {
       return LayoutBuilder(
         builder: (context, constraints) {
-          final displayWidth = totalWidth + 48; // padding compensation
-          return ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(
-              dragDevices: {
-                ui.PointerDeviceKind.touch,
-                ui.PointerDeviceKind.mouse,
-              },
-            ),
-            child: RawScrollbar(
-              controller: _horizontalController,
-              thumbVisibility: true,
-              trackVisibility: true,
-              thumbColor: accent,
-              trackColor: Colors.black26,
-              trackBorderColor: Colors.white10,
-              thickness: 10,
-              radius: const Radius.circular(5),
-              padding: const EdgeInsets.only(bottom: 2),
-              child: SingleChildScrollView(
-                controller: _horizontalController,
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: math.max(displayWidth, constraints.maxWidth),
-                  height: constraints.maxHeight,
-                  child: content(math.max(displayWidth, constraints.maxWidth)),
+          final displayWidth = totalWidth + 48;
+          final contentWidth = math.max(displayWidth, constraints.maxWidth);
+          final needsHorizontalScroll = displayWidth > constraints.maxWidth;
+
+          return Stack(
+            children: [
+              // Main content with both scrolls
+              Padding(
+                padding: EdgeInsets.only(
+                  right: 12, // Space for vertical scrollbar
+                  bottom: needsHorizontalScroll ? 14 : 0, // Space for horizontal scrollbar
+                ),
+                child: ScrollConfiguration(
+                  behavior: scrollBehavior,
+                  child: SingleChildScrollView(
+                    controller: _horizontalController,
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      width: contentWidth,
+                      child: Column(
+                        children: [
+                          // Pass contentWidth - Container padding is handled internally
+                          _buildHeader(bg, accent, isFixed, contentWidth),
+                          Expanded(
+                            child: ListView.builder(
+                              controller: _verticalController,
+                              itemCount: widget.itemCount,
+                              itemBuilder: (context, row) =>
+                                  _buildRow(row, accent, bg, isFixed, contentWidth),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              // Vertical scrollbar - fixed at right edge
+              Positioned(
+                right: 0,
+                top: 52, // Below header
+                bottom: needsHorizontalScroll ? 14 : 0,
+                child: RawScrollbar(
+                  controller: _verticalController,
+                  thumbVisibility: true,
+                  trackVisibility: true,
+                  interactive: true,
+                  thumbColor: accent.withValues(alpha: 0.7),
+                  trackColor: Colors.black26,
+                  trackBorderColor: Colors.white10,
+                  thickness: 8,
+                  radius: const Radius.circular(4),
+                  child: const SizedBox(width: 8),
+                ),
+              ),
+              // Horizontal scrollbar - fixed at bottom edge
+              if (needsHorizontalScroll)
+                Positioned(
+                  left: 0,
+                  right: 12,
+                  bottom: 0,
+                  child: RawScrollbar(
+                    controller: _horizontalController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    interactive: true,
+                    thumbColor: accent,
+                    trackColor: Colors.black26,
+                    trackBorderColor: Colors.white10,
+                    thickness: 10,
+                    radius: const Radius.circular(5),
+                    child: const SizedBox(height: 10),
+                  ),
+                ),
+            ],
           );
         },
       );
     } else {
-      return content(0);
+      // Flex-based layout (no horizontal scrolling needed)
+      return Column(
+        children: [
+          _buildHeader(bg, accent, isFixed, null),
+          Expanded(
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ScrollConfiguration(
+                    behavior: scrollBehavior,
+                    child: ListView.builder(
+                      controller: _verticalController,
+                      itemCount: widget.itemCount,
+                      itemBuilder: (context, row) =>
+                          _buildRow(row, accent, bg, isFixed, null),
+                    ),
+                  ),
+                ),
+                // Vertical scrollbar - fixed at right edge
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: RawScrollbar(
+                    controller: _verticalController,
+                    thumbVisibility: true,
+                    trackVisibility: true,
+                    interactive: true,
+                    thumbColor: accent.withValues(alpha: 0.7),
+                    trackColor: Colors.black26,
+                    trackBorderColor: Colors.white10,
+                    thickness: 8,
+                    radius: const Radius.circular(4),
+                    child: const SizedBox(width: 8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
     }
   }
 }

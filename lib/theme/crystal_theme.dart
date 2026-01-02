@@ -38,13 +38,16 @@ class CrystalTheme extends ThemeExtension<CrystalTheme> {
     Color accentColor;
     switch (game) {
       case AppGameCode.ff13_1:
-        accentColor = const Color(0xFF5bfdfd); // Cyan
+        // FF13: Light cyan/aqua - the iconic crystalline blue-cyan UI
+        accentColor = const Color(0xFF00E5FF); // Bright cyan
         break;
       case AppGameCode.ff13_2:
-        accentColor = const Color(0xFFFF69B4); // Hot Pink
+        // FF13-2: Deep blue/indigo - darker, more mysterious tone
+        accentColor = const Color(0xFF3D5AFE); // Deep indigo blue
         break;
       case AppGameCode.ff13_lr:
-        accentColor = const Color(0xFFFF0000); // Red
+        // Lightning Returns: Rose/magenta pink - Lightning's signature color
+        accentColor = const Color(0xFFEC407A); // Rose pink
         break;
     }
 
@@ -52,7 +55,7 @@ class CrystalTheme extends ThemeExtension<CrystalTheme> {
       accent: accentColor,
       activeBarGradient: LinearGradient(
         colors: [
-          accentColor.withValues(alpha: 0.4), // Darker shade approximation
+          accentColor.withValues(alpha: 0.4),
           accentColor,
           Colors.white,
         ],

@@ -1,0 +1,103 @@
+{
+  "id": "add-hope-companion-ff13-2",
+  "name": "Add Hope as Companion (FF13-2)",
+  "description": "Adds Hope from XIII as a playable companion/monster in FF13-2. Set the workspace directory to your alba_data folder before running.",
+  "gameCode": "ff13_2",
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "modifiedAt": "2025-01-01T00:00:00.000Z",
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "position": {"x": 50, "y": 300},
+      "label": "Start",
+      "config": {}
+    },
+
+    {
+      "id": "transform-charaspec",
+      "type": "wdbTransform",
+      "position": {"x": 300, "y": 300},
+      "label": "Transform r_charaspec.wdb",
+      "config": {
+        "filePath": "db/resident/_wdbpack/r_charaspec.wdb",
+        "operations": [
+          {"type": "copy", "params": {"sourceRecordId": "p_hope"}},
+          {"type": "paste", "params": {"afterRecordId": "k895", "newRecordId": "k904"}}
+        ]
+      }
+    },
+
+    {
+      "id": "transform-btchsp",
+      "type": "wdbTransform",
+      "position": {"x": 600, "y": 300},
+      "label": "Transform bt_chsp_x000_2.wdb",
+      "config": {
+        "filePath": "btscene/pack/wdb/_x000/bt_chsp_x000_2.wdb",
+        "operations": [
+          {"type": "copy", "params": {"sourceRecordId": "pc003"}},
+          {"type": "paste", "params": {"afterRecordId": "k895", "newRecordId": "k904"}},
+          {"type": "setField", "params": {"recordId": "k904", "column": "sCharaSpec", "value": "k904"}},
+          {"type": "setField", "params": {"recordId": "k904", "column": "u6PcKind", "value": 19}},
+          {"type": "setField", "params": {"recordId": "k904", "column": "u6RoleStyle", "value": 26}}
+        ]
+      }
+    },
+
+    {
+      "id": "transform-growst",
+      "type": "wdbTransform",
+      "position": {"x": 900, "y": 300},
+      "label": "Transform r_grow_st.wdb",
+      "config": {
+        "filePath": "db/resident/_wdbpack/r_grow_st.wdb",
+        "operations": [
+          {"type": "copy", "params": {"sourceRecordId": "k954"}},
+          {"type": "paste", "params": {"afterRecordId": "k895", "newRecordId": "k904"}},
+          {"type": "setField", "params": {"recordId": "k904", "column": "sBtCharaSpecId", "value": "k904"}},
+          {"type": "setField", "params": {"recordId": "k904", "column": "u9FaceIcon", "value": 6}}
+        ]
+      }
+    },
+
+    {
+      "id": "end",
+      "type": "end",
+      "position": {"x": 1200, "y": 300},
+      "label": "Done",
+      "config": {}
+    }
+  ],
+  "connections": [
+    {
+      "id": "start->transform-charaspec",
+      "sourceNodeId": "start",
+      "sourcePort": "output",
+      "targetNodeId": "transform-charaspec",
+      "targetPort": "input"
+    },
+    {
+      "id": "transform-charaspec->transform-btchsp",
+      "sourceNodeId": "transform-charaspec",
+      "sourcePort": "output",
+      "targetNodeId": "transform-btchsp",
+      "targetPort": "input"
+    },
+    {
+      "id": "transform-btchsp->transform-growst",
+      "sourceNodeId": "transform-btchsp",
+      "sourcePort": "output",
+      "targetNodeId": "transform-growst",
+      "targetPort": "input"
+    },
+    {
+      "id": "transform-growst->end",
+      "sourceNodeId": "transform-growst",
+      "sourcePort": "output",
+      "targetNodeId": "end",
+      "targetPort": "input"
+    }
+  ],
+  "variables": {}
+}

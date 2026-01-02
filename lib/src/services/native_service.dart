@@ -1,808 +1,629 @@
 import 'dart:async';
-import 'dart:ffi';
-import 'dart:isolate';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:oracle_drive/src/services/navigation_service.dart';
 import 'package:oracle_drive/components/widgets/crystal_dialog.dart';
 import 'package:oracle_drive/components/widgets/crystal_button.dart';
 
 import 'package:oracle_drive/models/wdb_model.dart';
-import 'package:oracle_drive/src/third_party/wbtlib/wbt.g.dart' as wbt_native;
-import 'package:oracle_drive/src/third_party/wbtlib/wbt.dart'; // For FileEntry, WhiteBinTools
-
-import 'package:oracle_drive/src/third_party/wdb/wdb.g.dart' as wdb_native;
-import 'package:oracle_drive/src/third_party/wpdlib/wpd.g.dart' as wpd_native;
-import 'package:oracle_drive/src/third_party/ztrlib/ztr.g.dart' as ztr_native;
-import 'package:oracle_drive/src/services/app_database.dart';
-import 'package:oracle_drive/models/ztr_model.dart';
 import 'package:oracle_drive/models/app_game_code.dart';
-import 'package:ffi/ffi.dart';
-import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 
-import 'package:oracle_drive/src/third_party/wdb/wdb.dart';
-import 'package:oracle_drive/src/third_party/wpdlib/wpd.dart';
-import 'package:oracle_drive/src/third_party/ztrlib/ztr.dart';
-import 'package:oracle_drive/models/wdb_entities/xiii/schema_registry.dart'; // Import the WdbSchemaRegistry
-import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart'; // Import base WdbEntity
+import 'package:fabula_nova_sdk/bridge_generated/api.dart' as sdk;
+import 'package:fabula_nova_sdk/bridge_generated/modules/ztr/structs.dart'
+    as ztr_sdk;
+import 'package:fabula_nova_sdk/bridge_generated/modules/wct.dart'
+    as wct_sdk; // Import WCT enums
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
+    show Uint64List;
+
+import 'package:oracle_drive/src/services/app_database.dart';
+import 'package:oracle_drive/src/isar/common/lookup_config.dart';
+import 'package:oracle_drive/src/isar/common/models.dart';
 
 class NativeService {
-  static final NativeService instance = NativeService._();
+  static NativeService? _instance;
+  static NativeService get instance => _instance ??= NativeService._();
+
   final Logger _logger = Logger('NativeService');
   NativeService._();
 
-  Isolate? _workerIsolate;
-  SendPort? _workerSendPort;
-  final ReceivePort _mainReceivePort = ReceivePort();
+  final List<String> _logBuffer = [];
+  StreamController<String>? _logStreamController;
 
-  final Map<int, Completer<dynamic>> _pendingRequests = {};
-  int _nextRequestId = 0;
+  // Timer for polling logs from Rust (hot restart safe)
+  Timer? _logPollTimer;
+  StreamSubscription<LogRecord>? _dartLogSubscription;
 
-  final StreamController<String> _logStreamController =
-      StreamController.broadcast();
-  Stream<String> get logStream => _logStreamController.stream;
+  // Static flag to track Rust SDK initialization (survives hot restart)
+  static bool _rustInitialized = false;
 
-  Future<void> initialize() async {
-    if (_workerIsolate != null) return;
-
-    _logger.info("Initializing NativeService worker...");
-    final token = ServicesBinding.rootIsolateToken;
-    if (token == null) {
-      throw Exception('Root isolate token is null');
-    }
-    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-    final initCompleter = Completer<void>();
-
-    _mainReceivePort.listen((message) {
-      if (message is SendPort) {
-        _workerSendPort = message;
-        initCompleter.complete();
-      } else if (message is _NativeResponse) {
-        final completer = _pendingRequests.remove(message.id);
-        _progressCallbacks.remove(message.id);
-        if (completer != null) {
-          if (message.error != null) {
-            if (navigatorKey.currentContext != null) {
-              showDialog(
-                context: navigatorKey.currentContext!,
-                builder: (context) => CrystalDialog(
-                  title: 'Native Error',
-                  content: SingleChildScrollView(
-                    child: Text(message.error.toString()),
-                  ),
-                  actions: [
-                    CrystalButton(
-                      label: 'OK',
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-              );
-            }
-            completer.completeError(message.error!);
-          } else {
-            completer.complete(message.data);
-          }
-        }
-      } else if (message is _NativeProgress) {
-        final callback = _progressCallbacks[message.id];
-        if (callback != null) {
-          callback(message.progress);
-        }
-      } else if (message is List<String>) {
-        // Log batch
-        for (final log in message) {
-          _logStreamController.add(log);
-        }
-      }
-    });
-
-    _workerIsolate = await Isolate.spawn(
-      _nativeWorker,
-      _WorkerArgs(_mainReceivePort.sendPort, ServicesBinding.rootIsolateToken),
-    );
-
-    await initCompleter.future;
-    _logger.info("NativeService initialized.");
+  Stream<String> get logStream {
+    _logStreamController ??= StreamController.broadcast();
+    return _logStreamController!.stream;
   }
 
-  final Map<int, void Function(double)> _progressCallbacks = {};
+  List<String> get logHistory => List.unmodifiable(_logBuffer);
 
-  Future<T> _sendRequest<T>(
-    String type,
-    dynamic args, {
-    void Function(double)? onProgress,
-  }) {
-    if (_workerSendPort == null) {
-      throw Exception('NativeService not initialized');
+  void _addLog(String message) {
+    if (_logStreamController?.isClosed ?? true) return;
+    _logBuffer.add(message);
+    if (_logBuffer.length > 1000) {
+      _logBuffer.removeAt(0);
     }
-    final id = _nextRequestId++;
-    final completer = Completer<T>();
-    _pendingRequests[id] = completer;
-    if (onProgress != null) {
-      _progressCallbacks[id] = onProgress;
+    _logStreamController?.add(message);
+  }
+
+  /// Reset the service for hot reload support
+  static Future<void> reset() async {
+    await _instance?._dispose();
+    _instance = null;
+  }
+
+  Future<void> initialize() async {
+    // Cancel existing timer and subscriptions first (for hot reload)
+    _logPollTimer?.cancel();
+    await _dartLogSubscription?.cancel();
+
+    // Reinitialize stream controller if closed
+    if (_logStreamController?.isClosed ?? true) {
+      _logStreamController = StreamController.broadcast();
     }
-    _workerSendPort!.send(_NativeRequest(id, type, args));
-    return completer.future;
+
+    _logger.info("NativeService initializing...");
+
+    // Only call initApp on first initialization - Rust state persists across hot restart
+    if (!_rustInitialized) {
+      await sdk.initApp();
+      _rustInitialized = true;
+    } else {
+      // After hot restart, reset the read index to fetch any logs we missed
+      await sdk.resetLogReadIndex();
+    }
+
+    // Load any buffered logs from Rust (survives hot restart)
+    final bufferedLogs = await sdk.getAllBufferedLogs();
+    for (final log in bufferedLogs) {
+      _addLog(log);
+    }
+
+    // Start polling for new logs from Rust (hot restart safe)
+    _startLogPolling();
+
+    // Also route our own Dart logs to this stream
+    _dartLogSubscription = Logger.root.onRecord.listen((record) {
+      final msg = "[DART] ${record.level.name}: ${record.message}";
+      _addLog(msg);
+    });
+
+    _logger.info("NativeService initialized (using fabula_nova_sdk).");
+    await sdk.testLog(message: "NativeService initialized successfully.");
+    sdk.setLogLevel(level: 3);
+  }
+
+  /// Poll for new logs from Rust (less frequent in debug mode to reduce overhead)
+  void _startLogPolling() {
+    // Use longer interval in debug mode to reduce overhead
+    final interval = kDebugMode
+        ? const Duration(milliseconds: 500)
+        : const Duration(milliseconds: 100);
+
+    _logPollTimer = Timer.periodic(interval, (_) async {
+      try {
+        final newLogs = await sdk.fetchLogs();
+        for (final log in newLogs) {
+          _addLog(log);
+        }
+      } catch (e) {
+        // Silently ignore polling errors - Rust side may be reinitializing
+      }
+    });
+  }
+
+  Future<void> testLog(String msg) async {
+    await sdk.testLog(message: msg);
   }
 
   // ========================================================================
   // Public API
   // ========================================================================
 
-  Future<dynamic> parseWdb(String path, wbt_native.GameCode game) {
-    return _sendRequest('wdb_parse', {'path': path, 'game': game.index});
+  Future<WdbData> parseWdb(String path, AppGameCode game) async {
+    try {
+      final sdkWdbData = await sdk.wdbParse(inFile: path, gameCode: game.index);
+      final wdbData = WdbData.fromSdk(sdkWdbData);
+      final sheetName = wdbData.sheetName;
+      final repo = AppDatabase.instance.getRepositoryForGame(game);
+
+      _logger.info(
+        "WDB parseWdb: sheetName='$sheetName', rows=${wdbData.rows.length}",
+      );
+
+      // Check if this sheet has a LookupConfig and upsert lookups
+      final lookupConfig = LookupConfigRegistry.instance.resolve(game, sheetName);
+      if (lookupConfig != null) {
+        final lookups = <EntityLookup>[];
+        for (final row in wdbData.rows) {
+          if (!row.containsKey('record')) continue;
+          final record = row['record'] as String;
+          final lookup = lookupConfig.extractFromRow(record, row);
+          if (lookup != null) {
+            lookups.add(lookup);
+          }
+        }
+
+        if (lookups.isNotEmpty) {
+          repo.upsertLookups(lookups);
+          _logger.info(
+            "WDB parseWdb: Upserted ${lookups.length} lookups via LookupConfig",
+          );
+        }
+      }
+
+      _logger.info(
+        "SheetName ${wdbData.sheetName}: Columns: ${wdbData.columns.map((c) => c.originalName).toList()}",
+      );
+
+      return wdbData;
+    } catch (e) {
+      _showErrorDialog("WDB Parse Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<void> saveWdb(
-    String path,
-    wbt_native.GameCode game,
-    WdbData data,
-  ) async {
-    await _sendRequest('wdb_save', {
-      'path': path,
-      'game': game.index,
-      'data': data,
-    });
+  Future<void> saveWdb(String path, AppGameCode game, WdbData data) async {
+    try {
+      final sdkWdbData = data.toSdk();
+      await sdk.wdbRepack(data: sdkWdbData, outFile: path);
+      _logger.info("WDB saved successfully to $path");
+    } catch (e) {
+      _showErrorDialog("WDB Save Error", e.toString());
+      rethrow;
+    }
   }
 
   Future<void> saveWdbJson(String path, WdbData data) async {
-    // Placeholder for JSON saving
-    // await _sendRequest('wdb_save_json', {'path': path, 'data': data});
-    _logger.info("JSON saving is not yet implemented.");
+    try {
+      final sdkWdbData = data.toSdk();
+      final json = await sdk.wdbToJson(data: sdkWdbData);
+      await File(path).writeAsString(json);
+      _logger.info("WDB JSON saved successfully to $path");
+    } catch (e) {
+      _showErrorDialog("WDB JSON Save Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<dynamic> parseWbtFileEntries(
-    wbt_native.GameCode game,
-    String fileListPath,
-  ) {
-    return _sendRequest('wbt_parse_entries', {
-      'game': game.index,
-      'fileListPath': fileListPath,
-    });
-  }
-
-  Future<int> unpackWbt(
-    wbt_native.GameCode gameCode,
-    String fileListPath,
-    String binPath,
-    List<FileEntry> entries, {
-    String? outputDir,
-    void Function(double)? onProgress,
-  }) async {
-    // We need to serialize FileEntry list or pass necessary data
-    // Since FileEntry is a Dart class, we can pass it if it's sendable.
-    // FileEntry contains Strings and ints, so it is sendable.
-    // However, the NativeWorker needs to reconstruct the calls.
-    // Actually, `unpack_single` takes paths.
-    // The `_unpackInternal` logic iterates and calls native.
-    // We should pass the list of entries to the worker.
-    final result = await _sendRequest('wbt_unpack', {
-      'game': gameCode.index,
-      'fileListPath': fileListPath,
-      'binPath': binPath,
-      'entries': entries,
-      'outputDir': outputDir,
-    }, onProgress: onProgress);
-    return result as int;
-  }
-
-  Future<int> unpackAllWbt(
-    wbt_native.GameCode gameCode,
+  Future<void> unpackWbt(
+    AppGameCode gameCode,
     String fileListPath,
     String binPath, {
     String? outputDir,
+    void Function(double)? onProgress,
   }) async {
-    final result = await _sendRequest('wbt_unpack_all', {
-      'game': gameCode.index,
-      'fileListPath': fileListPath,
-      'binPath': binPath,
-      'outputDir': outputDir,
-    });
-    return result as int;
+    // Note: The new SDK wbtExtract extracts EVERYTHING.
+    // If we want to unpack specific entries, we might need a new SDK function
+    // or just use wbtExtract if that's acceptable.
+    // For now, let's use wbtExtract for all.
+    try {
+      if (outputDir == null) throw "Output directory is required";
+      await sdk.wbtExtract(
+        filelistPath: fileListPath,
+        containerPath: binPath,
+        outDir: outputDir,
+        gameCode: gameCode.index,
+      );
+    } catch (e) {
+      _showErrorDialog("WBT Unpack Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<int> repackMultipleWbt(
-    wbt_native.GameCode gameCode,
+  /// Repacks all files from a directory into a WBT archive.
+  Future<void> repackWbtAll(
+    AppGameCode gameCode,
     String fileListPath,
     String binPath,
-    String extractDir, {
-    bool makeBackup = true,
-  }) async {
-    final result = await _sendRequest('wbt_repack_multiple', {
-      'game': gameCode.index,
-      'fileListPath': fileListPath,
-      'binPath': binPath,
-      'extractDir': extractDir,
-      'makeBackup': makeBackup,
-    });
-    return result as int;
+    String extractDir,
+  ) async {
+    try {
+      await sdk.wbtRepack(
+        filelistPath: fileListPath,
+        containerPath: binPath,
+        extractedDir: extractDir,
+        gameCode: gameCode.index,
+      );
+    } catch (e) {
+      _showErrorDialog("WBT Repack Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<int> repackWpd(String inputWpdDir) async {
-    final result = await _sendRequest('wpd_repack', {
-      'inputWpdDir': inputWpdDir,
-    });
-    return result as int;
+  /// Repacks a single file into a WBT archive.
+  /// [targetPathInArchive] is the virtual path in the archive (e.g., "chr/c000/model.trb")
+  /// [fileToInject] is the path to the file on disk to inject.
+  Future<void> repackWbtSingle(
+    AppGameCode gameCode,
+    String fileListPath,
+    String binPath,
+    String targetPathInArchive,
+    String fileToInject,
+  ) async {
+    try {
+      await sdk.wbtRepackSingle(
+        filelistPath: fileListPath,
+        containerPath: binPath,
+        targetPathInArchive: targetPathInArchive,
+        fileToInject: fileToInject,
+        gameCode: gameCode.index,
+      );
+    } catch (e) {
+      _showErrorDialog("WBT Repack Single Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<int> unpackWpd(String inputWdpFile) async {
-    final result = await _sendRequest('wpd_unpack', {
-      'inputWdpFile': inputWdpFile,
-    });
-    return result as int;
+  /// Repacks multiple specific files into a WBT archive.
+  /// [filesToPatch] is a list of (targetPathInArchive, fileToInject) pairs.
+  Future<void> repackWbtMultiple(
+    AppGameCode gameCode,
+    String fileListPath,
+    String binPath,
+    List<(String, String)> filesToPatch,
+  ) async {
+    try {
+      await sdk.wbtRepackMultiple(
+        filelistPath: fileListPath,
+        containerPath: binPath,
+        filesToPatch: filesToPatch,
+        gameCode: gameCode.index,
+      );
+    } catch (e) {
+      _showErrorDialog("WBT Repack Multiple Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<int> extractZtrData(String path, AppGameCode game) async {
-    final result = await _sendRequest('ztr_extract_data', {
-      'path': path,
-      'game': game.index,
-    });
-    return result as int;
+  // Keeping old method name for backwards compatibility
+  Future<void> repackMultipleWbt(
+    AppGameCode gameCode,
+    String fileListPath,
+    String binPath,
+    String extractDir,
+  ) async {
+    return repackWbtAll(gameCode, fileListPath, binPath, extractDir);
   }
 
-  Future<int> extractZtrToTxt(
-    String inZtrPath,
+  /// Gets the file list from a WBT archive without extracting.
+  Future<List<sdk.WbtFileEntry>> getWbtFileList(
+    AppGameCode gameCode,
+    String fileListPath,
+    String binPath,
+  ) async {
+    try {
+      return await sdk.wbtGetFileList(
+        filelistPath: fileListPath,
+        gameCode: gameCode.index,
+      );
+    } catch (e) {
+      _showErrorDialog("WBT File List Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Extracts specific files from a WBT archive by their indices.
+  Future<int> extractWbtByIndices(
+    AppGameCode gameCode,
+    String fileListPath,
+    String binPath,
+    List<int> indices,
+    String outputDir,
+  ) async {
+    try {
+      final uint64Indices = Uint64List.fromList(indices.map((i) => i).toList());
+      final count = await sdk.wbtExtractFilesByIndices(
+        filelistPath: fileListPath,
+        containerPath: binPath,
+        indices: uint64Indices,
+        outputDir: outputDir,
+        gameCode: gameCode.index,
+      );
+      return count.toInt();
+    } catch (e) {
+      _showErrorDialog("WBT Extract Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> unpackWpd(String inputWdpFile, String outputDir) async {
+    try {
+      await sdk.wpdUnpack(inFile: inputWdpFile, outDir: outputDir);
+    } catch (e) {
+      _showErrorDialog("WPD Unpack Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> repackWpd(String inputWpdDir, String outputFile) async {
+    try {
+      await sdk.wpdRepack(inDir: inputWpdDir, outFile: outputFile);
+    } catch (e) {
+      _showErrorDialog("WPD Repack Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> unpackImg(
+    String headerPath,
+    String imgbPath,
+    String outputDdsPath,
+  ) async {
+    try {
+      await sdk.imgUnpack(
+        headerFile: headerPath,
+        imgbFile: imgbPath,
+        outDds: outputDdsPath,
+      );
+    } catch (e) {
+      _showErrorDialog("IMG Unpack Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> repackImg(
+    String headerPath,
+    String imgbPath,
+    String inputDdsPath,
+  ) async {
+    try {
+      await sdk.imgRepackStrict(
+        headerFile: headerPath,
+        imgbFile: imgbPath,
+        inDds: inputDdsPath,
+      );
+    } catch (e) {
+      _showErrorDialog("IMG Repack Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> processWct(
+    String inputFile,
+    wct_sdk.TargetType target,
+    wct_sdk.Action action,
+  ) async {
+    try {
+      await sdk.wctProcess(
+        target: target,
+        action: action,
+        inputFile: inputFile,
+      );
+    } catch (e) {
+      _showErrorDialog("WCT Process Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> extractZtrData(String path, AppGameCode game) async {
+    try {
+      final ztrData = await sdk.ztrParse(inFile: path, gameCode: game.index);
+      _logger.info("ZTR parsed: ${ztrData.entries.length} entries from $path");
+
+      final Map<String, String> strings = {};
+      for (final entry in ztrData.entries) {
+        strings[entry.id] = entry.text;
+      }
+
+      if (strings.isNotEmpty) {
+        final count = AppDatabase.instance
+            .getRepositoryForGame(game)
+            .insertStringData(strings);
+        _logger.info(
+          "ZTR inserted $count strings into ${game.displayName} database",
+        );
+      } else {
+        _logger.warning("ZTR parsed but no strings found!");
+      }
+    } catch (e) {
+      _showErrorDialog("ZTR Extract Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> dumpZtrFileFromDb(AppGameCode game, String outPath) async {
+    try {
+      final Map<String, String> strings = {};
+      final stream = AppDatabase.instance
+          .getRepositoryForGame(game)
+          .getStrings();
+      await for (final chunk in stream) {
+        strings.addAll(chunk);
+      }
+
+      final List<(String, String)> entries = strings.entries
+          .map((e) => (e.key, e.value))
+          .toList();
+      await sdk.ztrPackFromData(
+        entries: entries,
+        outFile: outPath,
+        gameCode: game.index,
+      );
+    } catch (e) {
+      _showErrorDialog("ZTR Dump Error", e.toString());
+      rethrow;
+    }
+  }
+
+  Future<void> dumpTxtFileFromDb(AppGameCode game, String outPath) async {
+    try {
+      final Map<String, String> strings = {};
+      final stream = AppDatabase.instance
+          .getRepositoryForGame(game)
+          .getStrings();
+      await for (final chunk in stream) {
+        strings.addAll(chunk);
+      }
+
+      final sdkEntries = strings.entries
+          .map((e) => ztr_sdk.ZtrEntry(id: e.key, text: e.value))
+          .toList();
+      final ztrData = ztr_sdk.ZtrData(entries: sdkEntries, mappings: []);
+      final text = await sdk.ztrToTextString(data: ztrData);
+
+      await File(outPath).writeAsString(text);
+    } catch (e) {
+      _showErrorDialog("ZTR Text Dump Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Loads all ZTR files from a directory recursively.
+  /// Returns a stream of progress updates.
+  /// When complete, inserts all strings into the database.
+  /// [filePattern] - Optional pattern to filter files (e.g., "_us.ztr" for US region only)
+  Stream<ztr_sdk.ZtrParseProgress> extractZtrDirectory(
+    String dirPath,
     AppGameCode game, {
-    ztr_native.ZTREncoding encoding = ztr_native.ZTREncoding.ZTR_ENCODING_AUTO,
-  }) async {
-    return (await _sendRequest('ztr_extract_file', {
-          'path': inZtrPath,
-          'game': game.index,
-          'encoding': encoding.value,
-        }))
-        as int;
+    String? filePattern,
+  }) async* {
+    try {
+      _logger.info(
+        "Starting ZTR directory scan: $dirPath"
+        "${filePattern != null ? ' (filter: $filePattern)' : ''}",
+      );
+
+      // Stream progress updates from Rust
+      final progressStream = sdk.ztrParseDirectory(
+        dirPath: dirPath,
+        gameCode: game.index,
+      );
+
+      await for (final progress in progressStream) {
+        yield progress;
+
+        // When complete, the simple version will have all entries
+        if (progress.stage == "complete") {
+          _logger.info(
+            "ZTR directory scan complete: ${progress.successCount} files, "
+            "${progress.errorCount} errors",
+          );
+        }
+      }
+
+      // Now load the full result and insert into database
+      final result = await sdk.ztrParseDirectorySimple(
+        dirPath: dirPath,
+        gameCode: game.index,
+      );
+
+      if (result.entries.isNotEmpty) {
+        final repo = AppDatabase.instance.getRepositoryForGame(game);
+
+        // Filter entries by file pattern if specified
+        var entriesToInsert = result.entries;
+        if (filePattern != null && filePattern.isNotEmpty) {
+          entriesToInsert = result.entries
+              .where((e) => e.sourceFile.endsWith(filePattern))
+              .toList();
+          _logger.info(
+            "Filtered entries: ${entriesToInsert.length} of ${result.entries.length} "
+            "(pattern: $filePattern)",
+          );
+        }
+
+        if (entriesToInsert.isNotEmpty) {
+          final stringsToInsert = entriesToInsert
+              .map((e) => Strings(
+                    strResourceId: e.id,
+                    value: e.text,
+                    sourceFile: e.sourceFile,
+                  ))
+              .toList();
+
+          repo.insertStringsWithSource(stringsToInsert);
+          _logger.info(
+            "Inserted ${stringsToInsert.length} strings from filtered files",
+          );
+        }
+      }
+
+      if (result.failedFiles.isNotEmpty) {
+        _logger.warning(
+          "Failed to parse ${result.failedFiles.length} files: "
+          "${result.failedFiles.map((e) => e.filePath).join(', ')}",
+        );
+      }
+    } catch (e) {
+      _showErrorDialog("ZTR Directory Load Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<int> convertTxtToZtr(
-    String inTxtPath,
-    AppGameCode game, {
-    ztr_native.ZTREncoding encoding = ztr_native.ZTREncoding.ZTR_ENCODING_AUTO,
-    ztr_native.ZTRAction action = ztr_native.ZTRAction.ZTR_ACTION_X,
-  }) async {
-    return (await _sendRequest('ztr_convert', {
-          'path': inTxtPath,
-          'game': game.index,
-          'encoding': encoding.value,
-          'action': action.value,
-        }))
-        as int;
-  }
-
-  Future<int> packZtrData(
-    ZtrData data,
-    String outZtrPath,
-    AppGameCode game, {
-    ztr_native.ZTREncoding encoding = ztr_native.ZTREncoding.ZTR_ENCODING_AUTO,
-    ztr_native.ZTRAction action = ztr_native.ZTRAction.ZTR_ACTION_X,
-  }) async {
-    return (await _sendRequest('ztr_pack', {
-          'data': data,
-          'path': outZtrPath,
-          'game': game.index,
-          'encoding': encoding.value,
-          'action': action.value,
-        }))
-        as int;
-  }
-
-  Future<int> dumpZtrData(ZtrData data, String outTxtPath) async {
-    return (await _sendRequest('ztr_dump', {'data': data, 'path': outTxtPath}))
-        as int;
-  }
-
-  Future<int> dumpZtrFileFromDb(
+  /// Dumps ZTR strings from database filtered by source file.
+  Future<void> dumpZtrFileFromDbBySource(
     AppGameCode game,
-    String outZtrPath, {
-    ztr_native.ZTREncoding encoding = ztr_native.ZTREncoding.ZTR_ENCODING_AUTO,
-    ztr_native.ZTRAction action = ztr_native.ZTRAction.ZTR_ACTION_C2,
-  }) async {
-    return (await _sendRequest('ztr_pack_from_db', {
-          'game': game.index,
-          'path': outZtrPath,
-          'encoding': encoding.value,
-          'action': action.value,
-        }))
-        as int;
+    String sourceFile,
+    String outPath,
+  ) async {
+    try {
+      final repo = AppDatabase.instance.getRepositoryForGame(game);
+      final strings = repo.getStringsBySourceFile(sourceFile);
+
+      final List<(String, String)> entries = strings.entries
+          .map((e) => (e.key, e.value))
+          .toList();
+
+      await sdk.ztrPackFromData(
+        entries: entries,
+        outFile: outPath,
+        gameCode: game.index,
+      );
+      _logger.info("Dumped ${entries.length} strings from $sourceFile to $outPath");
+    } catch (e) {
+      _showErrorDialog("ZTR Dump By Source Error", e.toString());
+      rethrow;
+    }
   }
 
-  Future<int> dumpTxtFileFromDb(AppGameCode game, String outTxtPath) async {
-    return (await _sendRequest('ztr_dump_from_db', {
-          'game': game.index,
-          'path': outTxtPath,
-        }))
-        as int;
+  /// Gets all unique source files in the database.
+  List<String> getZtrSourceFiles(AppGameCode game) {
+    return AppDatabase.instance
+        .getRepositoryForGame(game)
+        .getDistinctSourceFiles();
+  }
+
+  void _showErrorDialog(String title, String message) {
+    if (navigatorKey.currentContext != null) {
+      showDialog(
+        context: navigatorKey.currentContext!,
+        builder: (context) => CrystalDialog(
+          title: title,
+          content: SingleChildScrollView(child: Text(message)),
+          actions: [
+            CrystalButton(
+              label: 'OK',
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Future<void> _dispose() async {
+    _logPollTimer?.cancel();
+    await _dartLogSubscription?.cancel();
+    _logPollTimer = null;
+    _dartLogSubscription = null;
+
+    if (!(_logStreamController?.isClosed ?? true)) {
+      await _logStreamController?.close();
+    }
+    _logStreamController = null;
   }
 
   void dispose() {
-    _workerSendPort?.send('stop');
-    _workerIsolate?.kill();
-    _workerIsolate = null;
-    _workerSendPort = null;
-    _mainReceivePort.close();
-    _logStreamController.close();
+    _dispose();
   }
-}
-
-// ========================================================================
-// Worker Definitions
-// ========================================================================
-
-class _WorkerArgs {
-  final SendPort mainSendPort;
-  final RootIsolateToken? rootIsolateToken;
-  _WorkerArgs(this.mainSendPort, this.rootIsolateToken);
-}
-
-class _NativeRequest {
-  final int id;
-  final String type;
-  final dynamic args;
-  _NativeRequest(this.id, this.type, this.args);
-}
-
-class _NativeResponse {
-  final int id;
-  final dynamic data;
-  final dynamic error;
-  _NativeResponse(this.id, this.data, this.error);
-}
-
-class _NativeProgress {
-  final int id;
-  final double progress;
-  _NativeProgress(this.id, this.progress);
-}
-
-// ========================================================================
-// Worker Implementation
-// ========================================================================
-
-void _nativeWorker(_WorkerArgs args) {
-  // Ensure that Flutter plugins can be used in this background isolate.
-  // This is required for plugins like path_provider which drift_flutter uses.
-  if (args.rootIsolateToken != null) {
-    BackgroundIsolateBinaryMessenger.ensureInitialized(args.rootIsolateToken!);
-  }
-
-  final sendPort = args.mainSendPort;
-  final receivePort = ReceivePort();
-  sendPort.send(receivePort.sendPort);
-
-  // Initialize AppDatabase in the worker isolate.
-  // This is crucial for database operations in the worker.
-  AppDatabase.ensureInitialized();
-
-  // --- Logging Setup ---
-  final List<String> logBuffer = [];
-  const int maxAllocatedStrings = 2000;
-
-  // We need 3 separate lists to be safe across potentially different heaps
-  final List<Pointer<Char>> wdbLogsToFree = [];
-  final List<Pointer<Char>> wpdLogsToFree = [];
-  final List<Pointer<Char>> wbtLogsToFree = [];
-  final List<Pointer<Char>> ztrLogsToFree = [];
-
-  void flushSpecific(
-    List<Pointer<Char>> list,
-    void Function(Pointer<Pointer<Void>>, int) freeFunc,
-  ) {
-    if (list.isEmpty) return;
-    final ptrArray = calloc<Pointer<Void>>(list.length);
-    for (int i = 0; i < list.length; i++) {
-      ptrArray[i] = Pointer.fromAddress(list[i].address);
-    }
-    freeFunc(ptrArray, list.length);
-    calloc.free(ptrArray);
-    list.clear();
-  }
-
-  void flushAllLogs() {
-    flushSpecific(wdbLogsToFree, wdb_native.free_log_memory_batch);
-    flushSpecific(wpdLogsToFree, wpd_native.free_log_memory_batch);
-    flushSpecific(wbtLogsToFree, wbt_native.free_log_memory_batch);
-    // ZTR currently shares logging mechanism or we assume it has its own if exported
-    // The ZTR generated bindings have free_log_memory_batch, check if it's distinct?
-    // It imports common.g.dart, so likely they share the same logging infra if linked together.
-    // However, the bindings might be separate libraries (DLLs/SOs).
-    // If they are separate shared objects, they might have separate memory managers.
-    // Assuming ZTR has its own free_log_memory_batch wrapper in ztr.g.dart
-    flushSpecific(ztrLogsToFree, ztr_native.free_log_memory_batch);
-  }
-
-  Timer.periodic(const Duration(milliseconds: 100), (timer) {
-    if (logBuffer.isNotEmpty) {
-      sendPort.send(List<String>.from(logBuffer));
-      logBuffer.clear();
-    }
-    flushAllLogs();
-  });
-
-  // --- Register Callbacks ---
-  final wdbListener = NativeCallable<Void Function(Pointer<Char>)>.listener((
-    Pointer<Char> messagePtr,
-  ) {
-    if (messagePtr == nullptr) return;
-    try {
-      logBuffer.add(messagePtr.cast<Utf8>().toDartString());
-    } finally {
-      wdbLogsToFree.add(messagePtr);
-      if (wdbLogsToFree.length >= maxAllocatedStrings) {
-        flushSpecific(wdbLogsToFree, wdb_native.free_log_memory_batch);
-      }
-    }
-  });
-  wdb_native.register_async_callback_with_level(
-    wdbListener.nativeFunction,
-    wdb_native.LogLevel.Info,
-  );
-
-  final wpdListener = NativeCallable<Void Function(Pointer<Char>)>.listener((
-    Pointer<Char> messagePtr,
-  ) {
-    if (messagePtr == nullptr) return;
-    try {
-      logBuffer.add(messagePtr.cast<Utf8>().toDartString());
-    } finally {
-      wpdLogsToFree.add(messagePtr);
-      if (wpdLogsToFree.length >= maxAllocatedStrings) {
-        flushSpecific(wpdLogsToFree, wpd_native.free_log_memory_batch);
-      }
-    }
-  });
-  wpd_native.register_async_callback_with_level(
-    wpdListener.nativeFunction,
-    wpd_native.LogLevel.Info,
-  );
-
-  final wbtListener = NativeCallable<Void Function(Pointer<Char>)>.listener((
-    Pointer<Char> messagePtr,
-  ) {
-    if (messagePtr == nullptr) return;
-    try {
-      logBuffer.add(messagePtr.cast<Utf8>().toDartString());
-    } finally {
-      wbtLogsToFree.add(messagePtr);
-      if (wbtLogsToFree.length >= maxAllocatedStrings) {
-        flushSpecific(wbtLogsToFree, wbt_native.free_log_memory_batch);
-      }
-    }
-  });
-  wbt_native.register_async_callback_with_level(
-    wbtListener.nativeFunction,
-    wbt_native.LogLevel.Info,
-  );
-
-  final ztrListener = NativeCallable<Void Function(Pointer<Char>)>.listener((
-    Pointer<Char> messagePtr,
-  ) {
-    if (messagePtr == nullptr) return;
-    try {
-      logBuffer.add(messagePtr.cast<Utf8>().toDartString());
-    } finally {
-      ztrLogsToFree.add(messagePtr);
-      if (ztrLogsToFree.length >= maxAllocatedStrings) {
-        flushSpecific(ztrLogsToFree, ztr_native.free_log_memory_batch);
-      }
-    }
-  });
-  ztr_native.register_async_callback_with_level(
-    ztrListener.nativeFunction,
-    ztr_native.LogLevel.Finest,
-  );
-
-  // Initialize ZTR
-  ZtrTool.init();
-
-  // --- Request Handler ---
-  receivePort.listen((message) async {
-    if (message == 'stop') {
-      wdbListener.close();
-      wpdListener.close();
-      wbtListener.close();
-      ztrListener.close();
-      flushAllLogs();
-      receivePort.close();
-      Isolate.current.kill();
-      return;
-    }
-
-    if (message is _NativeRequest) {
-      try {
-        dynamic result;
-        switch (message.type) {
-          case 'wdb_parse':
-            result = _handleWdbParse(message.args);
-            break;
-          case 'wdb_save':
-            result = _handleWdbSave(message.args);
-            break;
-          case 'wbt_parse_entries':
-            result = _handleWbtParseEntries(message.args);
-            break;
-          case 'wbt_unpack':
-            result = _handleWbtUnpack(message.id, sendPort, message.args);
-            break;
-          case 'wbt_unpack_all':
-            result = _handleWbtUnpackAll(message.args);
-            break;
-          case 'wbt_repack_multiple':
-            result = _handleWbtRepackMultiple(message.args);
-            break;
-          case 'wpd_repack':
-            result = _handleWpdRepack(message.args);
-            break;
-          case 'wpd_unpack':
-            result = _handleWpdUnpack(message.args);
-            break;
-          case 'ztr_extract_data':
-            result = _handleZtrExtractData(message.args);
-            break;
-          case 'ztr_extract_file':
-            result = _handleZtrExtractFile(message.args);
-            break;
-          case 'ztr_convert':
-            result = _handleZtrConvert(message.args);
-            break;
-          case 'ztr_pack':
-            result = _handleZtrPack(message.args);
-            break;
-          case 'ztr_dump':
-            result = _handleZtrDump(message.args);
-            break;
-          case 'ztr_pack_from_db':
-            result = _handleZtrPackFromDb(message.args);
-            break;
-          case 'ztr_dump_from_db':
-            result = _handleZtrDumpFromDb(message.args);
-            break;
-          default:
-            throw "Unknown request type: ${message.type}";
-        }
-
-        final data = result is Future ? await result : result;
-        sendPort.send(_NativeResponse(message.id, data, null));
-      } catch (e, stack) {
-        sendPort.send(_NativeResponse(message.id, null, "$e\n$stack"));
-      }
-    }
-  });
-}
-
-// ========================================================================
-// Request Handlers
-// ========================================================================
-
-Future<WdbData> _handleWdbParse(Map<String, dynamic> args) async {
-  final path = args['path'] as String;
-  final gameIndex = args['game'] as int;
-  final gameCode = AppGameCode.values[gameIndex];
-  final nativeGameCode = wbt_native.GameCode.values[gameIndex];
-
-  final wdbData = WdbTool.parseFile(path, nativeGameCode);
-
-  // Convert WdbData rows to WdbEntity instances
-  final Map<String, WdbEntity> wdbEntities = {};
-  final sheetName = wdbData.sheetName; // Get sheetName for createEntity
-  WdbEntity? createEntityFunction(Map<String, dynamic> row) =>
-      WdbSchemaRegistry.createEntity(sheetName, row);
-
-  if (wdbData.entities != null) {
-    for (int i = 0; i < wdbData.rows.length; i++) {
-      if (wdbData.columns.any((col) => col.originalName == "record") == false) {
-        // If there's no "record" column, we cannot create entities reliably.
-        // Skip this sheet.
-        continue;
-      }
-
-      final row = wdbData.rows[i];
-
-      wdbEntities[row['record'] as String] = wdbData.entities != null
-          ? wdbData.entities![i]
-          : createEntityFunction(row)!;
-    }
-
-    // Upsert the WDB data into the database
-    if (wdbEntities.isNotEmpty) {
-      await AppDatabase.instance
-          .getRepositoryForGame(gameCode)
-          .upsertWdbEntities(wdbData.sheetName, wdbEntities);
-    }
-  }
-
-  return wdbData;
-}
-
-Future<void> _handleWdbSave(Map<String, dynamic> args) async {
-  final path = args['path'] as String;
-  final gameIndex = args['game'] as int;
-  final WdbData data = args['data'];
-  final nativeGameCode = wbt_native.GameCode.values[gameIndex];
-
-  WdbTool.writeFile(path, nativeGameCode, data);
-}
-
-Future<int> _handleZtrExtractData(Map<String, dynamic> args) async {
-  final path = args['path'] as String;
-  final gameIndex = args['game'] as int;
-  final gameCode = AppGameCode.values[gameIndex];
-  final ztrGameCodeValue = ztr_native.ZTRGameCode.values[gameIndex].value;
-
-  final strings = ZtrTool.extractData(path, ztrGameCodeValue);
-
-  // Insert into DB
-  if (strings.isNotEmpty) {
-    AppDatabase.instance
-        .getRepositoryForGame(gameCode)
-        .insertStringData(strings);
-  }
-
-  return 0; // Success
-}
-
-Future<int> _handleZtrExtractFile(Map<String, dynamic> args) async {
-  final path = args['path'] as String;
-  final gameIndex = args['game'] as int;
-  final encodingVal = args['encoding'] as int;
-  final ztrGameCodeValue = ztr_native.ZTRGameCode.values[gameIndex].value;
-
-  ZtrTool.extractFile(path, ztrGameCodeValue, encodingVal);
-  return 0;
-}
-
-Future<int> _handleZtrConvert(Map<String, dynamic> args) async {
-  final path = args['path'] as String;
-  final gameIndex = args['game'] as int;
-  final encodingVal = args['encoding'] as int;
-  final actionVal = args['action'] as int;
-  final ztrGameCodeValue = ztr_native.ZTRGameCode.values[gameIndex].value;
-
-  ZtrTool.convert(path, ztrGameCodeValue, encodingVal, actionVal);
-  return 0;
-}
-
-Future<int> _handleZtrPack(Map<String, dynamic> args) async {
-  final ZtrData data = args['data'];
-  final path = args['path'] as String;
-  final gameIndex = args['game'] as int;
-  final encodingVal = args['encoding'] as int;
-  final actionVal = args['action'] as int;
-  final ztrGameCodeValue = ztr_native.ZTRGameCode.values[gameIndex].value;
-
-  ZtrTool.packData(data, path, ztrGameCodeValue, encodingVal, actionVal);
-  return 0;
-}
-
-Future<int> _handleZtrDump(Map<String, dynamic> args) async {
-  final ZtrData data = args['data'];
-  final path = args['path'] as String;
-
-  ZtrTool.dumpData(data, path);
-  return 0;
-}
-
-Future<int> _handleZtrPackFromDb(Map<String, dynamic> args) async {
-  final gameIndex = args['game'] as int;
-  final gameCode = AppGameCode.values[gameIndex];
-  final path = args['path'] as String;
-  final encodingVal = args['encoding'] as int;
-  final actionVal = args['action'] as int;
-  final ztrGameCodeValue = ztr_native.ZTRGameCode.values[gameIndex].value;
-
-  final stream = AppDatabase.instance
-      .getRepositoryForGame(gameCode)
-      .getStrings();
-  final Map<String, String> stringsMap = {};
-  await for (final chunk in stream) {
-    stringsMap.addAll(chunk);
-  }
-  final entries = stringsMap.entries
-      .map((e) => ZtrEntry(e.key, e.value))
-      .toList();
-  final ztrData = ZtrData(entries: entries);
-
-  ZtrTool.packData(ztrData, path, ztrGameCodeValue, encodingVal, actionVal);
-  return 0;
-}
-
-Future<int> _handleZtrDumpFromDb(Map<String, dynamic> args) async {
-  final gameIndex = args['game'] as int;
-  final gameCode = AppGameCode.values[gameIndex];
-  final path = args['path'] as String;
-
-  final stream = AppDatabase.instance
-      .getRepositoryForGame(gameCode)
-      .getStrings();
-  final Map<String, String> stringsMap = {};
-  await for (final chunk in stream) {
-    stringsMap.addAll(chunk);
-  }
-  final entries = stringsMap.entries
-      .map((e) => ZtrEntry(e.key, e.value))
-      .toList();
-  final ztrData = ZtrData(entries: entries);
-
-  ZtrTool.dumpData(ztrData, path);
-  return 0;
-}
-
-Future<List<FileEntry>> _handleWbtParseEntries(
-  Map<String, dynamic> args,
-) async {
-  final gameIndex = args['game'] as int;
-  final fileListPath = args['fileListPath'] as String;
-  final gameCode = wbt_native.GameCode.values[gameIndex];
-
-  return WhiteBinTools.getMetadata(gameCode, fileListPath);
-}
-
-Future<int> _handleWbtUnpack(
-  int requestId,
-  SendPort sendPort,
-  Map<String, dynamic> args,
-) async {
-  final gameIndex = args['game'] as int;
-  final fileListPath = args['fileListPath'] as String;
-  final binPath = args['binPath'] as String;
-  final outputDir = args['outputDir'] as String?;
-  final entries = args['entries'] as List<dynamic>;
-  final gameCode = wbt_native.GameCode.values[gameIndex];
-
-  for (int i = 0; i < entries.length; i++) {
-    final entry = entries[i];
-    final String virtualPath = entry.chunkInfo.virtualPath;
-    WhiteBinTools.unpackSingle(
-      gameCode,
-      fileListPath,
-      binPath,
-      virtualPath,
-      outputDir: outputDir,
-    );
-    sendPort.send(_NativeProgress(requestId, (i + 1) / entries.length));
-  }
-  return 0;
-}
-
-Future<int> _handleWbtUnpackAll(Map<String, dynamic> args) async {
-  final gameIndex = args['game'] as int;
-  final fileListPath = args['fileListPath'] as String;
-  final binPath = args['binPath'] as String;
-  final outputDir = args['outputDir'] as String?;
-  final gameCode = wbt_native.GameCode.values[gameIndex];
-
-  WhiteBinTools.unpackAll(
-    gameCode,
-    fileListPath,
-    binPath,
-    outputDir: outputDir,
-  );
-  return 0;
-}
-
-Future<int> _handleWbtRepackMultiple(Map<String, dynamic> args) async {
-  final gameIndex = args['game'] as int;
-  final fileListPath = args['fileListPath'] as String;
-  final binPath = args['binPath'] as String;
-  final extractDir = args['extractDir'] as String;
-  final makeBackup = args['makeBackup'] as bool;
-  final gameCode = wbt_native.GameCode.values[gameIndex];
-
-  WhiteBinTools.repackMultipleInternal(
-    gameCode,
-    fileListPath,
-    binPath,
-    extractDir,
-    makeBackup: makeBackup,
-  );
-  return 0;
-}
-
-Future<int> _handleWpdRepack(Map<String, dynamic> args) async {
-  final inputWpdDir = args['inputWpdDir'] as String;
-  return WpdTool.repack(inputWpdDir);
-}
-
-Future<int> _handleWpdUnpack(Map<String, dynamic> args) async {
-  final inputWdpFile = args['inputWdpFile'] as String;
-  return WpdTool.unpack(inputWdpFile);
 }

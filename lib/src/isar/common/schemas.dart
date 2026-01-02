@@ -3,14 +3,10 @@ import 'package:isar_plus/isar_plus.dart';
 
 final List<IsarGeneratedSchema> schemas = [
   StringsSchema,
-  BattleAbilitySchema,
-  BattleAutoAbilitySchema,
-  ItemSchema,
+  EntityLookupSchema,
 ];
 
 final Map<String, IsarGeneratedSchema> schemaByName = {
   'Strings': StringsSchema,
-  'BattleAbility': BattleAbilitySchema,
-  'BattleAutoAbility': BattleAutoAbilitySchema,
-  'Item': ItemSchema,
+  'EntityLookup': EntityLookupSchema,
 };

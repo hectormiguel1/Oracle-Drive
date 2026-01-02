@@ -1,8 +1,9 @@
 class ZtrEntry {
   final String id;
   String text;
+  final String? sourceFile;
 
-  ZtrEntry(this.id, this.text);
+  ZtrEntry(this.id, this.text, {this.sourceFile});
 }
 
 class ZtrKeyMapping {

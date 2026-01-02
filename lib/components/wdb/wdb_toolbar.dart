@@ -1,10 +1,12 @@
 import 'package:oracle_drive/components/widgets/crystal_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_popup_menu.dart';
 import 'package:oracle_drive/components/widgets/crystal_text_field.dart';
 import 'package:flutter/material.dart';
 
 class WdbToolbar extends StatelessWidget {
   final VoidCallback onLoad;
   final VoidCallback? onNew;
+  final VoidCallback? onBulkUpdate;
   final VoidCallback? onSaveWdb;
   final VoidCallback? onSaveJson;
   final String? currentPath;
@@ -14,6 +16,7 @@ class WdbToolbar extends StatelessWidget {
     super.key,
     required this.onLoad,
     this.onNew,
+    this.onBulkUpdate,
     this.onSaveWdb,
     this.onSaveJson,
     this.currentPath,
@@ -36,9 +39,15 @@ class WdbToolbar extends StatelessWidget {
           if (currentPath != null) ...[
             const SizedBox(width: 8),
             CrystalButton(onPressed: onNew, icon: Icons.add, label: "New"),
+            const SizedBox(width: 8),
+            CrystalButton(
+              onPressed: onBulkUpdate,
+              icon: Icons.edit_note,
+              label: "Bulk Update",
+            ),
           ],
           const SizedBox(width: 8),
-          PopupMenuButton<String>(
+          CrystalPopupMenuButton<String>(
             enabled: onSaveWdb != null || onSaveJson != null,
             onSelected: (value) {
               if (value == 'wdb') {
@@ -47,33 +56,22 @@ class WdbToolbar extends StatelessWidget {
                 onSaveJson?.call();
               }
             },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
+            items: const [
+              CrystalMenuItem(
                 value: 'wdb',
-                child: Row(
-                  children: [
-                    Icon(Icons.save, size: 18, color: Colors.white70),
-                    SizedBox(width: 8),
-                    Text('Save as .wdb'),
-                  ],
-                ),
+                label: 'Save as .wdb',
+                icon: Icons.save,
               ),
-              const PopupMenuItem(
+              CrystalMenuItem(
                 value: 'json',
-                child: Row(
-                  children: [
-                    Icon(Icons.code, size: 18, color: Colors.white70),
-                    SizedBox(width: 8),
-                    Text('Save as .json'),
-                  ],
-                ),
+                label: 'Save as .json',
+                icon: Icons.code,
               ),
             ],
             child: CrystalButton(
-              onPressed: null, // Let PopupMenuButton handle the tap
+              onPressed: null,
               icon: Icons.save_alt,
               label: "Save...",
-              // isPrimary: false,
             ),
           ),
           if (currentPath != null) ...[

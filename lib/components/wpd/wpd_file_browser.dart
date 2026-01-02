@@ -1,0 +1,443 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_fancy_tree_view2/flutter_fancy_tree_view2.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:oracle_drive/components/widgets/crystal_compact_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_icon_button.dart';
+import 'package:oracle_drive/components/widgets/crystal_loading_spinner.dart';
+import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/models/app_game_code.dart';
+import 'package:oracle_drive/providers/wpd_provider.dart';
+import 'package:oracle_drive/components/wpd/wpd_file_utils.dart';
+import 'package:path/path.dart' as p;
+
+/// Wrapper for FileSystemEntity with path-based equality.
+/// This is needed because FileSystemEntity uses object identity,
+/// but the tree controller needs stable equality for expansion tracking.
+class FileNode {
+  final FileSystemEntity entity;
+
+  FileNode(this.entity);
+
+  String get path => entity.path;
+  String get name => p.basename(path);
+  bool get isDirectory => entity is Directory;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FileNode && runtimeType == other.runtimeType && path == other.path;
+
+  @override
+  int get hashCode => path.hashCode;
+}
+
+/// File browser sidebar for the WPD screen.
+/// Shows a tree view of the workspace directory.
+class WpdFileBrowser extends ConsumerStatefulWidget {
+  final AppGameCode gameCode;
+  final VoidCallback onPickDirectory;
+
+  const WpdFileBrowser({
+    super.key,
+    required this.gameCode,
+    required this.onPickDirectory,
+  });
+
+  @override
+  WpdFileBrowserState createState() => WpdFileBrowserState();
+}
+
+class WpdFileBrowserState extends ConsumerState<WpdFileBrowser> {
+  TreeController<FileNode>? _treeController;
+  String? _currentRootPath;
+
+  @override
+  void dispose() {
+    _treeController?.dispose();
+    super.dispose();
+  }
+
+  void _reloadTree(String? rootPath) {
+    if (rootPath == null) {
+      _treeController?.dispose();
+      _treeController = null;
+      _currentRootPath = null;
+      setState(() {});
+      return;
+    }
+
+    final rootDir = Directory(rootPath);
+    if (!rootDir.existsSync()) {
+      _treeController?.dispose();
+      _treeController = null;
+      _currentRootPath = null;
+      setState(() {});
+      return;
+    }
+
+    try {
+      _treeController?.dispose();
+      final rootNode = FileNode(rootDir);
+      _treeController = TreeController<FileNode>(
+        roots: [rootNode],
+        childrenProvider: (FileNode parent) {
+          if (parent.isDirectory) {
+            try {
+              final dir = parent.entity as Directory;
+              final list = dir.listSync()
+                ..sort((a, b) {
+                  final aIsDir = a is Directory;
+                  final bIsDir = b is Directory;
+                  if (aIsDir && !bIsDir) return -1;
+                  if (!aIsDir && bIsDir) return 1;
+                  return a.path.compareTo(b.path);
+                });
+              return list.map((e) => FileNode(e));
+            } catch (e) {
+              return [];
+            }
+          }
+          return [];
+        },
+      );
+
+      _treeController!.expand(rootNode);
+      _currentRootPath = rootPath;
+      setState(() {});
+    } catch (e) {
+      debugPrint("Error scanning directory: $e");
+    }
+  }
+
+  void rebuild() {
+    setState(() => _treeController?.rebuild());
+  }
+
+  void _navigateUp() {
+    final currentPath = _currentRootPath;
+    if (currentPath == null) return;
+
+    final parentPath = p.dirname(currentPath);
+    // Don't navigate above root
+    if (parentPath == currentPath) return;
+
+    ref.read(wpdProvider(widget.gameCode).notifier).setRootDirPath(parentPath);
+  }
+
+  void _navigateToPath(String path) {
+    ref.read(wpdProvider(widget.gameCode).notifier).setRootDirPath(path);
+  }
+
+  List<_BreadcrumbSegment> _buildBreadcrumbs(String rootPath) {
+    final segments = <_BreadcrumbSegment>[];
+    var current = rootPath;
+
+    // Build path segments from root to current
+    while (true) {
+      final name = p.basename(current);
+      final path = current;
+
+      // Handle root directory
+      if (name.isEmpty || current == p.dirname(current)) {
+        segments.insert(0, _BreadcrumbSegment(name: '/', path: current));
+        break;
+      }
+
+      segments.insert(0, _BreadcrumbSegment(name: name, path: path));
+      current = p.dirname(current);
+    }
+
+    return segments;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(wpdProvider(widget.gameCode));
+
+    // Handle tree sync with state
+    if (state.rootDirPath != _currentRootPath) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _reloadTree(state.rootDirPath);
+      });
+    }
+
+    final canNavigateUp = state.rootDirPath != null &&
+        p.dirname(state.rootDirPath!) != state.rootDirPath;
+
+    return Column(
+      children: [
+        // Toolbar
+        Container(
+          padding: const EdgeInsets.all(8),
+          color: Colors.black.withValues(alpha: 0.2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Action buttons row
+              Row(
+                children: [
+                  CrystalIconButton(
+                    onPressed: canNavigateUp ? _navigateUp : null,
+                    icon: Icons.arrow_upward,
+                    tooltip: "Go to parent directory",
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: CrystalCompactButton(
+                      onPressed: widget.onPickDirectory,
+                      icon: Icons.folder_open,
+                      label: "Open",
+                    ),
+                  ),
+                ],
+              ),
+              // Breadcrumb bar
+              if (state.rootDirPath != null) ...[
+                const SizedBox(height: 8),
+                _BreadcrumbBar(
+                  segments: _buildBreadcrumbs(state.rootDirPath!),
+                  onNavigate: _navigateToPath,
+                ),
+              ],
+            ],
+          ),
+        ),
+        // Tree View
+        Expanded(
+          child: state.rootDirPath == null
+              ? const Center(
+                  child: Text(
+                    "No Workspace Open",
+                    style: TextStyle(color: Colors.white24),
+                  ),
+                )
+              : _treeController == null
+                  ? const Center(child: CrystalLoadingSpinner())
+                  : CrystalPanel(
+                      padding: EdgeInsets.zero,
+                      child: AnimatedTreeView<FileNode>(
+                        treeController: _treeController!,
+                        nodeBuilder: (context, entry) {
+                          return _TreeNode(
+                            entry: entry,
+                            gameCode: widget.gameCode,
+                            onTap: () {
+                              final node = entry.node;
+                              if (node.isDirectory) {
+                                // Directories: expand/collapse
+                                _treeController!.toggleExpansion(node);
+                              } else {
+                                // Files: select to show in center pane
+                                ref
+                                    .read(wpdProvider(widget.gameCode).notifier)
+                                    .setSelectedNode(node.entity);
+                              }
+                            },
+                            isSelected:
+                                state.selectedNode?.path == entry.node.path,
+                          );
+                        },
+                      ),
+                    ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BreadcrumbSegment {
+  final String name;
+  final String path;
+
+  const _BreadcrumbSegment({required this.name, required this.path});
+}
+
+class _BreadcrumbBar extends StatelessWidget {
+  final List<_BreadcrumbSegment> segments;
+  final ValueChanged<String> onNavigate;
+
+  const _BreadcrumbBar({
+    required this.segments,
+    required this.onNavigate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 28,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        reverse: true, // Show end of path (most relevant) when overflowing
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(width: 4),
+            for (int i = 0; i < segments.length; i++) ...[
+              if (i > 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Icon(
+                    Icons.chevron_right,
+                    size: 14,
+                    color: Colors.white24,
+                  ),
+                ),
+              _BreadcrumbChip(
+                segment: segments[i],
+                isLast: i == segments.length - 1,
+                onTap: () => onNavigate(segments[i].path),
+              ),
+            ],
+            const SizedBox(width: 4),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BreadcrumbChip extends StatefulWidget {
+  final _BreadcrumbSegment segment;
+  final bool isLast;
+  final VoidCallback onTap;
+
+  const _BreadcrumbChip({
+    required this.segment,
+    required this.isLast,
+    required this.onTap,
+  });
+
+  @override
+  State<_BreadcrumbChip> createState() => _BreadcrumbChipState();
+}
+
+class _BreadcrumbChipState extends State<_BreadcrumbChip> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? Colors.cyan.withValues(alpha: 0.2)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Text(
+            widget.segment.name,
+            style: TextStyle(
+              fontSize: 12,
+              color: widget.isLast
+                  ? Colors.white
+                  : (_isHovered ? Colors.cyan : Colors.white60),
+              fontWeight: widget.isLast ? FontWeight.w500 : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TreeNode extends StatefulWidget {
+  final TreeEntry<FileNode> entry;
+  final AppGameCode gameCode;
+  final VoidCallback onTap;
+  final bool isSelected;
+
+  const _TreeNode({
+    required this.entry,
+    required this.gameCode,
+    required this.onTap,
+    required this.isSelected,
+  });
+
+  @override
+  State<_TreeNode> createState() => _TreeNodeState();
+}
+
+class _TreeNodeState extends State<_TreeNode> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final node = widget.entry.node;
+    final isDir = node.isDirectory;
+    final name = node.name;
+    final isExpanded = widget.entry.isExpanded;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Container(
+          color: widget.isSelected
+              ? Colors.cyan.withValues(alpha: 0.2)
+              : (_isHovered ? Colors.white.withValues(alpha: 0.05) : null),
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          child: TreeIndentation(
+            entry: widget.entry,
+            guide: const IndentGuide.connectingLines(
+              indent: 20,
+              color: Colors.white12,
+              thickness: 1.0,
+              origin: 0.5,
+              roundCorners: true,
+            ),
+            child: Row(
+              children: [
+                // Expand/collapse chevron for directories
+                if (isDir)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(
+                      isExpanded
+                          ? Icons.keyboard_arrow_down
+                          : Icons.keyboard_arrow_right,
+                      color: Colors.white38,
+                      size: 16,
+                    ),
+                  )
+                else
+                  const SizedBox(width: 20), // Alignment spacer for files
+                Icon(
+                  isDir
+                      ? (isExpanded ? Icons.folder_open : Icons.folder)
+                      : WpdFileUtils.getFileIcon(name),
+                  color: isDir ? Colors.cyan : WpdFileUtils.getFileColor(name),
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    name,
+                    style: TextStyle(
+                      color: widget.isSelected ? Colors.white : Colors.white70,
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

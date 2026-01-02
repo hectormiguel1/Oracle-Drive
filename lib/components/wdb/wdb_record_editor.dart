@@ -1,16 +1,14 @@
 import 'package:oracle_drive/components/widgets/crystal_background.dart';
 import 'package:oracle_drive/components/widgets/crystal_badge.dart';
 import 'package:oracle_drive/components/widgets/crystal_checkbox.dart';
+import 'package:oracle_drive/components/widgets/crystal_divider.dart';
 import 'package:oracle_drive/components/widgets/crystal_dropdowns.dart';
 import 'package:oracle_drive/components/widgets/crystal_panel.dart';
 import 'package:oracle_drive/components/widgets/crystal_text_field.dart';
 import 'package:oracle_drive/models/app_game_code.dart';
 import 'package:oracle_drive/models/shared_lookups.dart';
-import 'package:oracle_drive/models/wdb_entities/wdb_entity.dart';
 import 'package:oracle_drive/models/wdb_model.dart';
-import 'package:oracle_drive/models/wdb_entities/xiii/schema_registry.dart';
 import 'package:oracle_drive/src/services/app_database.dart';
-import 'package:oracle_drive/src/third_party/wdb/wdb.g.dart' as native;
 import 'package:oracle_drive/src/utils/ztr_text_renderer.dart';
 import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +16,6 @@ import 'package:flutter/services.dart';
 
 class WdbRecordEditor extends StatefulWidget {
   final List<Map<String, dynamic>> rows;
-  final List<WdbEntity>? entities;
   final List<WdbColumn> columns;
   final int initialIndex;
   final String sheetName;
@@ -30,7 +27,6 @@ class WdbRecordEditor extends StatefulWidget {
     super.key,
     required this.rows,
     required this.columns,
-    this.entities,
     required this.initialIndex,
     required this.sheetName,
     required this.gameCode,
@@ -58,6 +54,12 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
   }
 
   void _loadRowData() {
+    // Bounds check to prevent index out of bounds
+    if (_currentIndex < 0 || _currentIndex >= widget.rows.length) {
+      _currentIndex = widget.rows.isNotEmpty ? 0 : -1;
+      if (_currentIndex < 0) return;
+    }
+
     _editedRow = widget.rows[_currentIndex];
 
     // Clear old controllers text to avoid stale data
@@ -71,30 +73,20 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
   void _initializeFields() {
     _lookupCache.clear();
 
-    WdbEntity? entity;
-    if (widget.entities != null && _currentIndex < widget.entities!.length) {
-      entity = widget.entities![_currentIndex];
-    }
-
-    if (entity != null || sharedLookups.containsKey(widget.sheetName)) {
-      final lookupKeys =
-          entity?.getLookupKeys() ?? sharedLookups[widget.sheetName];
-      if (lookupKeys != null) {
-        for (var entry in lookupKeys.entries) {
-          for (var colName in entry.value) {
-            _lookupCache[colName] = entry.key;
-          }
+    // Use sharedLookups for lookup type resolution
+    final lookupKeys = sharedLookups[widget.sheetName];
+    if (lookupKeys != null) {
+      for (var entry in lookupKeys.entries) {
+        for (var colName in entry.value) {
+          _lookupCache[colName] = entry.key;
         }
       }
     }
 
     for (var col in widget.columns) {
-      // Cache Enums
+      // Cache enum options based on column type
       if (!_enumOptionsCache.containsKey(col.originalName)) {
-        _enumOptionsCache[col.originalName] = WdbSchemaRegistry.getEnumOptions(
-          widget.sheetName,
-          col.originalName,
-        );
+        _enumOptionsCache[col.originalName] = _getEnumOptionsForColumn(col);
       }
 
       // Initialize Controllers
@@ -103,11 +95,46 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
           _controllers[col.originalName] = TextEditingController();
         }
         // Update text
-        final text = _editedRow[col.originalName]?.toString() ?? '';
+        final val = _editedRow[col.originalName];
+        final text = (val is Enum) ? val.name : (val?.toString() ?? '');
         if (_controllers[col.originalName]!.text != text) {
           _controllers[col.originalName]!.text = text;
         }
       }
+    }
+  }
+
+  /// Get enum options for a column based on its type
+  List<String>? _getEnumOptionsForColumn(WdbColumn col) {
+    // Check if the column type is an enum type from WdbColumnType
+    switch (col.type) {
+      case WdbColumnType.crystalRole:
+        return CrystalRole.values.map((e) => e.name).toList();
+      case WdbColumnType.crystalNodeType:
+        return CrystalNodeType.values.map((e) => e.name).toList();
+      default:
+        return null;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant WdbRecordEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Clean up controllers for columns that no longer exist
+    if (widget.columns != oldWidget.columns) {
+      final currentColumnNames =
+          widget.columns.map((c) => c.originalName).toSet();
+      final controllersToRemove = _controllers.keys
+          .where((key) => !currentColumnNames.contains(key))
+          .toList();
+
+      for (final key in controllersToRemove) {
+        _controllers[key]?.dispose();
+        _controllers.remove(key);
+      }
+      _enumOptionsCache.clear();
+      _lookupCache.clear();
+      _initializeFields();
     }
   }
 
@@ -116,6 +143,7 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
     for (var controller in _controllers.values) {
       controller.dispose();
     }
+    _controllers.clear();
     super.dispose();
   }
 
@@ -158,9 +186,8 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
   }
 
   bool _isBool(WdbColumn col) {
-    if (col.type == native.WDBValueType.WDB_VALUE_TYPE_BOOL) return true;
-    if (col.type == native.WDBValueType.WDB_VALUE_TYPE_INT ||
-        col.type == native.WDBValueType.WDB_VALUE_TYPE_UINT) {
+    if (col.type == WdbColumnType.bool) return true;
+    if (col.type == WdbColumnType.int) {
       final name = col.originalName;
       if (name.startsWith('b')) return true;
       if (name.startsWith('u1')) {
@@ -174,34 +201,33 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
   }
 
   bool _isNumber(WdbColumn col) {
-    return col.type == native.WDBValueType.WDB_VALUE_TYPE_INT ||
-        col.type == native.WDBValueType.WDB_VALUE_TYPE_UINT ||
-        col.type == native.WDBValueType.WDB_VALUE_TYPE_FLOAT;
+    return col.type == WdbColumnType.int ||
+        col.type == WdbColumnType.float;
   }
 
-  Widget _buildTypeBadge(native.WDBValueType type) {
+  Widget _buildTypeBadge(WdbColumnType type) {
     Color color;
     String label;
     switch (type) {
-      case native.WDBValueType.WDB_VALUE_TYPE_INT:
+      case WdbColumnType.int:
         color = Colors.blueAccent;
         label = 'INT';
         break;
-      case native.WDBValueType.WDB_VALUE_TYPE_UINT:
-        color = Colors.lightBlueAccent;
-        label = 'UINT';
-        break;
-      case native.WDBValueType.WDB_VALUE_TYPE_FLOAT:
+      case WdbColumnType.float:
         color = Colors.orangeAccent;
         label = 'DEC';
         break;
-      case native.WDBValueType.WDB_VALUE_TYPE_STRING:
+      case WdbColumnType.string:
         color = Colors.greenAccent;
         label = 'STR';
         break;
-      case native.WDBValueType.WDB_VALUE_TYPE_BOOL:
+      case WdbColumnType.bool:
         color = Colors.purpleAccent;
         label = 'BOOL';
+        break;
+      case WdbColumnType.array:
+        color = Colors.tealAccent;
+        label = 'ARR';
         break;
       default:
         color = Colors.grey;
@@ -247,11 +273,12 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
           value: isTrue,
           onChanged: (newValue) {
             setState(() {
-              if (col.type == native.WDBValueType.WDB_VALUE_TYPE_BOOL) {
-                _editedRow[originalName] = newValue;
-              } else {
-                _editedRow[originalName] = newValue ? 1 : 0;
-              }
+                          if (col.type == WdbColumnType.bool) {
+                            _editedRow[originalName] = newValue;
+                          } else {
+                            _editedRow[originalName] = newValue ? 1 : 0;
+                          }
+              
             });
             _saveCurrent();
           },
@@ -317,7 +344,7 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
         onChanged: (text) {
           dynamic newValue = text;
           if (isNum) {
-            if (col.type == native.WDBValueType.WDB_VALUE_TYPE_FLOAT) {
+            if (col.type == WdbColumnType.float) {
               newValue = double.tryParse(text) ?? 0.0;
             } else {
               newValue = int.tryParse(text) ?? 0;
@@ -508,10 +535,7 @@ class _WdbRecordEditorState extends State<WdbRecordEditor> {
 
                       if (i < columns - 1) {
                         columnWidgets.add(
-                          const VerticalDivider(
-                            width: 1,
-                            color: Colors.white10,
-                          ),
+                          const CrystalVerticalDivider.subtle(width: 1),
                         );
                       }
                     }

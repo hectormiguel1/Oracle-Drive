@@ -11,3 +11,10 @@ final selectedGameProvider = StateProvider<AppGameCode>((ref) {
 final navigationIndexProvider = StateProvider<int>((ref) {
   return 0;
 });
+
+/// Provider for workflow fullscreen mode.
+/// When true, the workflow screen is displayed in fullscreen mode
+/// without the navigation rail.
+final workflowFullscreenProvider = StateProvider<bool>((ref) {
+  return false;
+});

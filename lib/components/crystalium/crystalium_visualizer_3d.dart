@@ -310,8 +310,8 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
 
     final widgets = <Widget>[];
 
-    // Determine labels based on count
-    final isFork = directions.length > 1;
+    // Check if we're at the root node
+    final isAtRoot = _walker!.currentNodeId == 0;
 
     for (var i = 0; i < directions.length; i++) {
       final dir = directions[i];
@@ -325,20 +325,20 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
 
       final color = _getRoleColor(dir.roleId);
 
-      // Determine label
+      // Determine label - show role name at root, otherwise show target node name
       String label;
       IconData icon;
-      if (isFork) {
-        if (directions.length == 2) {
-          label = i == 0 ? 'Left' : 'Right';
-          icon = i == 0 ? Icons.turn_left : Icons.turn_right;
-        } else {
-          label = 'Fork ${i + 1}';
-          icon = Icons.call_split;
-        }
+      if (isAtRoot) {
+        // At root, show the role name we're going to
+        final role = CrystariumRole.fromId(dir.roleId);
+        label = role.abbreviation;
+        icon = Icons.call_split;
       } else {
-        label = 'Next';
-        icon = Icons.arrow_upward;
+        // Not at root, show the target node's name
+        final targetNode = widget.cgtFile.getNode(dir.nodeId);
+        final nodeName = targetNode?.name.replaceAll(RegExp(r'\x00'), '') ?? '';
+        label = nodeName.isNotEmpty ? nodeName : '#${dir.nodeId}';
+        icon = directions.length > 1 ? Icons.call_split : Icons.arrow_upward;
       }
 
       widgets.add(
@@ -371,20 +371,26 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                   ),
                 ],
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: Colors.white, size: 28),
-                  const SizedBox(height: 2),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, color: Colors.white, size: 24),
+                    const SizedBox(height: 2),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isAtRoot ? 11 : 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -402,16 +408,23 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
             parentInfo == null || _enabledRoles.contains(parentInfo.roleId);
 
         if (parentRoleEnabled) {
+          // Get parent node name
+          final parentNode = _renderer.cgtFile.getNode(cgtNode.parentIndex);
+          final parentName =
+              parentNode?.name.replaceAll(RegExp(r'\x00'), '') ?? '';
+          final prevLabel =
+              parentName.isNotEmpty ? parentName : '#${cgtNode.parentIndex}';
+
           widgets.add(
             Positioned(
-              left: centerX - 50,
+              left: centerX - 60,
               bottom: 30,
               child: GestureDetector(
                 onTap: () {
                   setState(() => _walker!.moveToParent());
                 },
                 child: Container(
-                  width: 100,
+                  width: 120,
                   height: 55,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
@@ -428,14 +441,19 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.arrow_downward, color: Colors.white, size: 22),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Prev',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                      Icon(Icons.arrow_downward, color: Colors.white, size: 18),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          prevLabel,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],
@@ -1105,17 +1123,17 @@ class _CrystaliumVisualizer3DState extends State<CrystaliumVisualizer3D>
 
   Color _getRoleColor(int roleId) {
     switch (roleId) {
-      case 0:
-        return const Color(0xFFFF4444); // COM - Red
       case 1:
+        return const Color(0xFFFF4444); // COM - Red
+      case 5:
         return const Color(0xFF44FF44); // RAV - Green
       case 2:
         return const Color(0xFF4444FF); // SEN - Blue
       case 3:
         return const Color(0xFFFF44FF); // SAB - Magenta
-      case 4:
+      case 0:
         return const Color(0xFFFFFF44); // SYN - Yellow
-      case 5:
+      case 4:
         return const Color(0xFF44FFFF); // MED - Cyan
       default:
         return Colors.white;
@@ -1579,17 +1597,17 @@ class CrystariumPainter extends CustomPainter {
 
   Color _getRoleColor(int roleId) {
     switch (roleId) {
-      case 0:
-        return const Color(0xFFFF4444);
       case 1:
+        return const Color(0xFFFF4444);
+      case 5:
         return const Color(0xFF44FF44);
       case 2:
         return const Color(0xFF4444FF);
       case 3:
         return const Color(0xFFFF44FF);
-      case 4:
+      case 0:
         return const Color(0xFFFFFF44);
-      case 5:
+      case 4:
         return const Color(0xFF44FFFF);
       default:
         return Colors.white;

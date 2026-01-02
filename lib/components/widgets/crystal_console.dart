@@ -1,10 +1,11 @@
 import 'package:oracle_drive/components/widgets/style.dart';
-import 'package:oracle_drive/src/third_party/logging_ctx.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
 import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 
 class CrystalConsole extends StatefulWidget {
   final VoidCallback onClose;
@@ -19,23 +20,26 @@ class _CrystalConsoleState extends State<CrystalConsole> {
   final ScrollController _scrollController = ScrollController();
   final List<String> _logs = [];
   bool _autoScroll = true;
+  StreamSubscription<String>? _logSubscription;
 
   @override
   void initState() {
     super.initState();
+    _logs.addAll(NativeService.instance.logHistory);
     _registerCallback();
+    _scrollToBottom();
   }
 
   void _registerCallback() {
-    LoggingCtx.registerLoggingCallback(
-      (msg) => setState(() {
+    _logSubscription = NativeService.instance.logStream.listen((msg) {
+      if (!mounted) return;
+      setState(() {
         _logs.add(msg);
         if (_autoScroll) {
           _scrollToBottom();
         }
-      }),
-      LogLevel.Info,
-    );
+      });
+    });
   }
 
   void _scrollToBottom() {
@@ -48,6 +52,7 @@ class _CrystalConsoleState extends State<CrystalConsole> {
 
   @override
   void dispose() {
+    _logSubscription?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -92,6 +97,19 @@ class _CrystalConsoleState extends State<CrystalConsole> {
                   ),
                 ),
                 const Spacer(),
+                // Test Log Button
+                IconButton(
+                  icon: const Icon(
+                    Icons.bug_report_outlined,
+                    color: Colors.white54,
+                    size: 18,
+                  ),
+                  onPressed: () => NativeService.instance.testLog("Manual test from Console UI"),
+                  tooltip: 'Test Rust Log',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 16),
                 // Clear Button
                 IconButton(
                   icon: const Icon(

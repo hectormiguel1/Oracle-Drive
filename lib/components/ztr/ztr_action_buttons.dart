@@ -6,20 +6,22 @@ class ZtrActionButtons extends StatelessWidget {
   final AppGameCode selectedGame;
   final int stringCount;
   final VoidCallback onLoadZtrFile;
+  final VoidCallback? onLoadZtrDirectory;
   final VoidCallback onDumpZtrFile;
   final VoidCallback onDumpTxtFile;
   final VoidCallback onResetDatabase;
-  final VoidCallback onAddEntry; // New callback
+  final VoidCallback onAddEntry;
 
   const ZtrActionButtons({
     super.key,
     required this.selectedGame,
     required this.stringCount,
     required this.onLoadZtrFile,
+    this.onLoadZtrDirectory,
     required this.onDumpZtrFile,
     required this.onDumpTxtFile,
     required this.onResetDatabase,
-    required this.onAddEntry, // Mark as required
+    required this.onAddEntry,
   });
 
   @override
@@ -27,11 +29,24 @@ class ZtrActionButtons extends StatelessWidget {
     if (stringCount == 0) {
       // This block is now handled by ZtrScreen directly, but keeping it
       // here for completeness if logic changes later.
-      return CrystalButton(
-        icon: Icons.folder_open,
-        label: "Load ZTR File",
-        onPressed: onLoadZtrFile,
-        isPrimary: true,
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CrystalButton(
+            icon: Icons.insert_drive_file,
+            label: "Load ZTR File",
+            onPressed: onLoadZtrFile,
+            isPrimary: true,
+          ),
+          if (onLoadZtrDirectory != null) ...[
+            const SizedBox(width: 10),
+            CrystalButton(
+              icon: Icons.folder_open,
+              label: "Load Directory",
+              onPressed: onLoadZtrDirectory!,
+            ),
+          ],
+        ],
       );
     } else {
       return Column(
@@ -41,35 +56,39 @@ class ZtrActionButtons extends StatelessWidget {
             style: const TextStyle(color: Colors.white, fontSize: 18),
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
             children: [
               CrystalButton(
-                icon: Icons.file_upload,
-                label: "Load/Overwrite",
+                icon: Icons.insert_drive_file,
+                label: "Load File",
                 onPressed: onLoadZtrFile,
               ),
-              const SizedBox(width: 10),
+              if (onLoadZtrDirectory != null)
+                CrystalButton(
+                  icon: Icons.folder_open,
+                  label: "Load Directory",
+                  onPressed: onLoadZtrDirectory!,
+                ),
               CrystalButton(
                 icon: Icons.download,
                 label: "Dump to ZTR",
                 onPressed: onDumpZtrFile,
               ),
-              const SizedBox(width: 10),
               CrystalButton(
                 icon: Icons.text_snippet,
                 label: "Dump to Text",
                 onPressed: onDumpTxtFile,
               ),
-              const SizedBox(width: 10),
               CrystalButton(
-                icon: Icons.add_box, // New icon for adding
-                label: "Add New Entry",
-                onPressed: onAddEntry, // New button
+                icon: Icons.add_box,
+                label: "Add Entry",
+                onPressed: onAddEntry,
               ),
-              const SizedBox(width: 10),
               CrystalButton(
-                icon: Icons.delete_forever, // Changed icon
+                icon: Icons.delete_forever,
                 label: "Reset Database",
                 onPressed: onResetDatabase,
               ),

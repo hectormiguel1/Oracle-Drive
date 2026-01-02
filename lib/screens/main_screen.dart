@@ -2,16 +2,18 @@ import 'package:oracle_drive/components/game_selector.dart';
 import 'package:oracle_drive/components/widgets/crystal_background.dart';
 import 'package:oracle_drive/components/widgets/crystal_button.dart';
 import 'package:oracle_drive/components/widgets/crystal_console.dart';
+import 'package:oracle_drive/components/widgets/crystal_divider.dart';
 import 'package:oracle_drive/components/widgets/crystal_dropdowns.dart';
-import 'package:oracle_drive/components/widgets/crystal_icon_button.dart';
 import 'package:oracle_drive/components/widgets/crystal_panel.dart';
 import 'package:oracle_drive/models/app_game_code.dart';
 import 'package:oracle_drive/providers/app_state_provider.dart';
 import 'package:oracle_drive/screens/crystalium_screen.dart';
 import 'package:oracle_drive/screens/wbt_screen.dart';
 import 'package:oracle_drive/screens/wdb_screen.dart';
+import 'package:oracle_drive/screens/workflow_screen.dart';
 import 'package:oracle_drive/screens/wpd_screen.dart';
 import 'package:oracle_drive/screens/ztr_screen.dart';
+import 'package:oracle_drive/screens/settings_screen.dart';
 import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,130 +67,137 @@ class _MainScreenState extends ConsumerState<MainScreen>
     });
   }
 
-  void _onGameChanged(AppGameCode g) {
-    final currentIdx = ref.read(navigationIndexProvider);
-    // Crystalium (index 4) is only available for FF13
-    if (g != AppGameCode.ff13_1 && currentIdx == 4) {
-      ref.read(navigationIndexProvider.notifier).state = 0;
-    }
-    ref.read(selectedGameProvider.notifier).state = g;
-  }
-
   List<Widget> _buildScreens(AppGameCode selectedGame) {
     return [
       const WhiteBinToolsScreen(),
       const WpdScreen(),
       const WdbScreen(),
-      ZtrScreen(selectedGame: selectedGame),
+      const ZtrScreen(),
+      const WorkflowScreen(),
       if (selectedGame == AppGameCode.ff13_1) const CrystaliumScreen(),
+      const SettingsScreen(),
     ];
+  }
+
+  /// Get the settings screen index based on game selection.
+  int _settingsIndex(AppGameCode game) {
+    return game == AppGameCode.ff13_1 ? 6 : 5;
   }
 
   @override
   Widget build(BuildContext context) {
     final selectedGame = ref.watch(selectedGameProvider);
     final selectedIndex = ref.watch(navigationIndexProvider);
+    final screens = _buildScreens(selectedGame);
+    // Clamp index to valid range to prevent out-of-bounds during game transitions
+    final safeIndex = selectedIndex.clamp(0, screens.length - 1);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           const Positioned.fill(child: CrystalBackgroundGrid()),
-          Positioned.fill(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
+          AnimatedBuilder(
+            animation: _paddingAnimation,
+            builder: (context, child) {
+              return Padding(
+                padding: EdgeInsets.only(bottom: _paddingAnimation.value),
+                child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: 270,
-                    child: CrystalPanel(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 20,
-                        horizontal: 10,
-                      ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Icon(
-                              Icons.diamond,
-                              color: Theme.of(
-                                context,
-                              ).extension<CrystalTheme>()!.accent,
-                              size: 32,
-                            ),
-                            const SizedBox(height: 20),
-                            _buildGameDropdown(selectedGame),
-                            const SizedBox(height: 150),
-                            _buildNavButton(0, "Archives", Icons.archive),
-                            const SizedBox(height: 10),
-                            _buildNavButton(1, "WPD", Icons.folder_zip),
-                            const SizedBox(height: 10),
-                            _buildNavButton(2, "WDB", Icons.table_chart),
-                            const SizedBox(height: 10),
-                            _buildNavButton(3, "ZTR", Icons.description),
-                            if (selectedGame == AppGameCode.ff13_1) ...[
-                              const SizedBox(height: 10),
-                              _buildNavButton(4, "Crystalium", Icons.auto_graph),
-                            ],
-                          ],
+                  child: child,
+                ),
+              );
+            },
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 270,
+                  child: CrystalPanel(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 20,
+                      horizontal: 10,
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.diamond,
+                          color: Theme.of(
+                            context,
+                          ).extension<CrystalTheme>()!.accent,
+                          size: 32,
                         ),
-                      ),
+                        const SizedBox(height: 20),
+                        _buildGameDropdown(selectedGame),
+                        const SizedBox(height: 150),
+                        _buildNavButton(0, "Archives", Icons.archive),
+                        const SizedBox(height: 10),
+                        _buildNavButton(1, "Workspace", Icons.folder_zip),
+                        const SizedBox(height: 10),
+                        _buildNavButton(2, "Database(s)", Icons.table_chart),
+                        const SizedBox(height: 10),
+                        _buildNavButton(3, "ZTR", Icons.description),
+                        const SizedBox(height: 10),
+                        _buildNavButton(4, "Workflows", Icons.account_tree),
+                        if (selectedGame == AppGameCode.ff13_1) ...[
+                          const SizedBox(height: 10),
+                          _buildNavButton(5, "Crystalium", Icons.auto_graph),
+                        ],
+                        const Spacer(),
+                        const CrystalDivider.subtle(),
+                        const SizedBox(height: 12),
+                        _buildNavButton(
+                          _settingsIndex(selectedGame),
+                          "Settings",
+                          Icons.settings,
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: CrystalButton(
+                            label: _isConsoleOpen ? "Hide Console" : "Console",
+                            icon: _isConsoleOpen
+                                ? Icons.terminal_rounded
+                                : Icons.terminal_outlined,
+                            isPrimary: _isConsoleOpen,
+                            onPressed: _toggleConsole,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const VerticalDivider(
-                  thickness: 1,
-                  width: 1,
-                  color: Colors.white10,
-                ),
+                const CrystalVerticalDivider.subtle(width: 1),
                 Expanded(
-                  child: AnimatedBuilder(
-                    animation: _paddingAnimation,
-                    builder: (context, child) {
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: _paddingAnimation.value,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: child,
-                        ),
-                      );
+                  child: GameSelector(
+                    selectedGame: selectedGame,
+                    onGameChanged: (g) {
+                      final previousGame = ref.read(selectedGameProvider);
+                      final currentIdx = ref.read(navigationIndexProvider);
+                      final wasOnSettings = currentIdx == _settingsIndex(previousGame);
+
+                      // Update navigation index BEFORE changing game to avoid out-of-bounds
+                      if (wasOnSettings) {
+                        // Stay on Settings when switching games
+                        ref.read(navigationIndexProvider.notifier).state = _settingsIndex(g);
+                      } else if (g != AppGameCode.ff13_1 && currentIdx == 5) {
+                        // Crystalium (index 5) only exists for FF13 - go to first screen
+                        ref.read(navigationIndexProvider.notifier).state = 0;
+                      } else if (g != AppGameCode.ff13_1 && currentIdx > 5) {
+                        // Index out of bounds for non-FF13 games - go to first screen
+                        ref.read(navigationIndexProvider.notifier).state = 0;
+                      }
+
+                      ref.read(selectedGameProvider.notifier).state = g;
                     },
-                    child: GameSelector(
-                      selectedGame: selectedGame,
-                      onGameChanged: _onGameChanged,
-                      child: IndexedStack(
-                        index: selectedIndex,
-                        children: _buildScreens(selectedGame),
-                      ),
+                    child: IndexedStack(
+                      index: safeIndex,
+                      children: screens,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          // Console Toggle
-          AnimatedBuilder(
-            animation: _paddingAnimation,
-            builder: (context, child) {
-              return Positioned(
-                right: 20,
-                bottom: 20 + _paddingAnimation.value,
-                child: child!,
-              );
-            },
-            child: CrystalIconButton(
-              onPressed: _toggleConsole,
-              icon: _isConsoleOpen
-                  ? Icons.terminal_rounded
-                  : Icons.terminal_outlined,
-              tooltip: _isConsoleOpen ? "Close Console" : "Open Console",
-              isSelected: _isConsoleOpen,
-            ),
-          ),
-
           // Console Panel
           Align(
             alignment: Alignment.bottomCenter,
@@ -218,7 +227,9 @@ class _MainScreenState extends ConsumerState<MainScreen>
         value: current,
         items: AppGameCode.values,
         itemLabelBuilder: (g) => g.displayName,
-        onChanged: _onGameChanged,
+        onChanged: (val) {
+          ref.read(selectedGameProvider.notifier).state = val;
+        },
       ),
     );
   }
