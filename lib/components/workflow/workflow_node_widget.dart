@@ -5,6 +5,7 @@ import '../../models/workflow/workflow_models.dart';
 import '../../providers/workflow_provider.dart';
 import '../widgets/crystal_panel.dart';
 import '../widgets/crystal_popup_menu.dart';
+import 'container_node_widget.dart';
 
 /// Visual representation of a workflow node.
 class WorkflowNodeWidget extends ConsumerStatefulWidget {
@@ -12,11 +13,16 @@ class WorkflowNodeWidget extends ConsumerStatefulWidget {
   final bool isSelected;
   final bool isConnecting;
 
+  /// Whether this node is rendered inside a container (Loop/ForEach).
+  /// When true, container nodes are rendered as regular nodes.
+  final bool isContainerChild;
+
   const WorkflowNodeWidget({
     super.key,
     required this.node,
     this.isSelected = false,
     this.isConnecting = false,
+    this.isContainerChild = false,
   });
 
   @override
@@ -28,6 +34,16 @@ class _WorkflowNodeWidgetState extends ConsumerState<WorkflowNodeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Delegate to ContainerNodeWidget for container types (Loop, ForEach)
+    // unless this is rendered inside another container
+    if (widget.node.type.isContainer && !widget.isContainerChild) {
+      return ContainerNodeWidget(
+        node: widget.node,
+        isSelected: widget.isSelected,
+        isConnecting: widget.isConnecting,
+      );
+    }
+
     final nodeColor = widget.node.type.nodeColor;
     final executionMode = widget.node.type.executionMode;
 

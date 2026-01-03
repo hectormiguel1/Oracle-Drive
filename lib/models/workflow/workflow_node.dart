@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:logging/logging.dart';
 import 'node_type.dart';
+import 'workflow_connection.dart';
 import '../../src/workflow/utils/deep_copy.dart';
 
 final _logger = Logger('WorkflowNode');
@@ -13,12 +14,22 @@ class WorkflowNode {
   Map<String, dynamic> config;
   String? label;
 
+  /// Child nodes for container types (Loop, ForEach).
+  /// Only applicable when [type.isContainer] is true.
+  List<WorkflowNode>? children;
+
+  /// Connections between child nodes within this container.
+  /// Only applicable when [type.isContainer] is true.
+  List<WorkflowConnection>? childConnections;
+
   WorkflowNode({
     required this.id,
     required this.type,
     required this.position,
     Map<String, dynamic>? config,
     this.label,
+    this.children,
+    this.childConnections,
   }) : config = config ?? type.configSchema.defaultConfig;
 
   /// Whether this node is an entry point (no inputs).
@@ -53,6 +64,8 @@ class WorkflowNode {
     Offset? position,
     Map<String, dynamic>? config,
     String? label,
+    List<WorkflowNode>? children,
+    List<WorkflowConnection>? childConnections,
   }) {
     return WorkflowNode(
       id: id ?? this.id,
@@ -61,6 +74,10 @@ class WorkflowNode {
       // Bug #50 fix: Use deep copy to avoid shared references
       config: config ?? DeepCopyUtils.copyConfig(this.config),
       label: label ?? this.label,
+      // Deep copy children to avoid shared references
+      children: children ?? this.children?.map((c) => c.copyWith()).toList(),
+      childConnections: childConnections ??
+          this.childConnections?.map((c) => c.copyWith()).toList(),
     );
   }
 
@@ -70,6 +87,10 @@ class WorkflowNode {
         'position': {'x': position.dx, 'y': position.dy},
         'config': config,
         if (label != null) 'label': label,
+        if (children != null && children!.isNotEmpty)
+          'children': children!.map((c) => c.toJson()).toList(),
+        if (childConnections != null && childConnections!.isNotEmpty)
+          'childConnections': childConnections!.map((c) => c.toJson()).toList(),
       };
 
   factory WorkflowNode.fromJson(Map<String, dynamic> json) {
@@ -83,6 +104,11 @@ class WorkflowNode {
         return NodeType.start;
       },
     );
+
+    // Parse children for container nodes
+    final childrenJson = json['children'] as List?;
+    final childConnectionsJson = json['childConnections'] as List?;
+
     return WorkflowNode(
       id: json['id'] as String,
       type: type,
@@ -92,6 +118,12 @@ class WorkflowNode {
       ),
       config: Map<String, dynamic>.from(json['config'] as Map? ?? {}),
       label: json['label'] as String?,
+      children: childrenJson
+          ?.map((c) => WorkflowNode.fromJson(c as Map<String, dynamic>))
+          .toList(),
+      childConnections: childConnectionsJson
+          ?.map((c) => WorkflowConnection.fromJson(c as Map<String, dynamic>))
+          .toList(),
     );
   }
 

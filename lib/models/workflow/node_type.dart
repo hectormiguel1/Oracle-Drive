@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../models/app_game_code.dart';
 import 'node_config.dart';
 import 'node_status.dart';
 
@@ -10,6 +11,7 @@ enum NodeCategory {
   img('IMG Operations', Icons.image),
   wdb('WDB Operations', Icons.storage),
   ztr('ZTR Operations', Icons.translate),
+  cgt('CGT Operations', Icons.diamond),
   variable('Variables', Icons.data_object);
 
   final String displayName;
@@ -61,6 +63,16 @@ enum NodeType {
   ztrAddEntry('Add Entry', NodeCategory.ztr, Icons.add),
   ztrDeleteEntry('Delete Entry', NodeCategory.ztr, Icons.delete),
 
+  // CGT Operations (Crystalium - FF13 only)
+  cgtOpen('Open CGT', NodeCategory.cgt, Icons.folder_open),
+  cgtSave('Save CGT', NodeCategory.cgt, Icons.save),
+  cgtAddOffshoot('Add Offshoot', NodeCategory.cgt, Icons.add_circle),
+  cgtAddChain('Add Chain', NodeCategory.cgt, Icons.link),
+  cgtUpdateEntry('Update Entry', NodeCategory.cgt, Icons.edit),
+  cgtUpdateNodeName('Update Node Name', NodeCategory.cgt, Icons.drive_file_rename_outline),
+  cgtFindEntry('Find Entry', NodeCategory.cgt, Icons.search),
+  cgtDeleteEntry('Delete Entry', NodeCategory.cgt, Icons.delete),
+
   // Variables
   setVariable('Set Variable', NodeCategory.variable, Icons.edit_attributes),
   getVariable('Get Variable', NodeCategory.variable, Icons.download),
@@ -78,6 +90,10 @@ enum NodeType {
   /// Whether this node is a terminal (has no outputs).
   bool get isTerminalNode => this == NodeType.end;
 
+  /// Whether this node type is a container that holds child nodes.
+  /// Container nodes render their children inside the node widget.
+  bool get isContainer => this == NodeType.loop || this == NodeType.forEach;
+
   /// Input port definitions for this node type.
   /// Bug #16 fix: Removed unused 'continue' port from Loop/ForEach - the engine
   /// handles iteration internally by re-executing the loop node after body completion.
@@ -90,18 +106,19 @@ enum NodeType {
       };
 
   /// Output port definitions for this node type.
+  /// Note: Loop and ForEach are container nodes - they execute children internally
+  /// and only have a 'done' output port for continuation after the loop completes.
   List<PortDefinition> get outputPorts => switch (this) {
         NodeType.end => [],
         NodeType.condition => [
             const PortDefinition('true', 'True', color: Colors.green),
             const PortDefinition('false', 'False', color: Colors.red),
           ],
+        // Container nodes only have 'done' port - children are executed internally
         NodeType.forEach => [
-            const PortDefinition('body', 'Body'),
             const PortDefinition('done', 'Done'),
           ],
         NodeType.loop => [
-            const PortDefinition('body', 'Body'),
             const PortDefinition('done', 'Done'),
           ],
         NodeType.fork => [
@@ -114,6 +131,11 @@ enum NodeType {
           ],
         // Bug #2 fix: ztrFindEntry returns 'found'/'notFound' ports
         NodeType.ztrFindEntry => [
+            const PortDefinition('found', 'Found', color: Colors.green),
+            const PortDefinition('notFound', 'Not Found', color: Colors.orange),
+          ],
+        // cgtFindEntry returns 'found'/'notFound' ports
+        NodeType.cgtFindEntry => [
             const PortDefinition('found', 'Found', color: Colors.green),
             const PortDefinition('notFound', 'Not Found', color: Colors.orange),
           ],
@@ -137,7 +159,23 @@ enum NodeType {
         NodeCategory.img => const Color(0xFF8BC34A), // Light green for image ops
         NodeCategory.wdb => const Color(0xFF00BCD4),
         NodeCategory.ztr => const Color(0xFFFF9800),
+        NodeCategory.cgt => const Color(0xFFE040FB), // Pink/Purple for Crystalium
         NodeCategory.variable => const Color(0xFF4CAF50),
+      };
+
+  /// The game codes this node type is available for.
+  /// Returns null if available for all games.
+  List<AppGameCode>? get availableForGames => switch (this) {
+        NodeType.cgtOpen ||
+        NodeType.cgtSave ||
+        NodeType.cgtAddOffshoot ||
+        NodeType.cgtAddChain ||
+        NodeType.cgtUpdateEntry ||
+        NodeType.cgtUpdateNodeName ||
+        NodeType.cgtFindEntry ||
+        NodeType.cgtDeleteEntry =>
+          [AppGameCode.ff13_1],
+        _ => null, // Available for all games
       };
 
   /// Execution mode for this node type.

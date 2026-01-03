@@ -323,13 +323,17 @@ pub fn wdb_from_json_string(json: &str) -> Result<WdbData> {
 use super::writer::WdbWriter;
 
 pub fn pack_wdb<P: AsRef<Path>>(
-    data: &WdbData, 
-    output_path: P, 
+    data: &WdbData,
+    output_path: P,
     game_code: GameCode
 ) -> Result<()> {
     let file = File::create(output_path)?;
     let mut writer = WdbWriter::new(BufWriter::new(file));
-    
+
     writer.write_file(data, game_code)?;
+
+    // Ensure data is fully written and synced to disk before returning
+    // This prevents race conditions when subsequent operations read the file
+    writer.into_inner().into_inner()?.sync_all()?;
     Ok(())
 }

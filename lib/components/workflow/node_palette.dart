@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/workflow/workflow_models.dart';
+import '../../providers/app_state_provider.dart';
 import '../widgets/crystal_panel.dart';
 import '../widgets/style.dart';
 
@@ -86,8 +87,18 @@ class _NodePaletteState extends ConsumerState<NodePalette> {
   }
 
   Widget _buildCategory(NodeCategory category) {
+    final currentGameCode = ref.watch(selectedGameProvider);
+
     final nodes = NodeType.values
         .where((n) => n.category == category)
+        .where((n) {
+          // Filter by game-specific availability
+          final availableGames = n.availableForGames;
+          if (availableGames != null && !availableGames.contains(currentGameCode)) {
+            return false;
+          }
+          return true;
+        })
         .where(
           (n) =>
               _searchQuery.isEmpty ||
@@ -95,7 +106,8 @@ class _NodePaletteState extends ConsumerState<NodePalette> {
         )
         .toList();
 
-    if (nodes.isEmpty && _searchQuery.isNotEmpty) {
+    // Hide empty categories (including game-specific ones with no available nodes)
+    if (nodes.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -158,10 +170,11 @@ class _NodePaletteState extends ConsumerState<NodePalette> {
       NodeCategory.control => const Color(0xFF7C4DFF),
       NodeCategory.wpd => const Color(0xFFE91E63),
       NodeCategory.wbt => const Color(0xFF9C27B0),
+      NodeCategory.img => const Color(0xFF8BC34A),
       NodeCategory.wdb => const Color(0xFF00BCD4),
       NodeCategory.ztr => const Color(0xFFFF9800),
+      NodeCategory.cgt => const Color(0xFFE040FB),
       NodeCategory.variable => const Color(0xFF4CAF50),
-      NodeCategory.img => const Color(0xFFFF5722),
     };
   }
 }

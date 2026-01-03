@@ -41,6 +41,18 @@ class _WorkflowScreenState extends ConsumerState<WorkflowScreen> {
     );
     final gameCode = ref.watch(selectedGameProvider);
 
+    // Listen for game code changes and close workflow if it has game-specific nodes
+    ref.listen<dynamic>(selectedGameProvider, (previous, current) {
+      if (previous != null && previous != current) {
+        final workflow = ref.read(workflowEditorProvider).workflow;
+        if (workflow != null) {
+          // Close the workflow when game mode changes
+          ref.read(workflowEditorProvider.notifier).close();
+          setState(() => _showWorkflowList = true);
+        }
+      }
+    });
+
     return CallbackShortcuts(
       bindings: _buildKeyboardShortcuts(),
       child: Focus(

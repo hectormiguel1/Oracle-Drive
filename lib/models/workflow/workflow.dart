@@ -73,9 +73,37 @@ class Workflow {
   List<WorkflowNode> get terminalNodes =>
       nodes.where((n) => n.type == NodeType.end).toList();
 
-  /// Find a node by ID.
+  /// Find a node by ID (top-level only).
   WorkflowNode? findNode(String id) =>
       nodes.where((n) => n.id == id).firstOrNull;
+
+  /// Find a node by ID, including searching within container children.
+  WorkflowNode? findNodeDeep(String id) {
+    for (final node in nodes) {
+      if (node.id == id) return node;
+      if (node.type.isContainer && node.children != null) {
+        for (final child in node.children!) {
+          if (child.id == id) return child;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Find the parent container of a child node, if any.
+  WorkflowNode? findParentContainer(String childId) {
+    for (final node in nodes) {
+      if (node.type.isContainer && node.children != null) {
+        if (node.children!.any((c) => c.id == childId)) {
+          return node;
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Check if a node is a child of a container.
+  bool isChildNode(String nodeId) => findParentContainer(nodeId) != null;
 
   /// Find connections from a node.
   List<WorkflowConnection> findConnectionsFrom(String nodeId) =>
@@ -208,6 +236,22 @@ class Workflow {
           nodeId: node.id,
           message: '${node.displayName}: $error',
         ));
+      }
+    }
+
+    // Validate no nested containers
+    for (final node in nodes) {
+      if (node.type.isContainer && node.children != null) {
+        for (final child in node.children!) {
+          if (child.type.isContainer) {
+            errors.add(WorkflowValidationError(
+              type: ValidationErrorType.nestedContainer,
+              nodeId: child.id,
+              message:
+                  'Container nodes (${child.displayName}) cannot be nested inside other containers',
+            ));
+          }
+        }
       }
     }
 
@@ -351,6 +395,7 @@ enum ValidationErrorType {
   disconnectedNode,
   invalidConfig,
   cyclicDependency,
+  nestedContainer,
 }
 
 /// A validation error in a workflow.

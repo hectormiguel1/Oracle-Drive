@@ -289,8 +289,37 @@ class WbtRepackFilesExecutor extends NodeExecutor {
     String fileListPath,
     String binPath,
   ) async {
-    final targetPathInArchive = node.config['targetPathInArchive']?.toString() ?? '';
-    final fileToInject = node.config['fileToInject']?.toString() ?? '';
+    String targetPathInArchive = node.config['targetPathInArchive']?.toString() ?? '';
+    String fileToInject = node.config['fileToInject']?.toString() ?? '';
+
+    // Auto-detect paths from source nodes if configured
+    final sourceWdbNode = node.config['sourceWdbNode']?.toString();
+    final sourceExtractNode = node.config['sourceExtractNode']?.toString();
+
+    if (sourceWdbNode != null && sourceWdbNode.isNotEmpty) {
+      // Get the save path from the WDB save node
+      final savePath = context.getVariable('${sourceWdbNode}_savePath')?.toString();
+      if (savePath != null && savePath.isNotEmpty) {
+        fileToInject = savePath;
+
+        // If we also have the extract node, calculate the archive path
+        if (sourceExtractNode != null && sourceExtractNode.isNotEmpty) {
+          final extractDir = context.getVariable('${sourceExtractNode}_outputDir')?.toString();
+          if (extractDir != null && extractDir.isNotEmpty) {
+            // Calculate relative path (archive path) by removing the extract dir prefix
+            String relativePath = savePath;
+            if (savePath.startsWith(extractDir)) {
+              relativePath = savePath.substring(extractDir.length);
+              // Remove leading slash if present
+              if (relativePath.startsWith('/') || relativePath.startsWith('\\')) {
+                relativePath = relativePath.substring(1);
+              }
+            }
+            targetPathInArchive = relativePath.replaceAll('\\', '/');
+          }
+        }
+      }
+    }
 
     if (targetPathInArchive.isEmpty) {
       return NodeExecutionResult(

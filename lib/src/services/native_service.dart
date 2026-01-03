@@ -41,6 +41,9 @@ class NativeService {
   // Static flag to track Rust SDK initialization (survives hot restart)
   static bool _rustInitialized = false;
 
+  // Track if an error dialog is currently showing to prevent multiple popups
+  bool _isErrorDialogShowing = false;
+
   Stream<String> get logStream {
     _logStreamController ??= StreamController.broadcast();
     return _logStreamController!.stream;
@@ -101,7 +104,7 @@ class NativeService {
 
     _logger.info("NativeService initialized (using fabula_nova_sdk).");
     await sdk.testLog(message: "NativeService initialized successfully.");
-    sdk.setLogLevel(level: 3);
+    sdk.setLogLevel(level: 4);
   }
 
   /// Poll for new logs from Rust (less frequent in debug mode to reduce overhead)
@@ -143,7 +146,10 @@ class NativeService {
       );
 
       // Check if this sheet has a LookupConfig and upsert lookups
-      final lookupConfig = LookupConfigRegistry.instance.resolve(game, sheetName);
+      final lookupConfig = LookupConfigRegistry.instance.resolve(
+        game,
+        sheetName,
+      );
       if (lookupConfig != null) {
         final lookups = <EntityLookup>[];
         for (final row in wdbData.rows) {
@@ -536,11 +542,13 @@ class NativeService {
 
         if (entriesToInsert.isNotEmpty) {
           final stringsToInsert = entriesToInsert
-              .map((e) => Strings(
-                    strResourceId: e.id,
-                    value: e.text,
-                    sourceFile: e.sourceFile,
-                  ))
+              .map(
+                (e) => Strings(
+                  strResourceId: e.id,
+                  value: e.text,
+                  sourceFile: e.sourceFile,
+                ),
+              )
               .toList();
 
           repo.insertStringsWithSource(stringsToInsert);
@@ -581,7 +589,9 @@ class NativeService {
         outFile: outPath,
         gameCode: game.index,
       );
-      _logger.info("Dumped ${entries.length} strings from $sourceFile to $outPath");
+      _logger.info(
+        "Dumped ${entries.length} strings from $sourceFile to $outPath",
+      );
     } catch (e) {
       _showErrorDialog("ZTR Dump By Source Error", e.toString());
       rethrow;
@@ -670,20 +680,32 @@ class NativeService {
   }
 
   void _showErrorDialog(String title, String message) {
+    // Prevent multiple error dialogs from stacking
+    if (_isErrorDialogShowing) {
+      _logger.warning('Suppressing duplicate error dialog: $title');
+      return;
+    }
+
     if (navigatorKey.currentContext != null) {
+      _isErrorDialogShowing = true;
       showDialog(
         context: navigatorKey.currentContext!,
+        barrierDismissible: false,
         builder: (context) => CrystalDialog(
           title: title,
           content: SingleChildScrollView(child: Text(message)),
           actions: [
             CrystalButton(
               label: 'OK',
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
           ],
         ),
-      );
+      ).then((_) {
+        _isErrorDialogShowing = false;
+      });
     }
   }
 

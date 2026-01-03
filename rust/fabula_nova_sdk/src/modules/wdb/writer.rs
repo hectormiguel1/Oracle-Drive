@@ -92,6 +92,11 @@ impl<W: Write + Seek> WdbWriter<W> {
         Self { writer }
     }
 
+    /// Consumes the writer and returns the underlying stream.
+    pub fn into_inner(self) -> W {
+        self.writer
+    }
+
     /// Writes complete WDB file from parsed data.
     ///
     /// Routes to game-specific writers based on `game_code`.

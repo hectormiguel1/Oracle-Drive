@@ -82,6 +82,12 @@ class _NodePropertyEditorState extends ConsumerState<_NodePropertyEditor> {
   late Map<String, TextEditingController> _controllers;
   late TextEditingController _labelController;
 
+  // Cached WDB data for bulk update preview (avoids repeated file loads)
+  WdbData? _cachedWdbData;
+  String? _cachedWdbPath;
+  bool _isLoadingWdbData = false;
+  String? _wdbLoadError;
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +100,10 @@ class _NodePropertyEditorState extends ConsumerState<_NodePropertyEditor> {
     if (oldWidget.node.id != widget.node.id) {
       _disposeControllers();
       _initControllers();
+      // Clear WDB cache when switching nodes
+      _cachedWdbData = null;
+      _cachedWdbPath = null;
+      _wdbLoadError = null;
     }
   }
 
@@ -237,58 +247,127 @@ class _NodePropertyEditorState extends ConsumerState<_NodePropertyEditor> {
       resolvedPath = '$workspaceDir/$resolvedPath';
     }
 
-    // Load WDB data and compute preview
-    return FutureBuilder<_BulkUpdatePreviewData>(
-      future: _computeBulkUpdatePreview(resolvedPath, gameCode),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildPreviewInfo(
-            icon: Icons.sync,
-            color: Colors.blue,
-            message: 'Loading preview...',
-            isLoading: true,
-          );
-        }
+    // Check if we need to load/reload the WDB data
+    if (_cachedWdbPath != resolvedPath && !_isLoadingWdbData) {
+      _loadWdbDataForPreview(resolvedPath, gameCode);
+    }
 
-        if (snapshot.hasError) {
-          return _buildPreviewInfo(
-            icon: Icons.error_outline,
-            color: Colors.red,
-            message: 'Error: ${snapshot.error}',
-          );
-        }
+    // Show loading state
+    if (_isLoadingWdbData) {
+      return _buildPreviewInfo(
+        icon: Icons.sync,
+        color: Colors.blue,
+        message: 'Loading preview...',
+        isLoading: true,
+      );
+    }
 
-        // Bug #55 fix: Add null check for snapshot.data
-        final data = snapshot.data;
-        if (data == null) {
-          return _buildPreviewInfo(
-            icon: Icons.warning_amber,
-            color: Colors.orange,
-            message: 'No preview data available',
-          );
-        }
-        final filter = widget.node.config['filter'] as String?;
-        final hasFilter = filter != null && filter.trim().isNotEmpty;
+    // Show error state
+    if (_wdbLoadError != null) {
+      return _buildPreviewInfo(
+        icon: Icons.error_outline,
+        color: Colors.red,
+        message: 'Error loading WDB',
+        subtitle: _wdbLoadError,
+      );
+    }
 
-        if (hasFilter) {
-          return _buildPreviewInfo(
-            icon: data.affectedRows == data.totalRows
-                ? Icons.select_all
-                : Icons.filter_alt,
-            color: Colors.cyan,
-            message: '${data.affectedRows} / ${data.totalRows} rows affected',
-            subtitle: data.filterError ?? 'Filter: $filter',
-            isError: data.filterError != null,
-          );
-        } else {
-          return _buildPreviewInfo(
-            icon: Icons.select_all,
-            color: Colors.green,
-            message: '${data.totalRows} rows affected (all rows)',
-            subtitle: 'No filter applied',
-          );
-        }
-      },
+    // Show preview from cached data
+    if (_cachedWdbData == null) {
+      return _buildPreviewInfo(
+        icon: Icons.warning_amber,
+        color: Colors.orange,
+        message: 'No preview data available',
+      );
+    }
+
+    // Compute affected rows from cached data (fast, in-memory operation)
+    final previewData = _computePreviewFromCachedData();
+    final filter = widget.node.config['filter'] as String?;
+    final hasFilter = filter != null && filter.trim().isNotEmpty;
+
+    if (hasFilter) {
+      return _buildPreviewInfo(
+        icon: previewData.affectedRows == previewData.totalRows
+            ? Icons.select_all
+            : Icons.filter_alt,
+        color: Colors.cyan,
+        message: '${previewData.affectedRows} / ${previewData.totalRows} rows affected',
+        subtitle: previewData.filterError ?? 'Filter: $filter',
+        isError: previewData.filterError != null,
+      );
+    } else {
+      return _buildPreviewInfo(
+        icon: Icons.select_all,
+        color: Colors.green,
+        message: '${previewData.totalRows} rows affected (all rows)',
+        subtitle: 'No filter applied',
+      );
+    }
+  }
+
+  /// Loads WDB data asynchronously and caches it for preview computation.
+  Future<void> _loadWdbDataForPreview(String path, AppGameCode gameCode) async {
+    if (_isLoadingWdbData) return;
+
+    setState(() {
+      _isLoadingWdbData = true;
+      _wdbLoadError = null;
+    });
+
+    try {
+      final wdbData = await NativeService.instance.parseWdb(path, gameCode);
+      if (mounted) {
+        setState(() {
+          _cachedWdbData = wdbData;
+          _cachedWdbPath = path;
+          _isLoadingWdbData = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _wdbLoadError = e.toString();
+          _cachedWdbPath = path; // Mark as attempted to prevent retry loop
+          _isLoadingWdbData = false;
+        });
+      }
+    }
+  }
+
+  /// Computes preview data from the cached WDB data (no file I/O).
+  _BulkUpdatePreviewData _computePreviewFromCachedData() {
+    final wdbData = _cachedWdbData;
+    if (wdbData == null) {
+      return _BulkUpdatePreviewData(totalRows: 0, affectedRows: 0);
+    }
+
+    final totalRows = wdbData.rows.length;
+    final filter = widget.node.config['filter'] as String?;
+
+    if (filter == null || filter.trim().isEmpty) {
+      return _BulkUpdatePreviewData(
+        totalRows: totalRows,
+        affectedRows: totalRows,
+      );
+    }
+
+    // Try to evaluate the filter expression
+    int affectedRows = 0;
+    String? filterError;
+
+    try {
+      affectedRows = _evaluateFilterCount(wdbData.rows, filter.trim());
+    } catch (e) {
+      // If filter evaluation fails, show error but still return total
+      filterError = 'Cannot evaluate filter: $e';
+      affectedRows = totalRows; // Assume all rows if filter can't be evaluated
+    }
+
+    return _BulkUpdatePreviewData(
+      totalRows: totalRows,
+      affectedRows: affectedRows,
+      filterError: filterError,
     );
   }
 
@@ -353,113 +432,110 @@ class _NodePropertyEditorState extends ConsumerState<_NodePropertyEditor> {
     );
   }
 
-  Future<_BulkUpdatePreviewData> _computeBulkUpdatePreview(
-    String wdbPath,
-    AppGameCode gameCode,
-  ) async {
-    try {
-      final wdbData = await NativeService.instance.parseWdb(wdbPath, gameCode);
-      final totalRows = wdbData.rows.length;
-      final filter = widget.node.config['filter'] as String?;
-
-      if (filter == null || filter.trim().isEmpty) {
-        return _BulkUpdatePreviewData(
-          totalRows: totalRows,
-          affectedRows: totalRows,
-        );
-      }
-
-      // Try to evaluate the filter expression
-      int affectedRows = 0;
-      String? filterError;
-
-      try {
-        affectedRows = _evaluateFilterCount(wdbData.rows, filter.trim());
-      } catch (e) {
-        // If filter evaluation fails, show error but still return total
-        filterError = 'Cannot evaluate filter: $e';
-        affectedRows = totalRows; // Assume all rows if filter can't be evaluated
-      }
-
-      return _BulkUpdatePreviewData(
-        totalRows: totalRows,
-        affectedRows: affectedRows,
-        filterError: filterError,
-      );
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   /// Evaluates a filter expression against WDB rows and returns the count of matching rows.
   /// Supports simple expressions like:
-  /// - ${_row.record}.startsWith("mcr_")
-  /// - ${_row.record}.contains("k9")
-  /// - ${_row.record} == "specific_id"
+  /// - ${row.record}.startsWith("mcr_")
+  /// - ${row.record}.contains("k9")
+  /// - ${row.record} == "specific_id"
+  ///
+  /// Compound expressions with || (OR) and && (AND):
+  /// - ${row.record}.startsWith("mat_") || ${row.record}.startsWith("item_")
+  /// - ${row.type} == "weapon" && ${row.level} != "0"
+  ///
+  /// Note: Both ${row.column} and ${_row.column} syntax are accepted.
   int _evaluateFilterCount(List<Map<String, dynamic>> rows, String filter) {
     int count = 0;
 
-    // Parse the filter expression
-    // Common patterns:
-    // ${_row.record}.startsWith("prefix")
-    // ${_row.record}.contains("substr")
-    // ${_row.record}.endsWith("suffix")
-    // ${_row.column_name} == value
-
-    // Pattern: ${_row.column}.startsWith("value")
-    final startsWithPattern = RegExp(r'\$\{_row\.(\w+)\}\.startsWith\(["' "'" r'](.+?)["' "'" r']\)');
-    // Pattern: ${_row.column}.contains("value")
-    final containsPattern = RegExp(r'\$\{_row\.(\w+)\}\.contains\(["' "'" r'](.+?)["' "'" r']\)');
-    // Pattern: ${_row.column}.endsWith("value")
-    final endsWithPattern = RegExp(r'\$\{_row\.(\w+)\}\.endsWith\(["' "'" r'](.+?)["' "'" r']\)');
-    // Pattern: ${_row.column} == "value"
-    final equalsPattern = RegExp(r'\$\{_row\.(\w+)\}\s*==\s*["' "'" r'](.+?)["' "'" r']');
-    // Pattern: ${_row.column} != "value"
-    final notEqualsPattern = RegExp(r'\$\{_row\.(\w+)\}\s*!=\s*["' "'" r'](.+?)["' "'" r']');
-
-    final startsWithMatch = startsWithPattern.firstMatch(filter);
-    final containsMatch = containsPattern.firstMatch(filter);
-    final endsWithMatch = endsWithPattern.firstMatch(filter);
-    final equalsMatch = equalsPattern.firstMatch(filter);
-    final notEqualsMatch = notEqualsPattern.firstMatch(filter);
-
     for (final row in rows) {
-      bool matches = false;
-
-      if (startsWithMatch != null) {
-        final column = startsWithMatch.group(1)!;
-        final prefix = startsWithMatch.group(2)!;
-        final value = row[column]?.toString() ?? '';
-        matches = value.startsWith(prefix);
-      } else if (containsMatch != null) {
-        final column = containsMatch.group(1)!;
-        final substr = containsMatch.group(2)!;
-        final value = row[column]?.toString() ?? '';
-        matches = value.contains(substr);
-      } else if (endsWithMatch != null) {
-        final column = endsWithMatch.group(1)!;
-        final suffix = endsWithMatch.group(2)!;
-        final value = row[column]?.toString() ?? '';
-        matches = value.endsWith(suffix);
-      } else if (equalsMatch != null) {
-        final column = equalsMatch.group(1)!;
-        final expected = equalsMatch.group(2)!;
-        final value = row[column]?.toString() ?? '';
-        matches = value == expected;
-      } else if (notEqualsMatch != null) {
-        final column = notEqualsMatch.group(1)!;
-        final expected = notEqualsMatch.group(2)!;
-        final value = row[column]?.toString() ?? '';
-        matches = value != expected;
-      } else {
-        // Unsupported filter expression
-        throw Exception('Unsupported filter syntax');
+      if (_evaluateRowFilter(row, filter)) {
+        count++;
       }
-
-      if (matches) count++;
     }
 
     return count;
+  }
+
+  /// Evaluates a filter expression against a single row.
+  /// Supports || (OR) and && (AND) operators.
+  bool _evaluateRowFilter(Map<String, dynamic> row, String filter) {
+    // Split by || (OR) - any segment matching means true
+    final orSegments = filter.split('||').map((s) => s.trim()).toList();
+
+    for (final orSegment in orSegments) {
+      // Split by && (AND) - all conditions in segment must match
+      final andConditions = orSegment.split('&&').map((s) => s.trim()).toList();
+
+      bool allAndMatch = true;
+      for (final condition in andConditions) {
+        if (!_evaluateSingleCondition(row, condition)) {
+          allAndMatch = false;
+          break;
+        }
+      }
+
+      if (allAndMatch) {
+        return true; // OR short-circuit: one segment matched
+      }
+    }
+
+    return false;
+  }
+
+  /// Evaluates a single condition (no || or &&) against a row.
+  bool _evaluateSingleCondition(Map<String, dynamic> row, String condition) {
+    // Pattern: ${row.column}.startsWith("value")
+    final startsWithPattern = RegExp(r'\$\{_?row\.(\w+)\}\.startsWith\(["' "'" r'](.+?)["' "'" r']\)');
+    // Pattern: ${row.column}.contains("value")
+    final containsPattern = RegExp(r'\$\{_?row\.(\w+)\}\.contains\(["' "'" r'](.+?)["' "'" r']\)');
+    // Pattern: ${row.column}.endsWith("value")
+    final endsWithPattern = RegExp(r'\$\{_?row\.(\w+)\}\.endsWith\(["' "'" r'](.+?)["' "'" r']\)');
+    // Pattern: ${row.column} == "value"
+    final equalsPattern = RegExp(r'\$\{_?row\.(\w+)\}\s*==\s*["' "'" r'](.+?)["' "'" r']');
+    // Pattern: ${row.column} != "value"
+    final notEqualsPattern = RegExp(r'\$\{_?row\.(\w+)\}\s*!=\s*["' "'" r'](.+?)["' "'" r']');
+
+    final startsWithMatch = startsWithPattern.firstMatch(condition);
+    if (startsWithMatch != null) {
+      final column = startsWithMatch.group(1)!;
+      final prefix = startsWithMatch.group(2)!;
+      final value = row[column]?.toString() ?? '';
+      return value.startsWith(prefix);
+    }
+
+    final containsMatch = containsPattern.firstMatch(condition);
+    if (containsMatch != null) {
+      final column = containsMatch.group(1)!;
+      final substr = containsMatch.group(2)!;
+      final value = row[column]?.toString() ?? '';
+      return value.contains(substr);
+    }
+
+    final endsWithMatch = endsWithPattern.firstMatch(condition);
+    if (endsWithMatch != null) {
+      final column = endsWithMatch.group(1)!;
+      final suffix = endsWithMatch.group(2)!;
+      final value = row[column]?.toString() ?? '';
+      return value.endsWith(suffix);
+    }
+
+    final equalsMatch = equalsPattern.firstMatch(condition);
+    if (equalsMatch != null) {
+      final column = equalsMatch.group(1)!;
+      final expected = equalsMatch.group(2)!;
+      final value = row[column]?.toString() ?? '';
+      return value == expected;
+    }
+
+    final notEqualsMatch = notEqualsPattern.firstMatch(condition);
+    if (notEqualsMatch != null) {
+      final column = notEqualsMatch.group(1)!;
+      final expected = notEqualsMatch.group(2)!;
+      final value = row[column]?.toString() ?? '';
+      return value != expected;
+    }
+
+    // Unsupported filter expression
+    throw Exception('Unsupported filter syntax: $condition');
   }
 
   Widget _buildImmediateExecuteButton() {

@@ -67,16 +67,37 @@ impl WbtRepacker {
     }
 
     /// Creates a backup of the filelist before modification.
-    fn create_backup(&self) -> Result<(), WbtError> {
+    fn create_filelist_backup(&self) -> Result<(), WbtError> {
         if self.filelist_path.exists() {
             let mut backup_path = self.filelist_path.clone();
             backup_path.set_extension("bin.bak");
-            debug!("Creating backup: {:?}", backup_path);
+            debug!("Creating filelist backup: {:?}", backup_path);
             fs::copy(&self.filelist_path, &backup_path)?;
-            trace!("Backup created successfully");
+            trace!("Filelist backup created successfully");
         } else {
             warn!("Filelist does not exist, skipping backup: {:?}", self.filelist_path);
         }
+        Ok(())
+    }
+
+    /// Creates a backup of the container before modification.
+    fn create_container_backup(&self) -> Result<(), WbtError> {
+        if self.container_path.exists() {
+            let mut backup_path = self.container_path.clone();
+            backup_path.set_extension("bin.bak");
+            debug!("Creating container backup: {:?}", backup_path);
+            fs::copy(&self.container_path, &backup_path)?;
+            trace!("Container backup created successfully");
+        } else {
+            warn!("Container does not exist, skipping backup: {:?}", self.container_path);
+        }
+        Ok(())
+    }
+
+    /// Creates backups of both filelist and container before modification.
+    fn create_backups(&self) -> Result<(), WbtError> {
+        self.create_filelist_backup()?;
+        self.create_container_backup()?;
         Ok(())
     }
 
@@ -100,10 +121,10 @@ impl WbtRepacker {
         };
         info!("Processing {} entries for full repack", filelist.entries.len());
 
-        self.create_backup()?;
+        self.create_backups()?;
 
         debug!("Compressing files in parallel...");
-        let entries_with_data: Vec<_> = filelist.entries.par_iter().enumerate().map(|(i, entry)| {
+        let mut entries_with_data: Vec<_> = filelist.entries.par_iter().enumerate().map(|(i, entry)| {
             let metadata = filelist.get_metadata(i).map_err(|e| e.to_string())?;
             let file_to_pack = extracted_path.join(&metadata.path);
 
@@ -128,6 +149,11 @@ impl WbtRepacker {
 
             Ok((i, metadata.path, uncompressed_size, compressed_size, packed_data, entry.chunk_number))
         }).collect::<Result<Vec<_>, String>>().map_err(WbtError::Zlib)?;
+
+        // CRITICAL: Sort by entry index to ensure path strings are added in correct order
+        // Parallel iteration does not guarantee order, but path strings within each chunk
+        // must be in entry order for path_string_pos to be correct
+        entries_with_data.sort_by_key(|(i, _, _, _, _, _)| *i);
 
         debug!("Compressed {} files, writing new container", entries_with_data.len());
 
@@ -215,7 +241,7 @@ impl WbtRepacker {
         };
         debug!("Filelist contains {} entries", filelist.entries.len());
 
-        self.create_backup()?;
+        self.create_backups()?;
 
         let patch_map: HashMap<String, String> = files_to_patch.iter()
             .map(|(k, v)| (k.replace("\\", "/"), v.clone()))
@@ -226,13 +252,19 @@ impl WbtRepacker {
         }
 
         debug!("Processing entries in parallel...");
-        let processed_entries: Vec<_> = (0..filelist.entries.len()).into_par_iter().map(|i| {
+        let mut processed_entries: Vec<_> = (0..filelist.entries.len()).into_par_iter().map(|i| {
             let metadata = filelist.get_metadata(i).map_err(|e| e.to_string())?;
             let normalized_path = metadata.path.replace(std::path::MAIN_SEPARATOR, "/");
             let entry = &filelist.entries[i];
 
             if let Some(local_path) = patch_map.get(&normalized_path) {
-                let file_data = fs::read(local_path).map_err(|e| e.to_string())?;
+                let file_data = fs::read(local_path).map_err(|e| {
+                    if e.kind() == std::io::ErrorKind::NotFound {
+                        format!("File not found: {} - ensure previous workflow steps have completed", local_path)
+                    } else {
+                        format!("Failed to read {}: {}", local_path, e)
+                    }
+                })?;
                 let uncompressed_size = file_data.len() as u32;
 
                 let (final_data, compressed_size) = if metadata.uncompressed_size != metadata.compressed_size {
@@ -249,7 +281,12 @@ impl WbtRepacker {
             } else {
                 Ok((i, normalized_path, None, metadata, entry.chunk_number))
             }
-        }).collect::<Result<Vec<_>, String>>().map_err(WbtError::Zlib)?;
+        }).collect::<Result<Vec<_>, String>>().map_err(WbtError::Repack)?;
+
+        // CRITICAL: Sort by entry index to ensure path strings are added in correct order
+        // Parallel iteration does not guarantee order, but path strings within each chunk
+        // must be in entry order for path_string_pos to be correct
+        processed_entries.sort_by_key(|(i, _, _, _, _)| *i);
 
         let mut new_chunks_dict: HashMap<u32, Vec<u8>> = HashMap::new();
         for i in 0..filelist.chunks.len() {
@@ -267,21 +304,34 @@ impl WbtRepacker {
         let mut unchanged = 0;
 
         for (_i, normalized_path, patch, metadata, chunk_number) in processed_entries {
-            let (new_pos, new_uncomp, new_comp) = if let Some((final_data, uncompressed_size, compressed_size)) = patch {
+            let path_string = if let Some((final_data, uncompressed_size, compressed_size)) = patch {
                 if compressed_size <= metadata.compressed_size {
-                    // File fits in original location
+                    // File fits in original location - zero out old data first (like C# CleanOldFile)
+                    container.seek(SeekFrom::Start(metadata.offset))?;
+                    container.write_all(&vec![0u8; metadata.compressed_size as usize])?;
+
+                    // Now write the new data
                     container.seek(SeekFrom::Start(metadata.offset))?;
                     container.write_all(&final_data)?;
                     patched_in_place += 1;
-                    trace!(
-                        "Patched in-place: {} ({} bytes at offset 0x{:X})",
-                        normalized_path,
-                        final_data.len(),
-                        metadata.offset
+
+                    let new_path_string = format!("{:x}:{:x}:{:x}:{}",
+                        (metadata.offset / 2048) as u32, uncompressed_size, compressed_size, normalized_path);
+
+                    info!(
+                        "PATCHED IN-PLACE: entry {} '{}' at offset 0x{:X} ({} bytes -> {} bytes)",
+                        _i, normalized_path, metadata.offset, metadata.compressed_size, final_data.len()
                     );
-                    ((metadata.offset / 2048) as u32, uncompressed_size, compressed_size)
+                    info!("  Original path string: '{}'", metadata.original_path_string);
+                    info!("  New path string:      '{}'", new_path_string);
+
+                    format!("{}\0", new_path_string)
                 } else {
-                    // File is larger, append to end
+                    // File is larger, append to end - zero out old location first
+                    container.seek(SeekFrom::Start(metadata.offset))?;
+                    container.write_all(&vec![0u8; metadata.compressed_size as usize])?;
+
+                    // Append to end with sector alignment
                     let mut end_pos = container.seek(SeekFrom::End(0))?;
                     if end_pos % 2048 != 0 {
                         let pad = 2048 - (end_pos % 2048);
@@ -291,25 +341,42 @@ impl WbtRepacker {
                     container.seek(SeekFrom::Start(end_pos))?;
                     container.write_all(&final_data)?;
                     patched_appended += 1;
-                    trace!(
-                        "Patched (appended): {} ({} bytes at offset 0x{:X}, was {} bytes)",
-                        normalized_path,
-                        final_data.len(),
-                        end_pos,
-                        metadata.compressed_size
+
+                    let new_path_string = format!("{:x}:{:x}:{:x}:{}",
+                        (end_pos / 2048) as u32, uncompressed_size, compressed_size, normalized_path);
+
+                    info!(
+                        "PATCHED APPENDED: entry {} '{}' moved from 0x{:X} to 0x{:X} ({} bytes -> {} bytes)",
+                        _i, normalized_path, metadata.offset, end_pos, metadata.compressed_size, final_data.len()
                     );
-                    ((end_pos / 2048) as u32, uncompressed_size, compressed_size)
+                    info!("  Original path string: '{}'", metadata.original_path_string);
+                    info!("  New path string:      '{}'", new_path_string);
+
+                    format!("{}\0", new_path_string)
                 }
             } else {
+                // CRITICAL: For unchanged files, use the ORIGINAL path string
+                // This preserves exact hex formatting (e.g., "0a" stays "0a", not "a")
+                // which is essential for correct path_string_pos calculations
                 unchanged += 1;
-                ((metadata.offset / 2048) as u32, metadata.uncompressed_size, metadata.compressed_size)
+                format!("{}\0", metadata.original_path_string)
             };
 
-            let path_string = format!("{:x}:{:x}:{:x}:{}\0", new_pos, new_uncomp, new_comp, normalized_path);
+            // Log first few entries for debugging
+            if _i < 5 {
+                debug!(
+                    "Adding path to chunk {}: entry {} -> '{}'",
+                    chunk_number,
+                    _i,
+                    path_string.trim_end_matches('\0')
+                );
+            }
+
             new_chunks_dict.get_mut(&chunk_number).unwrap().extend_from_slice(path_string.as_bytes());
         }
 
         if let Some(last_entry) = filelist.entries.last() {
+            debug!("Adding 'end' marker to chunk {}", last_entry.chunk_number);
             new_chunks_dict.get_mut(&last_entry.chunk_number).unwrap().extend_from_slice(b"end\0");
         }
 
@@ -329,13 +396,17 @@ impl WbtRepacker {
         debug!("Building new filelist with {} chunks", filelist.chunks.len());
 
         trace!("Compressing chunks in parallel...");
-        let compressed_chunks: Vec<_> = (0..filelist.chunks.len() as u32).into_par_iter().map(|c| {
+        let mut compressed_chunks: Vec<_> = (0..filelist.chunks.len() as u32).into_par_iter().map(|c| {
             let chunk_uncmp = new_chunks_dict.get(&c).unwrap();
             let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
             encoder.write_all(chunk_uncmp).map_err(|e| e.to_string())?;
             let chunk_cmp = encoder.finish().map_err(|e| e.to_string())?;
             Ok((c, chunk_uncmp.len() as u32, chunk_cmp))
         }).collect::<Result<Vec<_>, String>>().map_err(WbtError::Zlib)?;
+
+        // CRITICAL: Sort by chunk index to ensure chunk_info is written in correct order
+        // Parallel iteration does not guarantee order, but chunk_info[n] must correspond to chunk n
+        compressed_chunks.sort_by_key(|(c, _, _)| *c);
 
         let mut chunk_info_stream = std::io::Cursor::new(Vec::new());
         let mut chunk_data_stream = Vec::new();
@@ -385,17 +456,39 @@ impl WbtRepacker {
         );
 
         // Update path_string_pos for each entry
+        // This must match the order that paths were added to new_chunks_dict
+        let mut total_entries_processed = 0;
         for c in 0..filelist.chunks.len() as u32 {
             let chunk_data = new_chunks_dict.get(&c).unwrap();
             let mut current_pos = 0;
+            let mut entries_in_chunk = 0;
 
-            for entry in filelist.entries.iter_mut().filter(|e| e.chunk_number == c) {
+            for (entry_idx, entry) in filelist.entries.iter_mut().enumerate().filter(|(_, e)| e.chunk_number == c) {
+                let old_pos = entry.path_string_pos;
                 entry.path_string_pos = current_pos as u32;
+
+                // Log first few entries, and always log if position changed significantly
+                let pos_changed = old_pos != current_pos as u32;
+                if total_entries_processed < 5 || pos_changed {
+                    debug!(
+                        "path_string_pos: entry {} in chunk {}, pos {} -> {} (entry_in_chunk: {})",
+                        entry_idx, c, old_pos, current_pos, entries_in_chunk
+                    );
+                }
 
                 while current_pos < chunk_data.len() && chunk_data[current_pos] != 0 {
                     current_pos += 1;
                 }
                 current_pos += 1;
+                entries_in_chunk += 1;
+                total_entries_processed += 1;
+            }
+
+            if entries_in_chunk > 0 {
+                trace!(
+                    "Chunk {}: {} entries, {} bytes of path data",
+                    c, entries_in_chunk, chunk_data.len()
+                );
             }
         }
 
@@ -423,6 +516,11 @@ impl WbtRepacker {
     }
 
     /// Writes an unencrypted filelist (FF13-1 format).
+    ///
+    /// IMPORTANT: This follows the C# approach:
+    /// 1. Write header (chunk_info_offset, chunk_data_offset, total_files)
+    /// 2. Write entries with file_code, chunk_number, and the pre-calculated path_string_pos
+    /// 3. Write chunk info and chunk data
     fn build_unencrypted_filelist(
         &self,
         filelist: &Filelist,
@@ -434,25 +532,44 @@ impl WbtRepacker {
     ) -> Result<(), WbtError> {
         trace!("Writing unencrypted filelist: {:?}", self.filelist_path);
         let mut new_filelist = File::create(&self.filelist_path)?;
+
+        // Step 1: Write header
         new_filelist.write_le(&chunk_info_offset)?;
         new_filelist.write_le(&chunk_data_offset)?;
         new_filelist.write_le(&total_files)?;
 
-        for entry in &filelist.entries {
+        // Step 2: Write entries with file_code, chunk_number, and path_string_pos
+        // The path_string_pos values were already calculated in build_filelist
+        for (i, entry) in filelist.entries.iter().enumerate() {
             new_filelist.write_le(&entry.file_code)?;
             match self.game_code {
                 GameCode::FF13_1 => {
                     new_filelist.write_le(&(entry.chunk_number as u16))?;
                     new_filelist.write_le(&(entry.path_string_pos as u16))?;
+
+                    if i < 5 {
+                        trace!(
+                            "Entry {}: file_code=0x{:08X}, chunk={}, path_pos={}",
+                            i, entry.file_code, entry.chunk_number, entry.path_string_pos
+                        );
+                    }
                 }
                 _ => {
-                    new_filelist.write_le(&(entry.path_string_pos as u16))?;
+                    // For FF13-2/LR: if the original entry had the 32768 flag,
+                    // we need to add 32768 back to the new path_string_pos
+                    let final_path_string_pos = if entry.has_continuation_flag {
+                        entry.path_string_pos as u16 + 32768
+                    } else {
+                        entry.path_string_pos as u16
+                    };
+                    new_filelist.write_le(&final_path_string_pos)?;
                     new_filelist.write_le(&(entry.chunk_number as u8))?;
                     new_filelist.write_le(&entry.file_type_id.unwrap_or(0))?;
                 }
             }
         }
 
+        // Step 3: Write chunk info and data
         new_filelist.write_all(chunk_info_data)?;
         new_filelist.write_all(chunk_data)?;
 
@@ -500,7 +617,14 @@ impl WbtRepacker {
                     body.extend_from_slice(&(entry.path_string_pos as u16).to_le_bytes());
                 }
                 _ => {
-                    body.extend_from_slice(&(entry.path_string_pos as u16).to_le_bytes());
+                    // For FF13-2/LR: if the original entry had the 32768 flag,
+                    // we need to add 32768 back to the new path_string_pos
+                    let final_path_string_pos = if entry.has_continuation_flag {
+                        entry.path_string_pos as u16 + 32768
+                    } else {
+                        entry.path_string_pos as u16
+                    };
+                    body.extend_from_slice(&final_path_string_pos.to_le_bytes());
                     body.push(entry.chunk_number as u8);
                     body.push(entry.file_type_id.unwrap_or(0));
                 }

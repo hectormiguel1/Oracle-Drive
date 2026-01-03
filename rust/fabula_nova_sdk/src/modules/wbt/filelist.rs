@@ -49,6 +49,8 @@ pub enum WbtError {
     BinRead(#[from] binrw::Error),
     #[error("Zlib decompression error: {0}")]
     Zlib(String),
+    #[error("Repack error: {0}")]
+    Repack(String),
     #[error("Invalid path string format")]
     InvalidPathString,
     #[error("Utf8 error: {0}")]
@@ -87,6 +89,10 @@ pub struct FileEntry {
     pub path_string_pos: u32,
     /// File type identifier (FF13-2/LR only)
     pub file_type_id: Option<u8>,
+    /// For FF13-2/LR: true if original path_string_pos was > 32767.
+    /// When writing, this flag indicates that 32768 should be added
+    /// to the new path_string_pos value to preserve the chunk transition marker.
+    pub has_continuation_flag: bool,
 }
 
 /// Chunk metadata from the chunk info section.
@@ -118,6 +124,9 @@ pub struct WbtFileMetadata {
     pub compressed_size: u32,
     /// Virtual path within the archive (e.g., "chr/pc/c000/model.trb")
     pub path: String,
+    /// Original path string from the chunk (preserves exact hex formatting)
+    /// Format: "OFFSET:UNCOMPRESSED:COMPRESSED:path"
+    pub original_path_string: String,
 }
 
 /// Parsed filelist containing all file entries and decompressed path chunks.
@@ -361,6 +370,7 @@ impl Filelist {
                         chunk_number,
                         path_string_pos,
                         file_type_id: None,
+                        has_continuation_flag: false, // FF13-1 doesn't use this flag
                     });
                 }
                 _ => {
@@ -374,6 +384,10 @@ impl Filelist {
                     let file_type_id = cursor.read_le::<u8>()?;
 
                     let mut path_string_pos = raw_path_string_pos;
+
+                    // Track if the original value had the 32768 flag (for repacking)
+                    // This is true when raw_path_string_pos > 32767 (i.e., >= 32768)
+                    let has_continuation_flag = raw_path_string_pos > 32767;
 
                     // Handle special path_string_pos values
                     match raw_path_string_pos {
@@ -406,9 +420,9 @@ impl Filelist {
                     // Debug first 10 entries to understand the pattern
                     if entry_idx < 10 {
                         debug!(
-                            "Entry {}: file_code=0x{:08X}, raw_path_pos={}, raw_chunk={}, resolved_chunk={}, resolved_pos={}, type_id={}",
+                            "Entry {}: file_code=0x{:08X}, raw_path_pos={}, raw_chunk={}, resolved_chunk={}, resolved_pos={}, type_id={}, has_flag={}",
                             entry_idx, file_code, raw_path_string_pos, raw_chunk_number,
-                            current_chunk_number, path_string_pos, file_type_id
+                            current_chunk_number, path_string_pos, file_type_id, has_continuation_flag
                         );
                     }
 
@@ -417,6 +431,7 @@ impl Filelist {
                         chunk_number: current_chunk_number as u32,
                         path_string_pos,
                         file_type_id: Some(file_type_id),
+                        has_continuation_flag,
                     });
                 }
             }
@@ -589,6 +604,7 @@ impl Filelist {
             uncompressed_size,
             compressed_size,
             path,
+            original_path_string: path_string,
         })
     }
 

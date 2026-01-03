@@ -80,6 +80,9 @@ class WdbSaveExecutor extends NodeExecutor {
       );
       wdbData.modified = false;
 
+      // Store save path for downstream nodes (e.g., WBT Repack)
+      context.setVariable('${node.id}_savePath', savePath);
+
       // Flush journal changes after successful save
       final changeCount = context.getWdbJournalChangeCount(wdbName);
       if (changeCount > 0) {
@@ -449,10 +452,12 @@ class WdbBulkUpdateExecutor extends NodeExecutor {
     for (final row in wdbData.data.rows) {
       // Apply filter if specified
       if (filterExpr != null && filterExpr.isNotEmpty) {
-        // Temporarily set 'row' variable for filter evaluation
-        context.setVariable('__internal_row', row);
+        // Set row variables for filter evaluation (support both ${row.x} and ${_row.x} syntax)
+        context.setVariable('row', row);
+        context.setVariable('_row', row);
         final shouldInclude = evaluator.evaluateCondition(filterExpr);
-        context.variables.remove('__internal_row');
+        context.variables.remove('row');
+        context.variables.remove('_row');
         if (!shouldInclude) continue;
       }
 

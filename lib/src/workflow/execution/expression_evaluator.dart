@@ -232,9 +232,50 @@ class ExpressionEvaluator {
   }
 
   /// Evaluate a boolean condition.
+  /// Supports filter expressions like:
+  /// - ${row.column}.startsWith("value")
+  /// - ${row.column}.contains("value")
+  /// - ${row.column} == "value"
+  /// - Compound: expr1 || expr2, expr1 && expr2
   bool evaluateCondition(dynamic expression) {
-    final result = evaluate(expression);
+    if (expression == null) return false;
+    if (expression is bool) return expression;
+    if (expression is! String) {
+      final result = evaluate(expression);
+      if (result is bool) return result;
+      if (result is num) return result != 0;
+      if (result is String) return result.isNotEmpty;
+      if (result is List) return result.isNotEmpty;
+      if (result is Map) return result.isNotEmpty;
+      return result != null;
+    }
 
+    final expr = expression.trim();
+
+    // Handle compound expressions with || (OR)
+    if (expr.contains('||')) {
+      final parts = _splitByOperator(expr, '||');
+      for (final part in parts) {
+        if (evaluateCondition(part.trim())) return true;
+      }
+      return false;
+    }
+
+    // Handle compound expressions with && (AND)
+    if (expr.contains('&&')) {
+      final parts = _splitByOperator(expr, '&&');
+      for (final part in parts) {
+        if (!evaluateCondition(part.trim())) return false;
+      }
+      return true;
+    }
+
+    // Try to evaluate as filter expression with method call
+    final filterResult = _evaluateFilterExpression(expr);
+    if (filterResult != null) return filterResult;
+
+    // Fall back to simple evaluation
+    final result = evaluate(expression);
     if (result is bool) return result;
     if (result is num) return result != 0;
     if (result is String) return result.isNotEmpty;
@@ -242,6 +283,123 @@ class ExpressionEvaluator {
     if (result is Map) return result.isNotEmpty;
 
     return result != null;
+  }
+
+  /// Split expression by operator, respecting quoted strings.
+  List<String> _splitByOperator(String expr, String op) {
+    final parts = <String>[];
+    var depth = 0;
+    var inString = false;
+    var stringChar = '';
+    var current = StringBuffer();
+
+    for (int i = 0; i < expr.length; i++) {
+      final char = expr[i];
+
+      if (!inString && (char == '"' || char == "'")) {
+        inString = true;
+        stringChar = char;
+        current.write(char);
+      } else if (inString && char == stringChar) {
+        inString = false;
+        current.write(char);
+      } else if (!inString && char == '(') {
+        depth++;
+        current.write(char);
+      } else if (!inString && char == ')') {
+        depth--;
+        current.write(char);
+      } else if (!inString && depth == 0 && expr.substring(i).startsWith(op)) {
+        parts.add(current.toString());
+        current = StringBuffer();
+        i += op.length - 1;
+      } else {
+        current.write(char);
+      }
+    }
+    parts.add(current.toString());
+    return parts;
+  }
+
+  /// Evaluate a filter expression with method calls.
+  /// Returns null if the expression doesn't match any known pattern.
+  bool? _evaluateFilterExpression(String expr) {
+    // Pattern: ${row.column}.startsWith("value")
+    final startsWithPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\.startsWith\(["' "'" r'](.+?)["' "'" r']\)');
+    final startsWithMatch = startsWithPattern.firstMatch(expr);
+    if (startsWithMatch != null) {
+      final varName = startsWithMatch.group(1)!;
+      final propName = startsWithMatch.group(2)!;
+      final prefix = startsWithMatch.group(3)!;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName]?.toString() ?? '';
+        return value.startsWith(prefix);
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column}.contains("value")
+    final containsPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\.contains\(["' "'" r'](.+?)["' "'" r']\)');
+    final containsMatch = containsPattern.firstMatch(expr);
+    if (containsMatch != null) {
+      final varName = containsMatch.group(1)!;
+      final propName = containsMatch.group(2)!;
+      final substring = containsMatch.group(3)!;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName]?.toString() ?? '';
+        return value.contains(substring);
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column}.endsWith("value")
+    final endsWithPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\.endsWith\(["' "'" r'](.+?)["' "'" r']\)');
+    final endsWithMatch = endsWithPattern.firstMatch(expr);
+    if (endsWithMatch != null) {
+      final varName = endsWithMatch.group(1)!;
+      final propName = endsWithMatch.group(2)!;
+      final suffix = endsWithMatch.group(3)!;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName]?.toString() ?? '';
+        return value.endsWith(suffix);
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} == "value"
+    final equalsPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*==\s*["' "'" r'](.+?)["' "'" r']');
+    final equalsMatch = equalsPattern.firstMatch(expr);
+    if (equalsMatch != null) {
+      final varName = equalsMatch.group(1)!;
+      final propName = equalsMatch.group(2)!;
+      final expected = equalsMatch.group(3)!;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName]?.toString() ?? '';
+        return value == expected;
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} != "value"
+    final notEqualsPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*!=\s*["' "'" r'](.+?)["' "'" r']');
+    final notEqualsMatch = notEqualsPattern.firstMatch(expr);
+    if (notEqualsMatch != null) {
+      final varName = notEqualsMatch.group(1)!;
+      final propName = notEqualsMatch.group(2)!;
+      final expected = notEqualsMatch.group(3)!;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName]?.toString() ?? '';
+        return value != expected;
+      }
+      return false;
+    }
+
+    return null; // No pattern matched
   }
 
   /// Evaluate an expression and convert to string.

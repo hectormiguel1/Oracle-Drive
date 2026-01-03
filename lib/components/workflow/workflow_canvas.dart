@@ -109,7 +109,10 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
                         ),
                       ),
                       // Nodes (rendered first so connections appear on top)
-                      ...workflow.nodes.map((node) => Positioned(
+                      // Filter out child nodes - they render inside their container
+                      ...workflow.nodes
+                          .where((node) => !workflow.isChildNode(node.id))
+                          .map((node) => Positioned(
                             left: node.position.dx,
                             top: node.position.dy,
                             child: WorkflowNodeWidget(

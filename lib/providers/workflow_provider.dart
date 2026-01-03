@@ -132,7 +132,7 @@ class WorkflowEditorState {
 
   WorkflowNode? get selectedNode {
     if (workflow == null || selectedNodeId == null) return null;
-    return workflow!.findNode(selectedNodeId!);
+    return workflow!.findNodeDeep(selectedNodeId!);
   }
 }
 
@@ -268,6 +268,15 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     final workflow = state.workflow;
     if (workflow == null) return;
 
+    // Check if this node is a child of a container
+    final parentContainer = workflow.findParentContainer(nodeId);
+    if (parentContainer != null) {
+      // Remove from container's children
+      removeChildFromContainer(parentContainer.id, nodeId);
+      return;
+    }
+
+    // Remove from top-level nodes
     workflow.removeNode(nodeId);
     _pushUndo();
     state = state.copyWith(
@@ -285,7 +294,7 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     final workflow = state.workflow;
     if (workflow == null) return;
 
-    final node = workflow.findNode(nodeId);
+    final node = workflow.findNodeDeep(nodeId);
     if (node == null) return;
 
     node.position = position;
@@ -297,7 +306,7 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     final workflow = state.workflow;
     if (workflow == null) return;
 
-    final node = workflow.findNode(nodeId);
+    final node = workflow.findNodeDeep(nodeId);
     if (node == null) return;
 
     node.config = config;
@@ -310,7 +319,7 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     final workflow = state.workflow;
     if (workflow == null) return;
 
-    final node = workflow.findNode(nodeId);
+    final node = workflow.findNodeDeep(nodeId);
     if (node == null) return;
 
     node.label = label;
@@ -332,6 +341,13 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
   void duplicateNode(String nodeId) {
     final workflow = state.workflow;
     if (workflow == null) return;
+
+    // Check if this is a child node
+    final parentContainer = workflow.findParentContainer(nodeId);
+    if (parentContainer != null) {
+      _duplicateChildNode(parentContainer, nodeId);
+      return;
+    }
 
     final sourceNode = workflow.findNode(nodeId);
     if (sourceNode == null) return;
@@ -412,6 +428,30 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     _logger.info('Duplicated node: $nodeId');
   }
 
+  /// Duplicates a child node within its container.
+  void _duplicateChildNode(WorkflowNode container, String childId) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+    if (container.children == null) return;
+
+    final sourceChild = container.children!.where((c) => c.id == childId).firstOrNull;
+    if (sourceChild == null) return;
+
+    final newChild = sourceChild.copyWith(
+      id: _uuid.v4(),
+      position: sourceChild.position + const Offset(0, 20),
+    );
+
+    container.children!.add(newChild);
+    _pushUndo();
+    state = state.copyWith(
+      workflow: workflow,
+      selectedNodeId: newChild.id,
+      isDirty: true,
+    );
+    _logger.info('Duplicated child node: $childId in container ${container.id}');
+  }
+
   // -------------------- Connection Operations --------------------
 
   void startConnection(String nodeId, String port) {
@@ -467,6 +507,158 @@ class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
     _pushUndo();
     state = state.copyWith(workflow: workflow, isDirty: true);
     _logger.info('Removed connection: $connectionId');
+  }
+
+  // -------------------- Container Child Operations --------------------
+
+  /// Add a node as a child of a container (Loop/ForEach).
+  void addChildToContainer(String containerId, NodeType childType) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+
+    final container = workflow.findNode(containerId);
+    if (container == null || !container.type.isContainer) {
+      _logger.warning('Cannot add child to non-container node: $containerId');
+      return;
+    }
+
+    // Prevent nesting containers
+    if (childType.isContainer) {
+      _logger.warning('Cannot nest container nodes');
+      return;
+    }
+
+    // Initialize children list if needed
+    container.children ??= [];
+
+    // Calculate position for the new child (stacked below existing children)
+    final yOffset = container.children!.length * 80.0;
+
+    final childNode = WorkflowNode(
+      id: _uuid.v4(),
+      type: childType,
+      position: Offset(0, yOffset), // Relative position within container
+    );
+
+    container.children!.add(childNode);
+    _pushUndo();
+    state = state.copyWith(
+      workflow: workflow,
+      selectedNodeId: childNode.id,
+      isDirty: true,
+    );
+    _logger.info('Added child node ${childType.displayName} to container $containerId');
+  }
+
+  /// Remove a child node from its container.
+  void removeChildFromContainer(String containerId, String childId) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+
+    final container = workflow.findNode(containerId);
+    if (container == null || container.children == null) return;
+
+    container.children!.removeWhere((c) => c.id == childId);
+    container.childConnections?.removeWhere(
+      (c) => c.sourceNodeId == childId || c.targetNodeId == childId,
+    );
+
+    _pushUndo();
+    state = state.copyWith(
+      workflow: workflow,
+      selectedNodeId:
+          state.selectedNodeId == childId ? null : state.selectedNodeId,
+      isDirty: true,
+      clearSelectedNode: state.selectedNodeId == childId,
+    );
+    _logger.info('Removed child node $childId from container $containerId');
+  }
+
+  /// Update the position of a child node within its container.
+  void updateChildNodePosition(String containerId, String childId, Offset position) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+
+    final container = workflow.findNode(containerId);
+    if (container == null || container.children == null) return;
+
+    final child = container.children!.where((c) => c.id == childId).firstOrNull;
+    if (child == null) return;
+
+    child.position = position;
+    workflow.modifiedAt = DateTime.now();
+    state = state.copyWith(workflow: workflow, isDirty: true);
+  }
+
+  /// Update the config of a child node.
+  void updateChildNodeConfig(String containerId, String childId, Map<String, dynamic> config) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+
+    final container = workflow.findNode(containerId);
+    if (container == null || container.children == null) return;
+
+    final child = container.children!.where((c) => c.id == childId).firstOrNull;
+    if (child == null) return;
+
+    child.config = config;
+    _pushUndo();
+    state = state.copyWith(workflow: workflow, isDirty: true);
+    _logger.info('Updated config for child node: $childId');
+  }
+
+  /// Add a connection between child nodes within a container.
+  void addChildConnection(String containerId, WorkflowConnection connection) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+
+    final container = workflow.findNode(containerId);
+    if (container == null) return;
+
+    container.childConnections ??= [];
+
+    // Remove existing connection from the same source port
+    container.childConnections!.removeWhere((c) =>
+        c.sourceNodeId == connection.sourceNodeId &&
+        c.sourcePort == connection.sourcePort);
+
+    container.childConnections!.add(connection);
+    _pushUndo();
+    state = state.copyWith(workflow: workflow, isDirty: true);
+    _logger.info('Added child connection in container $containerId');
+  }
+
+  /// Remove a connection between child nodes.
+  void removeChildConnection(String containerId, String connectionId) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+
+    final container = workflow.findNode(containerId);
+    if (container == null || container.childConnections == null) return;
+
+    container.childConnections!.removeWhere((c) => c.id == connectionId);
+    _pushUndo();
+    state = state.copyWith(workflow: workflow, isDirty: true);
+    _logger.info('Removed child connection $connectionId from container $containerId');
+  }
+
+  /// Reorder children within a container.
+  void reorderChildren(String containerId, int oldIndex, int newIndex) {
+    final workflow = state.workflow;
+    if (workflow == null) return;
+
+    final container = workflow.findNode(containerId);
+    if (container == null || container.children == null) return;
+
+    if (oldIndex < 0 || oldIndex >= container.children!.length) return;
+    if (newIndex < 0 || newIndex >= container.children!.length) return;
+
+    final child = container.children!.removeAt(oldIndex);
+    container.children!.insert(newIndex, child);
+
+    _pushUndo();
+    state = state.copyWith(workflow: workflow, isDirty: true);
+    _logger.info('Reordered children in container $containerId');
   }
 
   // -------------------- Variable Operations --------------------

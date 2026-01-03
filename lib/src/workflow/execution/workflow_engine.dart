@@ -7,6 +7,7 @@ import '../../../models/workflow/workflow_models.dart';
 import '../../../providers/workflow_provider.dart';
 import 'execution_context.dart';
 import 'node_executor.dart';
+import 'executors/cgt_executors.dart';
 import 'executors/control_executors.dart';
 import 'executors/img_executors.dart';
 import 'executors/wbt_executors.dart';
@@ -92,6 +93,16 @@ class WorkflowEngine {
     _executors[NodeType.ztrModifyText] = ZtrModifyTextExecutor();
     _executors[NodeType.ztrAddEntry] = ZtrAddEntryExecutor();
     _executors[NodeType.ztrDeleteEntry] = ZtrDeleteEntryExecutor();
+
+    // CGT executors (Crystalium - FF13 only)
+    _executors[NodeType.cgtOpen] = CgtOpenExecutor();
+    _executors[NodeType.cgtSave] = CgtSaveExecutor();
+    _executors[NodeType.cgtAddOffshoot] = CgtAddOffshootExecutor();
+    _executors[NodeType.cgtAddChain] = CgtAddChainExecutor();
+    _executors[NodeType.cgtUpdateEntry] = CgtUpdateEntryExecutor();
+    _executors[NodeType.cgtUpdateNodeName] = CgtUpdateNodeNameExecutor();
+    _executors[NodeType.cgtFindEntry] = CgtFindEntryExecutor();
+    _executors[NodeType.cgtDeleteEntry] = CgtDeleteEntryExecutor();
   }
 
   /// Execute a workflow.
@@ -405,26 +416,21 @@ class WorkflowEngine {
         return _BranchResult(success: true, reachedEnd: true);
       }
 
-      // Bug #5 fix: Handle loop/forEach nodes specially
-      // When a loop returns 'body', execute body then return to loop for re-evaluation
-      if ((currentNode.type == NodeType.loop || currentNode.type == NodeType.forEach) &&
-          result.nextPort == 'body') {
-        // Find the body branch start node
-        final bodyNode = _findNextNode(workflow, currentNode.id, 'body');
+      // Handle container nodes (Loop/ForEach) - execute children directly
+      // When a container returns 'body', execute its children then return for re-evaluation
+      if (currentNode.type.isContainer && result.nextPort == 'body') {
+        final children = currentNode.children ?? [];
 
-        if (bodyNode != null) {
-          // Execute the body branch - but DON'T mark loop as completed yet
+        if (children.isNotEmpty) {
           // Remove from completed so we can re-execute it
           completedNodes.remove(currentNode.id);
 
-          // Execute body branch
-          final bodyResult = await _executeBranch(
+          // Execute container body (its children)
+          final bodyResult = await _executeContainerBody(
             workflow,
-            bodyNode,
+            currentNode,
             context,
             executionLog,
-            completedNodes,
-            pendingJoinNodes,
             onStateChange,
             startTime,
           );
@@ -433,12 +439,11 @@ class WorkflowEngine {
             return bodyResult;
           }
 
-          // Return to the loop node for next iteration check
-          // Don't set currentNode = null, just continue the loop with same node
+          // Return to the container node for next iteration check
           continue;
         }
 
-        // No body connected, exit loop
+        // No children, exit container via 'done' port
         currentNode = _findNextNode(workflow, currentNode.id, 'done');
         continue;
       }
@@ -519,6 +524,114 @@ class WorkflowEngine {
     }
 
     return _BranchResult(success: true);
+  }
+
+  /// Execute the body of a container node (its children in sequence).
+  Future<_BranchResult> _executeContainerBody(
+    Workflow workflow,
+    WorkflowNode containerNode,
+    ExecutionContext context,
+    List<WorkflowExecutionStep> executionLog,
+    void Function(WorkflowExecutionState)? onStateChange,
+    DateTime startTime,
+  ) async {
+    final children = containerNode.children ?? [];
+    final childConnections = containerNode.childConnections ?? [];
+
+    if (children.isEmpty) {
+      return _BranchResult(success: true);
+    }
+
+    // Find the first child (no incoming childConnections)
+    WorkflowNode? currentChild = _findFirstChild(children, childConnections);
+
+    while (currentChild != null && !_cancelRequested) {
+      // Handle pause
+      while (_pauseRequested && !_cancelRequested) {
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+      }
+
+      if (_cancelRequested) {
+        return _BranchResult(success: true, cancelled: true);
+      }
+
+      // Get executor for this child node type
+      final executor = _executors[currentChild.type];
+      if (executor == null) {
+        return _BranchResult(
+          success: false,
+          errorMessage: 'No executor for child node type: ${currentChild.type}',
+        );
+      }
+
+      // Create execution step
+      final step = WorkflowExecutionStep(
+        nodeId: currentChild.id,
+        nodeName: currentChild.label ?? currentChild.type.displayName,
+        startTime: DateTime.now(),
+      );
+
+      // Execute the child node
+      final result = await executor.execute(currentChild, context);
+
+      step.endTime = DateTime.now();
+      step.success = result.success;
+      step.message = result.logMessage ?? result.errorMessage;
+      executionLog.add(step);
+
+      _logger.info(
+        'Container child [${currentChild.displayName}] ${result.success ? "succeeded" : "failed"}: ${result.logMessage ?? result.errorMessage ?? ""}',
+      );
+
+      if (!result.success) {
+        return _BranchResult(
+          success: false,
+          errorMessage: result.errorMessage,
+        );
+      }
+
+      // Find next child via childConnections
+      currentChild = _findNextChildNode(
+        children,
+        childConnections,
+        currentChild.id,
+        result.nextPort ?? 'output',
+      );
+    }
+
+    return _BranchResult(success: true);
+  }
+
+  /// Find the first child node (entry point of container body).
+  WorkflowNode? _findFirstChild(
+    List<WorkflowNode> children,
+    List<WorkflowConnection> childConnections,
+  ) {
+    if (children.isEmpty) return null;
+
+    // Find node with no incoming connections - it's the entry point
+    for (final child in children) {
+      final hasIncoming = childConnections.any((c) => c.targetNodeId == child.id);
+      if (!hasIncoming) return child;
+    }
+
+    // Fallback to first child if all have incoming (shouldn't happen normally)
+    return children.first;
+  }
+
+  /// Find the next child node following a connection.
+  WorkflowNode? _findNextChildNode(
+    List<WorkflowNode> children,
+    List<WorkflowConnection> childConnections,
+    String sourceId,
+    String sourcePort,
+  ) {
+    for (final conn in childConnections) {
+      if (conn.sourceNodeId == sourceId && conn.sourcePort == sourcePort) {
+        return children.where((c) => c.id == conn.targetNodeId).firstOrNull;
+      }
+    }
+    return null; // End of body
   }
 
   /// Request pause.

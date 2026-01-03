@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import '../../../models/app_game_code.dart';
+import '../../../models/crystalium/cgt_file.dart';
 import '../../../models/journal_types.dart';
 import '../../../models/wdb_model.dart';
 import '../../../providers/journal_provider.dart';
 import '../../../providers/workflow_provider.dart';
+import '../../utils/crystalium/cgt_modifier.dart';
 
 /// Runtime context for workflow execution.
 class ExecutionContext {
@@ -24,6 +26,9 @@ class ExecutionContext {
 
   /// Open ZTR files keyed by variable name.
   final Map<String, ZtrExecutionData> openZtrs = {};
+
+  /// Open CGT files keyed by variable name.
+  final Map<String, CgtExecutionData> openCgts = {};
 
   /// Pending changes for preview mode.
   final List<WorkflowChange> pendingChanges = [];
@@ -129,6 +134,15 @@ class ExecutionContext {
     variables[name] = data;
   }
 
+  /// Get an open CGT by variable name.
+  CgtExecutionData? getCgt(String name) => openCgts[name];
+
+  /// Store an open CGT.
+  void setCgt(String name, CgtExecutionData data) {
+    openCgts[name] = data;
+    variables[name] = data;
+  }
+
   /// Add a pending change (preview mode only).
   void addChange(WorkflowChange change) {
     if (previewMode) {
@@ -226,6 +240,7 @@ class ExecutionContext {
     // Share open file handles (they represent the same files)
     forked.openWdbs.addAll(openWdbs);
     forked.openZtrs.addAll(openZtrs);
+    forked.openCgts.addAll(openCgts);
 
     // Share journal changes (they should be merged back)
     for (final entry in _wdbJournalChanges.entries) {
@@ -257,6 +272,7 @@ class ExecutionContext {
     // Merge any new open files
     openWdbs.addAll(other.openWdbs);
     openZtrs.addAll(other.openZtrs);
+    openCgts.addAll(other.openCgts);
 
     // Merge journal changes
     for (final entry in other._wdbJournalChanges.entries) {
@@ -340,4 +356,50 @@ class ZtrExecutionData {
     }
     return -1;
   }
+}
+
+/// Wrapper for CGT data during execution.
+class CgtExecutionData {
+  final String sourcePath;
+  CgtFile data;
+  CgtModifier? modifier;
+  bool modified = false;
+
+  CgtExecutionData({
+    required this.sourcePath,
+    required this.data,
+  });
+
+  /// Get or create a modifier for this CGT.
+  CgtModifier getModifier() {
+    modifier ??= CgtModifier(cgtFile: data);
+    return modifier!;
+  }
+
+  /// Apply pending modifications and update the data.
+  void applyModifications() {
+    if (modifier != null) {
+      data = modifier!.build();
+      modified = true;
+    }
+  }
+
+  /// Find the entry index containing a node ID.
+  int? findEntryForNode(int nodeId) {
+    for (int i = 0; i < data.entries.length; i++) {
+      if (data.entries[i].nodeIds.contains(nodeId)) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  /// Get a node by ID.
+  CrystariumNode? getNode(int nodeId) => data.getNode(nodeId);
+
+  /// Get all available node IDs.
+  List<int> get nodeIds => data.nodes.map((n) => n.index).toList();
+
+  /// Get all stages present in the CGT.
+  List<int> get stages => data.stages;
 }

@@ -2,6 +2,9 @@
 enum LookupType { direct, item, ability }
 
 Map<String, Map<LookupType, List<String>>> get sharedLookups => {
+  'Item': {
+    .direct: ['sItemNameStringId', 'sHelpStringId'],
+  },
   'treasurebox': {
     .item: ['sItemResourceId'],
   },
