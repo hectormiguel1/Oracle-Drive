@@ -270,24 +270,55 @@ pub fn parse_wdb<P: AsRef<Path>>(wdb_path: P, game_code: GameCode) -> Result<Wdb
         field_count = field_count_from_num;
     }
 
-    if fields.is_empty() {
-        for i in 0..field_count {
-            fields.push(format!("Field_{}", i));
+    // Detect "without-fields" mode - when we have no field definitions
+    let without_fields = fields.is_empty();
+
+    if without_fields {
+        // Generate type-based field names for the header metadata
+        let mut bitpacked_counter = 0;
+        let mut float_counter = 0;
+        let mut string_counter = 0;
+        let mut uint_counter = 0;
+
+        for &type_code in &strtypelist_values {
+            match type_code {
+                0 => {
+                    fields.push(format!("bitpacked-field_{}", bitpacked_counter));
+                    bitpacked_counter += 1;
+                },
+                1 => {
+                    fields.push(format!("float-field_{}", float_counter));
+                    float_counter += 1;
+                },
+                2 => {
+                    fields.push(format!("!!string-field_{}", string_counter));
+                    string_counter += 1;
+                },
+                3 => {
+                    fields.push(format!("uint-field_{}", uint_counter));
+                    uint_counter += 1;
+                },
+                _ => {
+                    fields.push(format!("unknown-field_{}", fields.len()));
+                }
+            }
         }
+        field_count = fields.len();
     }
-    
+
     header_map.insert("!structitem".to_string(), WdbValue::StringArray(fields.clone()));
-    
+
     let vars = WdbVariables {
         strtypelist_values,
         field_count,
         fields: fields.clone(),
         strings_data,
         record_count,
-        wdb_name: file_header.magic.clone(),
+        wdb_name,
         str_array_dict,
         offsets_per_value,
         bits_per_offset,
+        without_fields,
     };
     
     reader.seek(SeekFrom::Start(record_start_pos))?;

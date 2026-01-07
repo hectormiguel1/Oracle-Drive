@@ -58,7 +58,6 @@ extension WdbValuePatterns on WdbValue {
     TResult Function(WdbValue_IntArray value)? intArray,
     TResult Function(WdbValue_UIntArray value)? uIntArray,
     TResult Function(WdbValue_StringArray value)? stringArray,
-    TResult Function(WdbValue_UInt64 value)? uInt64,
     TResult Function(WdbValue_CrystalRole value)? crystalRole,
     TResult Function(WdbValue_CrystalNodeType value)? crystalNodeType,
     TResult Function(WdbValue_Unknown value)? unknown,
@@ -82,8 +81,6 @@ extension WdbValuePatterns on WdbValue {
         return uIntArray(_that);
       case WdbValue_StringArray() when stringArray != null:
         return stringArray(_that);
-      case WdbValue_UInt64() when uInt64 != null:
-        return uInt64(_that);
       case WdbValue_CrystalRole() when crystalRole != null:
         return crystalRole(_that);
       case WdbValue_CrystalNodeType() when crystalNodeType != null:
@@ -118,7 +115,6 @@ extension WdbValuePatterns on WdbValue {
     required TResult Function(WdbValue_IntArray value) intArray,
     required TResult Function(WdbValue_UIntArray value) uIntArray,
     required TResult Function(WdbValue_StringArray value) stringArray,
-    required TResult Function(WdbValue_UInt64 value) uInt64,
     required TResult Function(WdbValue_CrystalRole value) crystalRole,
     required TResult Function(WdbValue_CrystalNodeType value) crystalNodeType,
     required TResult Function(WdbValue_Unknown value) unknown,
@@ -141,8 +137,6 @@ extension WdbValuePatterns on WdbValue {
         return uIntArray(_that);
       case WdbValue_StringArray():
         return stringArray(_that);
-      case WdbValue_UInt64():
-        return uInt64(_that);
       case WdbValue_CrystalRole():
         return crystalRole(_that);
       case WdbValue_CrystalNodeType():
@@ -174,7 +168,6 @@ extension WdbValuePatterns on WdbValue {
     TResult? Function(WdbValue_IntArray value)? intArray,
     TResult? Function(WdbValue_UIntArray value)? uIntArray,
     TResult? Function(WdbValue_StringArray value)? stringArray,
-    TResult? Function(WdbValue_UInt64 value)? uInt64,
     TResult? Function(WdbValue_CrystalRole value)? crystalRole,
     TResult? Function(WdbValue_CrystalNodeType value)? crystalNodeType,
     TResult? Function(WdbValue_Unknown value)? unknown,
@@ -197,8 +190,6 @@ extension WdbValuePatterns on WdbValue {
         return uIntArray(_that);
       case WdbValue_StringArray() when stringArray != null:
         return stringArray(_that);
-      case WdbValue_UInt64() when uInt64 != null:
-        return uInt64(_that);
       case WdbValue_CrystalRole() when crystalRole != null:
         return crystalRole(_that);
       case WdbValue_CrystalNodeType() when crystalNodeType != null:
@@ -232,7 +223,6 @@ extension WdbValuePatterns on WdbValue {
     TResult Function(Int32List field0)? intArray,
     TResult Function(Uint32List field0)? uIntArray,
     TResult Function(List<String> field0)? stringArray,
-    TResult Function(BigInt field0)? uInt64,
     TResult Function(CrystalRole field0)? crystalRole,
     TResult Function(CrystalNodeType field0)? crystalNodeType,
     TResult Function()? unknown,
@@ -256,8 +246,6 @@ extension WdbValuePatterns on WdbValue {
         return uIntArray(_that.field0);
       case WdbValue_StringArray() when stringArray != null:
         return stringArray(_that.field0);
-      case WdbValue_UInt64() when uInt64 != null:
-        return uInt64(_that.field0);
       case WdbValue_CrystalRole() when crystalRole != null:
         return crystalRole(_that.field0);
       case WdbValue_CrystalNodeType() when crystalNodeType != null:
@@ -292,7 +280,6 @@ extension WdbValuePatterns on WdbValue {
     required TResult Function(Int32List field0) intArray,
     required TResult Function(Uint32List field0) uIntArray,
     required TResult Function(List<String> field0) stringArray,
-    required TResult Function(BigInt field0) uInt64,
     required TResult Function(CrystalRole field0) crystalRole,
     required TResult Function(CrystalNodeType field0) crystalNodeType,
     required TResult Function() unknown,
@@ -315,8 +302,6 @@ extension WdbValuePatterns on WdbValue {
         return uIntArray(_that.field0);
       case WdbValue_StringArray():
         return stringArray(_that.field0);
-      case WdbValue_UInt64():
-        return uInt64(_that.field0);
       case WdbValue_CrystalRole():
         return crystalRole(_that.field0);
       case WdbValue_CrystalNodeType():
@@ -348,7 +333,6 @@ extension WdbValuePatterns on WdbValue {
     TResult? Function(Int32List field0)? intArray,
     TResult? Function(Uint32List field0)? uIntArray,
     TResult? Function(List<String> field0)? stringArray,
-    TResult? Function(BigInt field0)? uInt64,
     TResult? Function(CrystalRole field0)? crystalRole,
     TResult? Function(CrystalNodeType field0)? crystalNodeType,
     TResult? Function()? unknown,
@@ -371,8 +355,6 @@ extension WdbValuePatterns on WdbValue {
         return uIntArray(_that.field0);
       case WdbValue_StringArray() when stringArray != null:
         return stringArray(_that.field0);
-      case WdbValue_UInt64() when uInt64 != null:
-        return uInt64(_that.field0);
       case WdbValue_CrystalRole() when crystalRole != null:
         return crystalRole(_that.field0);
       case WdbValue_CrystalNodeType() when crystalNodeType != null:
@@ -903,70 +885,6 @@ class _$WdbValue_StringArrayCopyWithImpl<$Res>
           ? _self._field0
           : field0 // ignore: cast_nullable_to_non_nullable
               as List<String>,
-    ));
-  }
-}
-
-/// @nodoc
-
-class WdbValue_UInt64 extends WdbValue {
-  const WdbValue_UInt64(this.field0) : super._();
-
-  final BigInt field0;
-
-  /// Create a copy of WdbValue
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $WdbValue_UInt64CopyWith<WdbValue_UInt64> get copyWith =>
-      _$WdbValue_UInt64CopyWithImpl<WdbValue_UInt64>(this, _$identity);
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is WdbValue_UInt64 &&
-            (identical(other.field0, field0) || other.field0 == field0));
-  }
-
-  @override
-  int get hashCode => Object.hash(runtimeType, field0);
-
-  @override
-  String toString() {
-    return 'WdbValue.uInt64(field0: $field0)';
-  }
-}
-
-/// @nodoc
-abstract mixin class $WdbValue_UInt64CopyWith<$Res>
-    implements $WdbValueCopyWith<$Res> {
-  factory $WdbValue_UInt64CopyWith(
-          WdbValue_UInt64 value, $Res Function(WdbValue_UInt64) _then) =
-      _$WdbValue_UInt64CopyWithImpl;
-  @useResult
-  $Res call({BigInt field0});
-}
-
-/// @nodoc
-class _$WdbValue_UInt64CopyWithImpl<$Res>
-    implements $WdbValue_UInt64CopyWith<$Res> {
-  _$WdbValue_UInt64CopyWithImpl(this._self, this._then);
-
-  final WdbValue_UInt64 _self;
-  final $Res Function(WdbValue_UInt64) _then;
-
-  /// Create a copy of WdbValue
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? field0 = null,
-  }) {
-    return _then(WdbValue_UInt64(
-      null == field0
-          ? _self.field0
-          : field0 // ignore: cast_nullable_to_non_nullable
-              as BigInt,
     ));
   }
 }

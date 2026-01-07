@@ -1,6 +1,7 @@
 pub mod clb;
 pub mod crystalium;
 pub mod img;
+pub mod vfx;
 pub mod wbt;
 pub mod wct;
 pub mod wdb;

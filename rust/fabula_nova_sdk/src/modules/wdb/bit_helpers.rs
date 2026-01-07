@@ -146,3 +146,62 @@ pub fn sign_extend(val: u32, bits: usize) -> i32 {
     let shift = 32 - bits;
     ((val << shift) as i32) >> shift
 }
+
+/// Validates that an unsigned value fits within the specified bit width.
+///
+/// If the value exceeds the maximum for the given bit width, logs a warning
+/// and returns 0. Otherwise returns the value unchanged.
+///
+/// # Arguments
+///
+/// * `field_name` - Name of the field (for warning message)
+/// * `field_bits` - Number of bits available for the value
+/// * `value` - The unsigned value to validate
+///
+/// # Returns
+///
+/// The original value if valid, or 0 if it exceeds the bit width.
+pub fn validate_uint(field_name: &str, field_bits: usize, value: u32) -> u32 {
+    if field_bits == 0 || field_bits >= 32 {
+        return value;
+    }
+    let max_value = (1u32 << field_bits) - 1;
+    if value > max_value {
+        log::warn!(
+            "Field '{}': value {} exceeds {}-bit maximum ({}), will be zeroed",
+            field_name, value, field_bits, max_value
+        );
+        return 0;
+    }
+    value
+}
+
+/// Validates that a signed value fits within the specified bit width.
+///
+/// For signed values, checks against the range [-2^(bits-1), 2^(bits-1)-1].
+/// If the value exceeds this range, logs a warning and returns 0.
+///
+/// # Arguments
+///
+/// * `field_name` - Name of the field (for warning message)
+/// * `field_bits` - Number of bits available for the value
+/// * `value` - The signed value to validate
+///
+/// # Returns
+///
+/// The original value if valid, or 0 if it exceeds the bit width range.
+pub fn validate_int(field_name: &str, field_bits: usize, value: i32) -> i32 {
+    if field_bits == 0 || field_bits >= 32 {
+        return value;
+    }
+    let max_positive = (1i32 << (field_bits - 1)) - 1;
+    let min_negative = -(1i32 << (field_bits - 1));
+    if value > max_positive || value < min_negative {
+        log::warn!(
+            "Field '{}': value {} exceeds {}-bit signed range ({} to {}), will be zeroed",
+            field_name, value, field_bits, min_negative, max_positive
+        );
+        return 0;
+    }
+    value
+}

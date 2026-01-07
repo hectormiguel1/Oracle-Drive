@@ -35,7 +35,7 @@ use byteorder::{BigEndian, WriteBytesExt};
 use anyhow::Result;
 use indexmap::IndexMap;
 use super::structs::{WdbValue, WdbData, GameCode};
-use super::bit_helpers::derive_field_number;
+use super::bit_helpers::{derive_field_number, validate_int, validate_uint};
 
 /// Converts an unsigned integer to a fixed-width binary string.
 ///
@@ -169,8 +169,6 @@ impl<W: Write + Seek> WdbWriter<W> {
     ///
     /// XIII uses a simpler section layout with exactly 4 metadata sections:
     /// `!!string`, `!!strtypelist`, `!!typelist`, `!!version`
-    ///
-    /// Supports u64 fields (type 3 with field name starting with "u64").
     fn write_xiii(
         &mut self,
         header_map: &std::collections::HashMap<String, WdbValue>,
@@ -254,6 +252,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                                         WdbValue::CrystalNodeType(n) => n.to_u32() as i32,
                                         _ => 0,
                                     };
+                                    let i_val = validate_int(field_name, actual_field_num, i_val);
 
                                     let mut binary_str = int_to_binary_fixed(i_val, actual_field_num);
                                     if binary_str.len() > actual_field_num {
@@ -276,6 +275,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                                         WdbValue::CrystalNodeType(n) => n.to_u32(),
                                         _ => 0,
                                     };
+                                    let u_val = validate_uint(field_name, actual_field_num, u_val);
 
                                     let binary_str = uint_to_binary_fixed(u_val, actual_field_num);
                                     let reversed = reverse_binary(&binary_str);
@@ -296,6 +296,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                                         WdbValue::CrystalNodeType(n) => n.to_u32() as i32,
                                         _ => 0,
                                     };
+                                    let f_val = validate_int(field_name, actual_field_num, f_val);
 
                                     let mut binary_str = int_to_binary_fixed(f_val, actual_field_num);
                                     if binary_str.len() > actual_field_num {
@@ -385,50 +386,24 @@ impl<W: Write + Seek> WdbWriter<W> {
                         data_index += 4;
                     },
 
-                    // Type 3: uint value (or u64 for XIII only)
+                    // Type 3: uint value
                     3 => {
-                        let field_name = &fields[f];
+                        let uint_val: u32 = match &record_values[f] {
+                            WdbValue::UInt(u) => *u,
+                            WdbValue::Int(i) => *i as u32,
+                            WdbValue::CrystalRole(r) => r.to_u32(),
+                            WdbValue::CrystalNodeType(n) => n.to_u32(),
+                            _ => 0,
+                        };
 
-                        if field_name.starts_with("u64") {
-                            // u64 handling - XIII ONLY
-                            let ulong_val: u64 = match &record_values[f] {
-                                WdbValue::UInt64(u) => *u,
-                                WdbValue::UInt(u) => *u as u64,
-                                WdbValue::Int(i) => *i as u64,
-                                _ => 0,
-                            };
+                        // Write as big-endian
+                        current_out_data[data_index] = (uint_val >> 24) as u8;
+                        current_out_data[data_index + 1] = (uint_val >> 16) as u8;
+                        current_out_data[data_index + 2] = (uint_val >> 8) as u8;
+                        current_out_data[data_index + 3] = uint_val as u8;
 
-                            // Write as big-endian
-                            current_out_data[data_index] = (ulong_val >> 56) as u8;
-                            current_out_data[data_index + 1] = (ulong_val >> 48) as u8;
-                            current_out_data[data_index + 2] = (ulong_val >> 40) as u8;
-                            current_out_data[data_index + 3] = (ulong_val >> 32) as u8;
-                            current_out_data[data_index + 4] = (ulong_val >> 24) as u8;
-                            current_out_data[data_index + 5] = (ulong_val >> 16) as u8;
-                            current_out_data[data_index + 6] = (ulong_val >> 8) as u8;
-                            current_out_data[data_index + 7] = ulong_val as u8;
-
-                            strtypelist_index += 2; // u64 takes 2 strtypelist entries
-                            data_index += 8;
-                        } else {
-                            // Regular uint
-                            let uint_val: u32 = match &record_values[f] {
-                                WdbValue::UInt(u) => *u,
-                                WdbValue::Int(i) => *i as u32,
-                                WdbValue::CrystalRole(r) => r.to_u32(),
-                                WdbValue::CrystalNodeType(n) => n.to_u32(),
-                                _ => 0,
-                            };
-
-                            // Write as big-endian
-                            current_out_data[data_index] = (uint_val >> 24) as u8;
-                            current_out_data[data_index + 1] = (uint_val >> 16) as u8;
-                            current_out_data[data_index + 2] = (uint_val >> 8) as u8;
-                            current_out_data[data_index + 3] = uint_val as u8;
-
-                            strtypelist_index += 1;
-                            data_index += 4;
-                        }
+                        strtypelist_index += 1;
+                        data_index += 4;
                     },
 
                     _ => {
@@ -765,6 +740,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                                         WdbValue::CrystalNodeType(n) => n.to_u32() as i32,
                                         _ => 0,
                                     };
+                                    let i_val = validate_int(field_name, actual_field_num, i_val);
 
                                     let mut binary_str = int_to_binary_fixed(i_val, actual_field_num);
                                     if binary_str.len() > actual_field_num {
@@ -784,6 +760,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                                         WdbValue::CrystalNodeType(n) => n.to_u32(),
                                         _ => 0,
                                     };
+                                    let u_val = validate_uint(field_name, actual_field_num, u_val);
 
                                     let binary_str = uint_to_binary_fixed(u_val, actual_field_num);
                                     let reversed = reverse_binary(&binary_str);
@@ -801,6 +778,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                                         WdbValue::CrystalNodeType(n) => n.to_u32() as i32,
                                         _ => 0,
                                     };
+                                    let f_val = validate_int(field_name, actual_field_num, f_val);
 
                                     let mut binary_str = int_to_binary_fixed(f_val, actual_field_num);
                                     if binary_str.len() > actual_field_num {
@@ -821,6 +799,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                                     let s_val = str_array_data_dict.get(field_name)
                                         .and_then(|list| list.iter().position(|s| s == &string_item))
                                         .unwrap_or(0) as u32;
+                                    let s_val = validate_uint(field_name, actual_field_num, s_val);
 
                                     let binary_str = uint_to_binary_fixed(s_val, actual_field_num);
                                     let reversed = reverse_binary(&binary_str);
@@ -892,7 +871,7 @@ impl<W: Write + Seek> WdbWriter<W> {
                         data_index += 4;
                     },
 
-                    // Type 3: uint value (NO u64 for XIII-2/LR!)
+                    // Type 3: uint value
                     3 => {
                         let uint_val: u32 = match &record_values[f] {
                             WdbValue::UInt(u) => *u,

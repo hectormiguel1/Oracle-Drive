@@ -19,7 +19,7 @@
 //! | 0         | Bitpacked fields  | 4 bytes   |
 //! | 1         | Float (f32)       | 4 bytes   |
 //! | 2         | String offset     | 4 bytes   |
-//! | 3         | UInt/UInt64       | 4/8 bytes |
+//! | 3         | UInt              | 4 bytes   |
 //!
 //! ## Bitpacking
 //!
@@ -52,6 +52,8 @@ pub struct WdbVariables {
     pub str_array_dict: HashMap<String, Vec<String>>,
     pub offsets_per_value: u8,
     pub bits_per_offset: u8,
+    /// When true, fields are unknown and should use type-based generic names
+    pub without_fields: bool,
 }
 
 /// Binary reader for WDB database files.
@@ -186,7 +188,7 @@ impl<R: Read + Seek> WdbReader<R> {
     /// - **Type 0**: Bitpacked fields - multiple values in 32 bits
     /// - **Type 1**: IEEE 754 float (f32)
     /// - **Type 2**: String offset into `!!string` section
-    /// - **Type 3**: Unsigned integer (u32 or u64 for fields starting with "u64")
+    /// - **Type 3**: Unsigned integer (u32)
     ///
     /// # Arguments
     ///
@@ -226,6 +228,75 @@ impl<R: Read + Seek> WdbReader<R> {
             let mut data_idx = 0;
             let mut type_idx = 0;
 
+            // Without-fields mode: use type-based generic names and raw hex for bitpacked
+            if vars.without_fields {
+                let mut bitpacked_counter = 0;
+                let mut float_counter = 0;
+                let mut string_counter = 0;
+                let mut uint_counter = 0;
+
+                while type_idx < vars.strtypelist_values.len() {
+                    let type_code = vars.strtypelist_values[type_idx];
+
+                    match type_code {
+                        0 => {
+                            // Bitpacked - output as hex string
+                            if data_idx + 4 > record_data.len() { break; }
+                            let val_u32 = u32::from_be_bytes(
+                                record_data[data_idx..data_idx + 4].try_into().unwrap(),
+                            );
+                            let hex_val = format!("0x{:08X}", val_u32);
+                            record.insert(format!("bitpacked-field_{}", bitpacked_counter), WdbValue::String(hex_val));
+                            bitpacked_counter += 1;
+                            data_idx += 4;
+                            type_idx += 1;
+                        },
+                        1 => {
+                            // Float
+                            if data_idx + 4 > record_data.len() { break; }
+                            let val_f32 = f32::from_be_bytes(
+                                record_data[data_idx..data_idx + 4].try_into().unwrap(),
+                            );
+                            record.insert(format!("float-field_{}", float_counter), WdbValue::Float(val_f32));
+                            float_counter += 1;
+                            data_idx += 4;
+                            type_idx += 1;
+                        },
+                        2 => {
+                            // String offset
+                            if data_idx + 4 > record_data.len() { break; }
+                            let offset = u32::from_be_bytes(
+                                record_data[data_idx..data_idx + 4].try_into().unwrap(),
+                            );
+                            let s = derive_string(&vars.strings_data, offset as usize);
+                            record.insert(format!("!!string-field_{}", string_counter), WdbValue::String(s));
+                            string_counter += 1;
+                            data_idx += 4;
+                            type_idx += 1;
+                        },
+                        3 => {
+                            // Uint
+                            if data_idx + 4 > record_data.len() { break; }
+                            let val_u32 = u32::from_be_bytes(
+                                record_data[data_idx..data_idx + 4].try_into().unwrap(),
+                            );
+                            record.insert(format!("uint-field_{}", uint_counter), WdbValue::UInt(val_u32));
+                            uint_counter += 1;
+                            data_idx += 4;
+                            type_idx += 1;
+                        },
+                        _ => {
+                            type_idx += 1;
+                        }
+                    }
+                }
+
+                records.push(record);
+                current_header_pos += 32;
+                continue;
+            }
+
+            // Normal mode with known fields
             let mut f = 0;
             while f < vars.field_count && type_idx < vars.strtypelist_values.len() {
                 let type_code = vars.strtypelist_values[type_idx];
@@ -327,45 +398,27 @@ impl<R: Read + Seek> WdbReader<R> {
                         type_idx += 1;
                     }
                     3 => {
-                        // Uint (or u64)
-                        let field_name = if f < vars.fields.len() {
-                            &vars.fields[f]
-                        } else {
-                            ""
-                        };
-                        if field_name.starts_with("u64") {
-                            if data_idx + 8 > record_data.len() {
-                                break;
-                            }
-                            let val_u64 = u64::from_be_bytes(
-                                record_data[data_idx..data_idx + 8].try_into().unwrap(),
-                            );
-                            if f < vars.fields.len() {
-                                record.insert(vars.fields[f].clone(), WdbValue::UInt64(val_u64));
-                                f += 1;
-                            }
-                            data_idx += 8;
-                        } else {
-                            if data_idx + 4 > record_data.len() {
-                                break;
-                            }
-                            let val_u32 = u32::from_be_bytes(
-                                record_data[data_idx..data_idx + 4].try_into().unwrap(),
-                            );
-                            if f < vars.fields.len() {
-                                // Check if this field should be an enum
-                                let val = if let Some(enum_type) =
-                                    get_enum_type(&vars.wdb_name, field_name)
-                                {
-                                    int_to_enum_value(enum_type, val_u32)
-                                } else {
-                                    WdbValue::UInt(val_u32)
-                                };
-                                record.insert(vars.fields[f].clone(), val);
-                                f += 1;
-                            }
-                            data_idx += 4;
+                        // Uint
+                        if data_idx + 4 > record_data.len() {
+                            break;
                         }
+                        let val_u32 = u32::from_be_bytes(
+                            record_data[data_idx..data_idx + 4].try_into().unwrap(),
+                        );
+                        if f < vars.fields.len() {
+                            let field_name = &vars.fields[f];
+                            // Check if this field should be an enum
+                            let val = if let Some(enum_type) =
+                                get_enum_type(&vars.wdb_name, field_name)
+                            {
+                                int_to_enum_value(enum_type, val_u32)
+                            } else {
+                                WdbValue::UInt(val_u32)
+                            };
+                            record.insert(field_name.clone(), val);
+                            f += 1;
+                        }
+                        data_idx += 4;
                         type_idx += 1;
                     }
                     _ => {

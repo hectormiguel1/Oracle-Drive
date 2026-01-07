@@ -58,9 +58,6 @@ sealed class WdbValue with _$WdbValue {
   const factory WdbValue.stringArray(
     List<String> field0,
   ) = WdbValue_StringArray;
-  const factory WdbValue.uInt64(
-    BigInt field0,
-  ) = WdbValue_UInt64;
   const factory WdbValue.crystalRole(
     CrystalRole field0,
   ) = WdbValue_CrystalRole;

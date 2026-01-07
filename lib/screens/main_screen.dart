@@ -13,6 +13,7 @@ import 'package:oracle_drive/screens/wdb_screen.dart';
 import 'package:oracle_drive/screens/workflow_screen.dart';
 import 'package:oracle_drive/screens/wpd_screen.dart';
 import 'package:oracle_drive/screens/ztr_screen.dart';
+import 'package:oracle_drive/screens/vfx_screen.dart';
 import 'package:oracle_drive/screens/settings_screen.dart';
 import 'package:oracle_drive/theme/crystal_theme.dart';
 import 'package:flutter/material.dart';
@@ -74,6 +75,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
       const WdbScreen(),
       const ZtrScreen(),
       const WorkflowScreen(),
+      const VfxScreen(),
       if (selectedGame == AppGameCode.ff13_1) const CrystaliumScreen(),
       const SettingsScreen(),
     ];
@@ -81,7 +83,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
 
   /// Get the settings screen index based on game selection.
   int _settingsIndex(AppGameCode game) {
-    return game == AppGameCode.ff13_1 ? 6 : 5;
+    return game == AppGameCode.ff13_1 ? 7 : 6;
   }
 
   @override
@@ -138,9 +140,11 @@ class _MainScreenState extends ConsumerState<MainScreen>
                         _buildNavButton(3, "ZTR", Icons.description),
                         const SizedBox(height: 10),
                         _buildNavButton(4, "Workflows", Icons.account_tree),
+                        const SizedBox(height: 10),
+                        _buildNavButton(5, "VFX Viewer", Icons.auto_awesome),
                         if (selectedGame == AppGameCode.ff13_1) ...[
                           const SizedBox(height: 10),
-                          _buildNavButton(5, "Crystalium", Icons.auto_graph),
+                          _buildNavButton(6, "Crystalium", Icons.auto_graph),
                         ],
                         const Spacer(),
                         const CrystalDivider.subtle(),
@@ -179,10 +183,10 @@ class _MainScreenState extends ConsumerState<MainScreen>
                       if (wasOnSettings) {
                         // Stay on Settings when switching games
                         ref.read(navigationIndexProvider.notifier).state = _settingsIndex(g);
-                      } else if (g != AppGameCode.ff13_1 && currentIdx == 5) {
-                        // Crystalium (index 5) only exists for FF13 - go to first screen
+                      } else if (g != AppGameCode.ff13_1 && currentIdx == 6) {
+                        // Crystalium (index 6) only exists for FF13 - go to first screen
                         ref.read(navigationIndexProvider.notifier).state = 0;
-                      } else if (g != AppGameCode.ff13_1 && currentIdx > 5) {
+                      } else if (g != AppGameCode.ff13_1 && currentIdx > 6) {
                         // Index out of bounds for non-FF13 games - go to first screen
                         ref.read(navigationIndexProvider.notifier).state = 0;
                       }

@@ -129,10 +129,8 @@ class WbtNotifier extends StateNotifier<WbtState> {
   void setFileListPath(String? path) {
     state = WbtState(
       fileListPath: path,
-      binPath: state.binPath,
       isProcessing: false,
       extractionProgress: 0,
-      repackSourceDir: state.repackSourceDir,
       fileEntries: const [],
       rootNode: null,
       selectedIndices: const {},

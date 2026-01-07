@@ -83,7 +83,6 @@ pub enum WdbValue {
     IntArray(Vec<i32>),
     UIntArray(Vec<u32>),
     StringArray(Vec<String>),
-    UInt64(u64),
     // Enum variants for type-safe field values
     CrystalRole(CrystalRole),
     CrystalNodeType(CrystalNodeType),

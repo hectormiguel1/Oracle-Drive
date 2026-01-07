@@ -93,6 +93,14 @@ pub struct FileEntry {
     /// When writing, this flag indicates that 32768 should be added
     /// to the new path_string_pos value to preserve the chunk transition marker.
     pub has_continuation_flag: bool,
+    /// For FF13-2/LR: the raw chunk byte from position 6 of the entry.
+    /// This is NOT the logical chunk number - it's an "odd chunk counter" value
+    /// used for chunk boundary tracking. Must be preserved exactly during repacking.
+    pub raw_chunk_byte: Option<u8>,
+    /// Raw 8-byte entry data from the original filelist.
+    /// Used by C#-compatible repacking to preserve exact byte layout.
+    /// Only path_string_pos (bytes 6-7 for FF13-1, bytes 4-5 for FF13-2/LR) is updated.
+    pub raw_entry_data: [u8; 8],
 }
 
 /// Chunk metadata from the chunk info section.
@@ -360,6 +368,14 @@ impl Filelist {
         };
 
         for entry_idx in 0..header.total_files {
+            // Read raw 8-byte entry data first (for C#-compatible repacking)
+            let entry_start_pos = cursor.position();
+            let mut raw_entry_data = [0u8; 8];
+            cursor.read_exact(&mut raw_entry_data)?;
+
+            // Reset position to parse the values
+            cursor.seek(SeekFrom::Start(entry_start_pos))?;
+
             let file_code = cursor.read_le::<u32>()?;
             match game_code {
                 GameCode::FF13_1 => {
@@ -371,6 +387,8 @@ impl Filelist {
                         path_string_pos,
                         file_type_id: None,
                         has_continuation_flag: false, // FF13-1 doesn't use this flag
+                        raw_chunk_byte: None, // FF13-1 doesn't have this field
+                        raw_entry_data,
                     });
                 }
                 _ => {
@@ -432,6 +450,8 @@ impl Filelist {
                         path_string_pos,
                         file_type_id: Some(file_type_id),
                         has_continuation_flag,
+                        raw_chunk_byte: Some(raw_chunk_number), // Preserve original byte for repacking
+                        raw_entry_data,
                     });
                 }
             }

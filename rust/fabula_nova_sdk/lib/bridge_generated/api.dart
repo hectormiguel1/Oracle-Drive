@@ -7,6 +7,7 @@ import 'frb_generated.dart';
 import 'lib.dart';
 import 'modules/crystalium/structs.dart';
 import 'modules/img/structs.dart';
+import 'modules/vfx/structs.dart';
 import 'modules/wct.dart';
 import 'modules/wdb/enums.dart';
 import 'modules/wdb/structs.dart';
@@ -389,6 +390,198 @@ Future<String> mcpToJson({required McpFile mcp}) =>
 /// Parses an MCP file from JSON string.
 Future<McpFile> mcpFromJson({required String json}) =>
     RustLib.instance.api.crateApiMcpFromJson(json: json);
+
+/// Parses a VFX XFV file and returns all effect data.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// Complete VFX data including textures, models, animations, and effects.
+Future<VfxData> vfxParse({required String inFile}) =>
+    RustLib.instance.api.crateApiVfxParse(inFile: inFile);
+
+/// Gets a quick summary of VFX file contents.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// Summary with counts and effect names.
+Future<VfxSummary> vfxGetSummary({required String inFile}) =>
+    RustLib.instance.api.crateApiVfxGetSummary(inFile: inFile);
+
+/// Lists all effect names in a VFX file.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// List of effect names.
+Future<List<String>> vfxListEffects({required String inFile}) =>
+    RustLib.instance.api.crateApiVfxListEffects(inFile: inFile);
+
+/// Lists all textures in a VFX file.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// List of texture info (name, dimensions, format).
+Future<List<VfxTexture>> vfxListTextures({required String inFile}) =>
+    RustLib.instance.api.crateApiVfxListTextures(inFile: inFile);
+
+/// Exports VFX data to JSON string.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// JSON string representation of VFX data.
+Future<String> vfxExportJson({required String inFile}) =>
+    RustLib.instance.api.crateApiVfxExportJson(inFile: inFile);
+
+/// Extracts VFX textures to DDS files.
+///
+/// Requires the paired IMGB file to be present.
+///
+/// # Arguments
+/// * `xfv_path` - Path to the XFV file
+/// * `output_dir` - Directory to write DDS files
+///
+/// # Returns
+/// List of extracted DDS file paths.
+Future<List<String>> vfxExtractTextures(
+        {required String xfvPath, required String outputDir}) =>
+    RustLib.instance.api
+        .crateApiVfxExtractTextures(xfvPath: xfvPath, outputDir: outputDir);
+
+/// Extracts a single VFX texture as PNG bytes in memory.
+///
+/// This function loads only the specified texture without writing to disk.
+/// Ideal for on-demand texture preview in the UI.
+///
+/// # Arguments
+/// * `xfv_path` - Path to the XFV file
+/// * `texture_name` - Name of the texture (e.g., "v04fdfc11828acd")
+///
+/// # Returns
+/// Tuple of ((width, height), png_bytes).
+Future<((int, int), Uint8List)> vfxExtractTextureAsPng(
+        {required String xfvPath, required String textureName}) =>
+    RustLib.instance.api.crateApiVfxExtractTextureAsPng(
+        xfvPath: xfvPath, textureName: textureName);
+
+/// Converts a DDS file to PNG format.
+///
+/// Supports DXT1, DXT3, DXT5, and uncompressed RGBA formats.
+///
+/// # Arguments
+/// * `dds_path` - Path to input DDS file
+/// * `png_path` - Path to output PNG file
+///
+/// # Returns
+/// Tuple of (width, height) of the converted image.
+Future<(int, int)> convertDdsToPng(
+        {required String ddsPath, required String pngPath}) =>
+    RustLib.instance.api
+        .crateApiConvertDdsToPng(ddsPath: ddsPath, pngPath: pngPath);
+
+/// Converts a DDS file to PNG and returns the PNG data as bytes.
+///
+/// Useful for displaying textures directly in Flutter.
+///
+/// # Arguments
+/// * `dds_path` - Path to input DDS file
+///
+/// # Returns
+/// Tuple of ((width, height), png_bytes).
+Future<((int, int), Uint8List)> convertDdsToPngBytes(
+        {required String ddsPath}) =>
+    RustLib.instance.api.crateApiConvertDdsToPngBytes(ddsPath: ddsPath);
+
+/// Initializes the VFX player with specified render dimensions.
+///
+/// Must be called before loading models or rendering frames.
+///
+/// # Arguments
+/// * `width` - Render width in pixels
+/// * `height` - Render height in pixels
+///
+/// # Returns
+/// Ok(()) on success.
+Future<void> vfxPlayerInit({required int width, required int height}) =>
+    RustLib.instance.api.crateApiVfxPlayerInit(width: width, height: height);
+
+/// Loads a test quad with specified color for debugging.
+///
+/// # Arguments
+/// * `r`, `g`, `b`, `a` - RGBA color (0.0 to 1.0)
+///
+/// # Returns
+/// Ok(()) on success.
+Future<void> vfxPlayerLoadTest(
+        {required double r,
+        required double g,
+        required double b,
+        required double a}) =>
+    RustLib.instance.api.crateApiVfxPlayerLoadTest(r: r, g: g, b: b, a: a);
+
+/// Loads a VFX model for rendering.
+///
+/// The model must exist in the VFX file, and a texture must be provided as RGBA bytes.
+///
+/// # Arguments
+/// * `xfv_path` - Path to the XFV file
+/// * `model_name` - Name of the model to load
+/// * `texture_name` - Name of the texture to use (or empty for first texture)
+///
+/// # Returns
+/// Ok(()) on success.
+Future<void> vfxPlayerLoadModel(
+        {required String xfvPath,
+        required String modelName,
+        required String textureName}) =>
+    RustLib.instance.api.crateApiVfxPlayerLoadModel(
+        xfvPath: xfvPath, modelName: modelName, textureName: textureName);
+
+/// Renders a single frame and returns RGBA pixel data.
+///
+/// # Arguments
+/// * `delta_time` - Time elapsed since last frame (in seconds)
+///
+/// # Returns
+/// RGBA pixel data (width * height * 4 bytes).
+Future<Uint8List> vfxPlayerRenderFrame({required double deltaTime}) =>
+    RustLib.instance.api.crateApiVfxPlayerRenderFrame(deltaTime: deltaTime);
+
+/// Gets the current animation time.
+///
+/// # Returns
+/// Current animation time in seconds.
+Future<double> vfxPlayerGetTime() =>
+    RustLib.instance.api.crateApiVfxPlayerGetTime();
+
+/// Resets the animation to the beginning.
+Future<void> vfxPlayerReset() => RustLib.instance.api.crateApiVfxPlayerReset();
+
+/// Disposes of the VFX player and releases GPU resources.
+Future<void> vfxPlayerDispose() =>
+    RustLib.instance.api.crateApiVfxPlayerDispose();
+
+/// Checks if the VFX player is initialized.
+///
+/// # Returns
+/// True if initialized, false otherwise.
+Future<bool> vfxPlayerIsInitialized() =>
+    RustLib.instance.api.crateApiVfxPlayerIsInitialized();
+
+/// Gets the render dimensions.
+///
+/// # Returns
+/// Tuple of (width, height) in pixels.
+Future<(int, int)> vfxPlayerGetDimensions() =>
+    RustLib.instance.api.crateApiVfxPlayerGetDimensions();
 
 /// File metadata for a single entry in a WBT archive.
 /// Mirrors the Rust struct for flutter_rust_bridge serialization.

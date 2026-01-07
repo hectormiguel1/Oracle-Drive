@@ -473,4 +473,328 @@ mod tests {
             println!("File is ALREADY DECRYPTED: {}", value_at_check == expected_if_decrypted);
         }
     }
+
+    #[test]
+    fn test_repack_single_ff13_1() {
+        use crate::modules::wbt::repack::WbtRepacker;
+        use crate::modules::wbt::api;
+
+        // Use paths that work on this machine
+        let data_dir = "/home/hectorr/Development/ff13_data";
+        let test_dir = "/tmp/rust_repack_test";
+
+        let filelist_src = format!("{}/filelistu.win32.bin", data_dir);
+        let container_src = format!("{}/white_imgu.win32.bin", data_dir);
+
+        // Check if source files exist
+        if !Path::new(&filelist_src).exists() {
+            println!("Skipping test: Source files not found at {}", data_dir);
+            return;
+        }
+
+        // Clean up and create test directory
+        let _ = std::fs::remove_dir_all(test_dir);
+        std::fs::create_dir_all(test_dir).expect("Failed to create test dir");
+
+        let filelist_path = format!("{}/filelistu.win32.bin", test_dir);
+        let container_path = format!("{}/white_imgu.win32.bin", test_dir);
+        let extraction_dir = test_dir;
+
+        // Copy source files
+        std::fs::copy(&filelist_src, &filelist_path).expect("Failed to copy filelist");
+        std::fs::copy(&container_src, &container_path).expect("Failed to copy container");
+
+        // STEP 1: Extract the item.wdb file first
+        println!("=== STEP 1: Extracting item.wdb ===");
+        let extracted_path = format!("{}/db/resident/item.wdb", extraction_dir);
+        api::extract_single_file(
+            &filelist_path,
+            &container_path,
+            "db/resident/item.wdb",
+            &extracted_path,
+            GameCode::FF13_1,
+        ).expect("Failed to extract item.wdb");
+        println!("Extracted item.wdb to: {}", extracted_path);
+
+        let extracted_size = std::fs::metadata(&extracted_path).unwrap().len();
+        println!("Extracted file size: {} bytes", extracted_size);
+
+        // Get original file sizes
+        let filelist_size_before = std::fs::metadata(&filelist_path).unwrap().len();
+        let container_size_before = std::fs::metadata(&container_path).unwrap().len();
+
+        println!("\n=== STEP 2: Rust RepackSingle Test ===");
+        println!("Before repack:");
+        println!("  Filelist: {} bytes", filelist_size_before);
+        println!("  Container: {} bytes", container_size_before);
+
+        // Create repacker and repack
+        let repacker = WbtRepacker::new(&filelist_path, &container_path, GameCode::FF13_1);
+        let result = repacker.repack_single("db/resident/item.wdb", &extracted_path);
+
+        match result {
+            Ok(()) => {
+                println!("Repack completed successfully!");
+
+                // Get new file sizes
+                let filelist_size_after = std::fs::metadata(&filelist_path).unwrap().len();
+                let container_size_after = std::fs::metadata(&container_path).unwrap().len();
+
+                println!("\nAfter repack:");
+                println!("  Filelist: {} bytes (diff: {})", filelist_size_after, filelist_size_after as i64 - filelist_size_before as i64);
+                println!("  Container: {} bytes (diff: {})", container_size_after, container_size_after as i64 - container_size_before as i64);
+
+                // Compare with original to count differences
+                let original_filelist = std::fs::read(&filelist_src).unwrap();
+                let new_filelist = std::fs::read(&filelist_path).unwrap();
+
+                let mut diff_count = 0;
+                let mut first_diff = None;
+                for i in 0..original_filelist.len().min(new_filelist.len()) {
+                    if original_filelist[i] != new_filelist[i] {
+                        diff_count += 1;
+                        if first_diff.is_none() {
+                            first_diff = Some(i);
+                        }
+                    }
+                }
+
+                println!("\n=== STEP 3: Comparing filelist with original ===");
+                println!("  Bytes compared: {}", original_filelist.len().min(new_filelist.len()));
+                println!("  Bytes different: {}", diff_count);
+                println!("  First difference at: {:?}", first_diff.map(|x| format!("0x{:X}", x)));
+
+                // Show first 30 differences to see pattern
+                if diff_count > 0 {
+                    println!("\n  First 30 byte differences:");
+                    let mut shown = 0;
+                    for i in 0..original_filelist.len().min(new_filelist.len()) {
+                        if original_filelist[i] != new_filelist[i] && shown < 30 {
+                            println!("    Offset 0x{:06X}: 0x{:02X} -> 0x{:02X}",
+                                i, original_filelist[i], new_filelist[i]);
+                            shown += 1;
+                        }
+                    }
+
+                    // Analyze the pattern
+                    println!("\n=== STEP 4: Analyzing first difference location ===");
+                    if let Some(first) = first_diff {
+                        // Check if this is in the entries section
+                        // Header is 12 bytes, each entry is 8 bytes
+                        if first >= 12 {
+                            let entry_offset = first - 12;
+                            let entry_index = entry_offset / 8;
+                            let byte_in_entry = entry_offset % 8;
+                            println!("  First diff is in entry index {}, byte {} within entry", entry_index, byte_in_entry);
+
+                            // For FF13-1: Entry layout is [file_code(4), chunk_number(2), path_string_pos(2)]
+                            match byte_in_entry {
+                                0..=3 => println!("  This is in the file_code field"),
+                                4..=5 => println!("  This is in the chunk_number field"),
+                                6..=7 => println!("  This is in the path_string_pos field"),
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                panic!("Repack failed: {:?}", e);
+            }
+        }
+    }
+
+    #[test]
+    fn test_repack_single_ff13_1_modified_file() {
+        //! Test repacking with a MODIFIED file to check if bugs appear with size changes
+        use crate::modules::wbt::repack::WbtRepacker;
+        use crate::modules::wbt::api;
+
+        let data_dir = "/home/hectorr/Development/ff13_data";
+        let test_dir = "/tmp/rust_repack_test_modified";
+
+        let filelist_src = format!("{}/filelistu.win32.bin", data_dir);
+        let container_src = format!("{}/white_imgu.win32.bin", data_dir);
+
+        if !Path::new(&filelist_src).exists() {
+            println!("Skipping test: Source files not found at {}", data_dir);
+            return;
+        }
+
+        // Clean up and create test directory
+        let _ = std::fs::remove_dir_all(test_dir);
+        std::fs::create_dir_all(test_dir).expect("Failed to create test dir");
+
+        let filelist_path = format!("{}/filelistu.win32.bin", test_dir);
+        let container_path = format!("{}/white_imgu.win32.bin", test_dir);
+
+        // Copy source files
+        std::fs::copy(&filelist_src, &filelist_path).expect("Failed to copy filelist");
+        std::fs::copy(&container_src, &container_path).expect("Failed to copy container");
+
+        // Extract the item.wdb file
+        println!("=== STEP 1: Extracting item.wdb ===");
+        let extracted_path = format!("{}/db/resident/item.wdb", test_dir);
+        api::extract_single_file(
+            &filelist_path,
+            &container_path,
+            "db/resident/item.wdb",
+            &extracted_path,
+            GameCode::FF13_1,
+        ).expect("Failed to extract item.wdb");
+
+        let original_size = std::fs::metadata(&extracted_path).unwrap().len();
+        println!("Extracted item.wdb: {} bytes", original_size);
+
+        // MODIFY the file - append some data to force a size change
+        println!("\n=== STEP 2: Modifying item.wdb ===");
+        let mut file_data = std::fs::read(&extracted_path).unwrap();
+        let original_len = file_data.len();
+
+        // Add 1000 bytes of padding (should force a larger compressed size)
+        file_data.extend(vec![0xAB; 1000]);
+        std::fs::write(&extracted_path, &file_data).unwrap();
+        println!("Modified file size: {} -> {} bytes (+{} bytes)",
+            original_len, file_data.len(), file_data.len() - original_len);
+
+        // REPACK
+        println!("\n=== STEP 3: Repacking with modified file ===");
+        let repacker = WbtRepacker::new(&filelist_path, &container_path, GameCode::FF13_1);
+        let result = repacker.repack_single("db/resident/item.wdb", &extracted_path);
+
+        match result {
+            Ok(()) => {
+                println!("Repack completed!");
+
+                // Verify the repacked archive can be read
+                println!("\n=== STEP 4: Verifying repacked archive ===");
+                let filelist_file = File::open(&filelist_path).expect("Failed to open repacked filelist");
+                let repacked_filelist = Filelist::read(filelist_file, GameCode::FF13_1);
+
+                match repacked_filelist {
+                    Ok(filelist) => {
+                        println!("Repacked filelist parsed successfully: {} entries", filelist.entries.len());
+
+                        // Verify entry 450 can be read
+                        if let Ok(meta) = filelist.get_metadata(450) {
+                            println!("Entry 450: path={}, size={}", meta.path, meta.uncompressed_size);
+
+                            // The uncompressed size should now be larger
+                            if meta.uncompressed_size as usize == file_data.len() {
+                                println!("SIZE CORRECT: Matches modified file size");
+                            } else {
+                                println!("SIZE MISMATCH: Expected {}, got {}", file_data.len(), meta.uncompressed_size);
+                            }
+                        }
+
+                        // Extract and verify the modified file
+                        let container_file = File::open(&container_path).expect("Failed to open container");
+                        let container_reader = std::io::BufReader::new(container_file);
+                        let mut container = crate::modules::wbt::WbtContainer::new(container_reader, filelist);
+
+                        match container.extract_file(450) {
+                            Ok((path, data)) => {
+                                println!("Re-extracted: {} ({} bytes)", path, data.len());
+                                if data == file_data {
+                                    println!("DATA VERIFIED: Extracted data matches modified file!");
+                                } else {
+                                    println!("DATA MISMATCH: Extracted data differs from modified file!");
+                                    println!("  Expected {} bytes, got {} bytes", file_data.len(), data.len());
+
+                                    // Show first difference
+                                    for i in 0..data.len().min(file_data.len()) {
+                                        if data[i] != file_data[i] {
+                                            println!("  First diff at byte {}: expected 0x{:02X}, got 0x{:02X}",
+                                                i, file_data[i], data[i]);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                println!("EXTRACTION FAILED: {:?}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        println!("PARSE ERROR: Failed to parse repacked filelist: {:?}", e);
+                    }
+                }
+            }
+            Err(e) => {
+                panic!("Repack failed: {:?}", e);
+            }
+        }
+    }
+
+    #[test]
+    fn test_ff13_1_entry_chunk_order() {
+        //! Diagnostic test to verify if FF13-1 entries are sorted by chunk_number
+        //! This is critical for understanding the C# vs Rust algorithm difference
+
+        let data_dir = "/home/hectorr/Development/ff13_data";
+        let filelist_path = Path::new(data_dir).join("filelistu.win32.bin");
+
+        if !filelist_path.exists() {
+            println!("Skipping test: File not found at {:?}", filelist_path);
+            return;
+        }
+
+        let file = File::open(&filelist_path).expect("Failed to open filelist");
+        let filelist = Filelist::read(file, GameCode::FF13_1).expect("Failed to parse filelist");
+
+        println!("=== FF13-1 Entry Order Analysis ===");
+        println!("Total entries: {}", filelist.entries.len());
+        println!("Total chunks: {}", filelist.chunks.len());
+
+        // Check if entries are sorted by chunk_number
+        let mut is_sorted = true;
+        let mut last_chunk = 0u32;
+        let mut chunk_boundaries: Vec<(u32, usize, usize)> = vec![]; // (chunk_num, start_idx, end_idx)
+        let mut current_chunk_start = 0;
+
+        for (i, entry) in filelist.entries.iter().enumerate() {
+            if entry.chunk_number < last_chunk {
+                is_sorted = false;
+                println!("  OUT OF ORDER: Entry {} has chunk {} but previous was {}", i, entry.chunk_number, last_chunk);
+            }
+            if entry.chunk_number != last_chunk {
+                if i > 0 {
+                    chunk_boundaries.push((last_chunk, current_chunk_start, i - 1));
+                }
+                current_chunk_start = i;
+            }
+            last_chunk = entry.chunk_number;
+        }
+        // Push last chunk
+        if !filelist.entries.is_empty() {
+            chunk_boundaries.push((last_chunk, current_chunk_start, filelist.entries.len() - 1));
+        }
+
+        println!("\nEntries sorted by chunk_number: {}", is_sorted);
+        println!("\nChunk boundaries:");
+        for (chunk, start, end) in &chunk_boundaries {
+            let count = end - start + 1;
+            println!("  Chunk {}: entries {} - {} ({} entries)", chunk, start, end, count);
+        }
+
+        // Show first few entries with their chunk numbers
+        println!("\nFirst 20 entries:");
+        for (i, entry) in filelist.entries.iter().take(20).enumerate() {
+            if let Ok(meta) = filelist.get_metadata(i) {
+                println!("  [{}] chunk={}, path_string_pos={}, path={}",
+                    i, entry.chunk_number, entry.path_string_pos, meta.path);
+            }
+        }
+
+        // Find entry 450 (item.wdb)
+        println!("\n=== Entry 450 (item.wdb) Analysis ===");
+        if let Ok(meta) = filelist.get_metadata(450) {
+            let entry = &filelist.entries[450];
+            println!("  Entry 450: chunk={}, path_string_pos={}", entry.chunk_number, entry.path_string_pos);
+            println!("  Path: {}", meta.path);
+            println!("  Offset: 0x{:X}", meta.offset);
+            println!("  Sizes: {} / {}", meta.uncompressed_size, meta.compressed_size);
+        }
+    }
 }

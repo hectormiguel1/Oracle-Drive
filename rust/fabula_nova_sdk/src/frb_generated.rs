@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 401158804;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1786907440;
 
 // Section: executor
 
@@ -323,6 +323,77 @@ fn wire__crate__api__clear_log_callback_impl(
                     })?;
                     Ok(output_ok)
                 })())
+            }
+        },
+    )
+}
+fn wire__crate__api__convert_dds_to_png_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "convert_dds_to_png",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_dds_path = <String>::sse_decode(&mut deserializer);
+            let api_png_path = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::convert_dds_to_png(api_dds_path, api_png_path)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__convert_dds_to_png_bytes_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "convert_dds_to_png_bytes",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_dds_path = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::convert_dds_to_png_bytes(api_dds_path)?;
+                        Ok(output_ok)
+                    })(),
+                )
             }
         },
     )
@@ -852,6 +923,574 @@ fn wire__crate__api__test_log_impl(
                     })?;
                     Ok(output_ok)
                 })())
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_export_json_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_export_json",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_export_json(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_extract_texture_as_png_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_extract_texture_as_png",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_xfv_path = <String>::sse_decode(&mut deserializer);
+            let api_texture_name = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok =
+                            crate::api::vfx_extract_texture_as_png(api_xfv_path, api_texture_name)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_extract_textures_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_extract_textures",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_xfv_path = <String>::sse_decode(&mut deserializer);
+            let api_output_dir = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok =
+                            crate::api::vfx_extract_textures(api_xfv_path, api_output_dir)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_get_summary_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_get_summary",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_get_summary(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_list_effects_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_list_effects",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_list_effects(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_list_textures_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_list_textures",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_list_textures(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_parse_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_parse",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_parse(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_dispose_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_dispose",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Result::<_, ()>::Ok({
+                        crate::api::vfx_player_dispose();
+                    })?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_get_dimensions_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_get_dimensions",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_player_get_dimensions()?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_get_time_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_get_time",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_player_get_time()?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_init_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_init",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_width = <u32>::sse_decode(&mut deserializer);
+            let api_height = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_player_init(api_width, api_height)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_is_initialized_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_is_initialized",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, ()>((move || {
+                    let output_ok = Result::<_, ()>::Ok(crate::api::vfx_player_is_initialized())?;
+                    Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_load_model_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_load_model",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_xfv_path = <String>::sse_decode(&mut deserializer);
+            let api_model_name = <String>::sse_decode(&mut deserializer);
+            let api_texture_name = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_player_load_model(
+                            api_xfv_path,
+                            api_model_name,
+                            api_texture_name,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_load_test_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_load_test",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_r = <f32>::sse_decode(&mut deserializer);
+            let api_g = <f32>::sse_decode(&mut deserializer);
+            let api_b = <f32>::sse_decode(&mut deserializer);
+            let api_a = <f32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok =
+                            crate::api::vfx_player_load_test(api_r, api_g, api_b, api_a)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_render_frame_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_render_frame",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_delta_time = <f32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_player_render_frame(api_delta_time)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__vfx_player_reset_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "vfx_player_reset",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::vfx_player_reset()?;
+                        Ok(output_ok)
+                    })(),
+                )
             }
         },
     )
@@ -2010,6 +2649,22 @@ impl SseDecode for f32 {
     }
 }
 
+impl SseDecode for [f32; 2] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <Vec<f32>>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::from_vec_to_array(inner);
+    }
+}
+
+impl SseDecode for [f32; 3] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <Vec<f32>>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::from_vec_to_array(inner);
+    }
+}
+
 impl SseDecode for [f32; 4] {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2120,6 +2775,18 @@ impl SseDecode for Vec<i32> {
     }
 }
 
+impl SseDecode for Vec<u16> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<u16>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<u32> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2203,6 +2870,76 @@ impl SseDecode for Vec<crate::modules::crystalium::structs::Vec3> {
         let mut ans_ = vec![];
         for idx_ in 0..len_ {
             ans_.push(<crate::modules::crystalium::structs::Vec3>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::vfx::structs::VfxAnimation> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::vfx::structs::VfxAnimation>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::vfx::structs::VfxEffect> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::vfx::structs::VfxEffect>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::vfx::structs::VfxModel> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::vfx::structs::VfxModel>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::vfx::structs::VfxTexture> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::vfx::structs::VfxTexture>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::vfx::structs::VfxVertex> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::vfx::structs::VfxVertex>::sse_decode(
                 deserializer,
             ));
         }
@@ -2324,10 +3061,54 @@ impl SseDecode for crate::modules::crystalium::structs::McpPattern {
     }
 }
 
+impl SseDecode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<String>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<u32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<u32>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::modules::vfx::structs::VfxMesh> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::modules::vfx::structs::VfxMesh>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for (crate::modules::img::structs::ImgData, Vec<u8>) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_field0 = <crate::modules::img::structs::ImgData>::sse_decode(deserializer);
+        let mut var_field1 = <Vec<u8>>::sse_decode(deserializer);
+        return (var_field0, var_field1);
+    }
+}
+
+impl SseDecode for ((u32, u32), Vec<u8>) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field0 = <(u32, u32)>::sse_decode(deserializer);
         let mut var_field1 = <Vec<u8>>::sse_decode(deserializer);
         return (var_field0, var_field1);
     }
@@ -2357,6 +3138,15 @@ impl SseDecode for (String, crate::modules::wdb::structs::WdbValue) {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_field0 = <String>::sse_decode(deserializer);
         let mut var_field1 = <crate::modules::wdb::structs::WdbValue>::sse_decode(deserializer);
+        return (var_field0, var_field1);
+    }
+}
+
+impl SseDecode for (u32, u32) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field0 = <u32>::sse_decode(deserializer);
+        let mut var_field1 = <u32>::sse_decode(deserializer);
         return (var_field0, var_field1);
     }
 }
@@ -2435,6 +3225,213 @@ impl SseDecode for crate::modules::crystalium::structs::Vec3 {
     }
 }
 
+impl SseDecode for crate::modules::vfx::structs::VfxAnimation {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_dataSize = <u32>::sse_decode(deserializer);
+        let mut var_durationFrames = <Option<u32>>::sse_decode(deserializer);
+        let mut var_keyframeCount = <Option<u32>>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxAnimation {
+            name: var_name,
+            data_size: var_dataSize,
+            duration_frames: var_durationFrames,
+            keyframe_count: var_keyframeCount,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxData {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_sourcePath = <String>::sse_decode(deserializer);
+        let mut var_textures =
+            <Vec<crate::modules::vfx::structs::VfxTexture>>::sse_decode(deserializer);
+        let mut var_models =
+            <Vec<crate::modules::vfx::structs::VfxModel>>::sse_decode(deserializer);
+        let mut var_animations =
+            <Vec<crate::modules::vfx::structs::VfxAnimation>>::sse_decode(deserializer);
+        let mut var_effects =
+            <Vec<crate::modules::vfx::structs::VfxEffect>>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxData {
+            source_path: var_sourcePath,
+            textures: var_textures,
+            models: var_models,
+            animations: var_animations,
+            effects: var_effects,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxEffect {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_dataSize = <u32>::sse_decode(deserializer);
+        let mut var_controllerPaths = <Vec<String>>::sse_decode(deserializer);
+        let mut var_modelRefs = <Vec<String>>::sse_decode(deserializer);
+        let mut var_textureRefs = <Vec<String>>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxEffect {
+            name: var_name,
+            data_size: var_dataSize,
+            controller_paths: var_controllerPaths,
+            model_refs: var_modelRefs,
+            texture_refs: var_textureRefs,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxMaterial {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_ambientColor = <[f32; 4]>::sse_decode(deserializer);
+        let mut var_diffuseColor = <[f32; 4]>::sse_decode(deserializer);
+        let mut var_specularColor = <[f32; 4]>::sse_decode(deserializer);
+        let mut var_shininess = <f32>::sse_decode(deserializer);
+        let mut var_fogParam = <[f32; 4]>::sse_decode(deserializer);
+        let mut var_fogColor = <[f32; 4]>::sse_decode(deserializer);
+        let mut var_alphaThreshold = <f32>::sse_decode(deserializer);
+        let mut var_blendEnabled = <bool>::sse_decode(deserializer);
+        let mut var_alphaTestEnabled = <bool>::sse_decode(deserializer);
+        let mut var_backFaceCulling = <bool>::sse_decode(deserializer);
+        let mut var_depthMaskEnabled = <bool>::sse_decode(deserializer);
+        let mut var_lightingEnabled = <bool>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxMaterial {
+            ambient_color: var_ambientColor,
+            diffuse_color: var_diffuseColor,
+            specular_color: var_specularColor,
+            shininess: var_shininess,
+            fog_param: var_fogParam,
+            fog_color: var_fogColor,
+            alpha_threshold: var_alphaThreshold,
+            blend_enabled: var_blendEnabled,
+            alpha_test_enabled: var_alphaTestEnabled,
+            back_face_culling: var_backFaceCulling,
+            depth_mask_enabled: var_depthMaskEnabled,
+            lighting_enabled: var_lightingEnabled,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxMesh {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_vertices =
+            <Vec<crate::modules::vfx::structs::VfxVertex>>::sse_decode(deserializer);
+        let mut var_indices = <Vec<u16>>::sse_decode(deserializer);
+        let mut var_primitiveType =
+            <crate::modules::vfx::structs::VfxPrimitiveType>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxMesh {
+            vertices: var_vertices,
+            indices: var_indices,
+            primitive_type: var_primitiveType,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxModel {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_dataSize = <u32>::sse_decode(deserializer);
+        let mut var_vertexCount = <Option<u32>>::sse_decode(deserializer);
+        let mut var_indexCount = <Option<u32>>::sse_decode(deserializer);
+        let mut var_material =
+            <crate::modules::vfx::structs::VfxMaterial>::sse_decode(deserializer);
+        let mut var_textureRefs = <Vec<String>>::sse_decode(deserializer);
+        let mut var_hasShader = <bool>::sse_decode(deserializer);
+        let mut var_techniqueName = <Option<String>>::sse_decode(deserializer);
+        let mut var_mesh =
+            <Option<crate::modules::vfx::structs::VfxMesh>>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxModel {
+            name: var_name,
+            data_size: var_dataSize,
+            vertex_count: var_vertexCount,
+            index_count: var_indexCount,
+            material: var_material,
+            texture_refs: var_textureRefs,
+            has_shader: var_hasShader,
+            technique_name: var_techniqueName,
+            mesh: var_mesh,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxPrimitiveType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::modules::vfx::structs::VfxPrimitiveType::TriangleList,
+            1 => crate::modules::vfx::structs::VfxPrimitiveType::TriangleStrip,
+            2 => crate::modules::vfx::structs::VfxPrimitiveType::PointSprite,
+            _ => unreachable!("Invalid variant for VfxPrimitiveType: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxSummary {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_sourcePath = <String>::sse_decode(deserializer);
+        let mut var_textureCount = <usize>::sse_decode(deserializer);
+        let mut var_modelCount = <usize>::sse_decode(deserializer);
+        let mut var_animationCount = <usize>::sse_decode(deserializer);
+        let mut var_effectCount = <usize>::sse_decode(deserializer);
+        let mut var_totalSize = <u64>::sse_decode(deserializer);
+        let mut var_effectNames = <Vec<String>>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxSummary {
+            source_path: var_sourcePath,
+            texture_count: var_textureCount,
+            model_count: var_modelCount,
+            animation_count: var_animationCount,
+            effect_count: var_effectCount,
+            total_size: var_totalSize,
+            effect_names: var_effectNames,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxTexture {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_width = <u16>::sse_decode(deserializer);
+        let mut var_height = <u16>::sse_decode(deserializer);
+        let mut var_format = <u8>::sse_decode(deserializer);
+        let mut var_formatName = <String>::sse_decode(deserializer);
+        let mut var_mipCount = <u8>::sse_decode(deserializer);
+        let mut var_imageType = <u8>::sse_decode(deserializer);
+        let mut var_depth = <u16>::sse_decode(deserializer);
+        let mut var_imgbOffset = <u32>::sse_decode(deserializer);
+        let mut var_imgbSize = <u32>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxTexture {
+            name: var_name,
+            width: var_width,
+            height: var_height,
+            format: var_format,
+            format_name: var_formatName,
+            mip_count: var_mipCount,
+            image_type: var_imageType,
+            depth: var_depth,
+            imgb_offset: var_imgbOffset,
+            imgb_size: var_imgbSize,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::vfx::structs::VfxVertex {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_position = <[f32; 3]>::sse_decode(deserializer);
+        let mut var_uv = <[f32; 2]>::sse_decode(deserializer);
+        return crate::modules::vfx::structs::VfxVertex {
+            position: var_position,
+            uv: var_uv,
+        };
+    }
+}
+
 impl SseDecode for crate::api::WbtFileEntry {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2508,20 +3505,16 @@ impl SseDecode for crate::modules::wdb::structs::WdbValue {
                 return crate::modules::wdb::structs::WdbValue::StringArray(var_field0);
             }
             8 => {
-                let mut var_field0 = <u64>::sse_decode(deserializer);
-                return crate::modules::wdb::structs::WdbValue::UInt64(var_field0);
-            }
-            9 => {
                 let mut var_field0 =
                     <crate::modules::wdb::enums::CrystalRole>::sse_decode(deserializer);
                 return crate::modules::wdb::structs::WdbValue::CrystalRole(var_field0);
             }
-            10 => {
+            9 => {
                 let mut var_field0 =
                     <crate::modules::wdb::enums::CrystalNodeType>::sse_decode(deserializer);
                 return crate::modules::wdb::structs::WdbValue::CrystalNodeType(var_field0);
             }
-            11 => {
+            10 => {
                 return crate::modules::wdb::structs::WdbValue::Unknown;
             }
             _ => {
@@ -2675,47 +3668,65 @@ fn pde_ffi_dispatcher_primary_impl(
         6 => wire__crate__api__cgt_write_impl(port, ptr, rust_vec_len, data_len),
         7 => wire__crate__api__cgt_write_to_memory_impl(port, ptr, rust_vec_len, data_len),
         8 => wire__crate__api__clear_log_callback_impl(port, ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__create_log_stream_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__fetch_logs_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__get_all_buffered_logs_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__get_log_level_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__img_repack_strict_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__img_unpack_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__img_unpack_to_memory_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__mcp_from_json_impl(port, ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__mcp_parse_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__mcp_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__mcp_to_json_impl(port, ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__reset_log_read_index_impl(port, ptr, rust_vec_len, data_len),
-        22 => wire__crate__api__set_log_level_impl(port, ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__test_log_impl(port, ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
-        27 => {
+        9 => wire__crate__api__convert_dds_to_png_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__convert_dds_to_png_bytes_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__create_log_stream_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__fetch_logs_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__get_all_buffered_logs_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__get_log_level_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__img_repack_strict_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__img_unpack_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__img_unpack_to_memory_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__mcp_from_json_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__mcp_parse_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__mcp_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__mcp_to_json_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__reset_log_read_index_impl(port, ptr, rust_vec_len, data_len),
+        24 => wire__crate__api__set_log_level_impl(port, ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__test_log_impl(port, ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__vfx_export_json_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__vfx_extract_texture_as_png_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__vfx_extract_textures_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__vfx_get_summary_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__vfx_list_effects_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__vfx_list_textures_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__vfx_parse_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__vfx_player_dispose_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__vfx_player_get_dimensions_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__vfx_player_get_time_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__vfx_player_init_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__vfx_player_is_initialized_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__vfx_player_load_model_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__vfx_player_load_test_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__vfx_player_render_frame_impl(port, ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__vfx_player_reset_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
+        44 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
+        45 => {
             wire__crate__api__wbt_extract_files_by_indices_impl(port, ptr, rust_vec_len, data_len)
         }
-        28 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
-        44 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
-        45 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
-        46 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
+        48 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
+        51 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
+        52 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
+        54 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3001,6 +4012,256 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::Vec3
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxAnimation {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.data_size.into_into_dart().into_dart(),
+            self.duration_frames.into_into_dart().into_dart(),
+            self.keyframe_count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxAnimation
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxAnimation>
+    for crate::modules::vfx::structs::VfxAnimation
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxAnimation {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxData {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.source_path.into_into_dart().into_dart(),
+            self.textures.into_into_dart().into_dart(),
+            self.models.into_into_dart().into_dart(),
+            self.animations.into_into_dart().into_dart(),
+            self.effects.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxData
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxData>
+    for crate::modules::vfx::structs::VfxData
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxData {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxEffect {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.data_size.into_into_dart().into_dart(),
+            self.controller_paths.into_into_dart().into_dart(),
+            self.model_refs.into_into_dart().into_dart(),
+            self.texture_refs.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxEffect
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxEffect>
+    for crate::modules::vfx::structs::VfxEffect
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxEffect {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxMaterial {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.ambient_color.into_into_dart().into_dart(),
+            self.diffuse_color.into_into_dart().into_dart(),
+            self.specular_color.into_into_dart().into_dart(),
+            self.shininess.into_into_dart().into_dart(),
+            self.fog_param.into_into_dart().into_dart(),
+            self.fog_color.into_into_dart().into_dart(),
+            self.alpha_threshold.into_into_dart().into_dart(),
+            self.blend_enabled.into_into_dart().into_dart(),
+            self.alpha_test_enabled.into_into_dart().into_dart(),
+            self.back_face_culling.into_into_dart().into_dart(),
+            self.depth_mask_enabled.into_into_dart().into_dart(),
+            self.lighting_enabled.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxMaterial
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxMaterial>
+    for crate::modules::vfx::structs::VfxMaterial
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxMaterial {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxMesh {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.vertices.into_into_dart().into_dart(),
+            self.indices.into_into_dart().into_dart(),
+            self.primitive_type.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxMesh
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxMesh>
+    for crate::modules::vfx::structs::VfxMesh
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxMesh {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxModel {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.data_size.into_into_dart().into_dart(),
+            self.vertex_count.into_into_dart().into_dart(),
+            self.index_count.into_into_dart().into_dart(),
+            self.material.into_into_dart().into_dart(),
+            self.texture_refs.into_into_dart().into_dart(),
+            self.has_shader.into_into_dart().into_dart(),
+            self.technique_name.into_into_dart().into_dart(),
+            self.mesh.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxModel
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxModel>
+    for crate::modules::vfx::structs::VfxModel
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxModel {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxPrimitiveType {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::TriangleList => 0.into_dart(),
+            Self::TriangleStrip => 1.into_dart(),
+            Self::PointSprite => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxPrimitiveType
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxPrimitiveType>
+    for crate::modules::vfx::structs::VfxPrimitiveType
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxPrimitiveType {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxSummary {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.source_path.into_into_dart().into_dart(),
+            self.texture_count.into_into_dart().into_dart(),
+            self.model_count.into_into_dart().into_dart(),
+            self.animation_count.into_into_dart().into_dart(),
+            self.effect_count.into_into_dart().into_dart(),
+            self.total_size.into_into_dart().into_dart(),
+            self.effect_names.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxSummary
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxSummary>
+    for crate::modules::vfx::structs::VfxSummary
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxSummary {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxTexture {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.width.into_into_dart().into_dart(),
+            self.height.into_into_dart().into_dart(),
+            self.format.into_into_dart().into_dart(),
+            self.format_name.into_into_dart().into_dart(),
+            self.mip_count.into_into_dart().into_dart(),
+            self.image_type.into_into_dart().into_dart(),
+            self.depth.into_into_dart().into_dart(),
+            self.imgb_offset.into_into_dart().into_dart(),
+            self.imgb_size.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxTexture
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxTexture>
+    for crate::modules::vfx::structs::VfxTexture
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxTexture {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::vfx::structs::VfxVertex {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.position.into_into_dart().into_dart(),
+            self.uv.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::vfx::structs::VfxVertex
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::vfx::structs::VfxVertex>
+    for crate::modules::vfx::structs::VfxVertex
+{
+    fn into_into_dart(self) -> crate::modules::vfx::structs::VfxVertex {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::WbtFileEntry {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -3068,16 +4329,13 @@ impl flutter_rust_bridge::IntoDart for crate::modules::wdb::structs::WdbValue {
             crate::modules::wdb::structs::WdbValue::StringArray(field0) => {
                 [7.into_dart(), field0.into_into_dart().into_dart()].into_dart()
             }
-            crate::modules::wdb::structs::WdbValue::UInt64(field0) => {
+            crate::modules::wdb::structs::WdbValue::CrystalRole(field0) => {
                 [8.into_dart(), field0.into_into_dart().into_dart()].into_dart()
             }
-            crate::modules::wdb::structs::WdbValue::CrystalRole(field0) => {
+            crate::modules::wdb::structs::WdbValue::CrystalNodeType(field0) => {
                 [9.into_dart(), field0.into_into_dart().into_dart()].into_dart()
             }
-            crate::modules::wdb::structs::WdbValue::CrystalNodeType(field0) => {
-                [10.into_dart(), field0.into_into_dart().into_dart()].into_dart()
-            }
-            crate::modules::wdb::structs::WdbValue::Unknown => [11.into_dart()].into_dart(),
+            crate::modules::wdb::structs::WdbValue::Unknown => [10.into_dart()].into_dart(),
             _ => {
                 unimplemented!("");
             }
@@ -3467,6 +4725,32 @@ impl SseEncode for f32 {
     }
 }
 
+impl SseEncode for [f32; 2] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<f32>>::sse_encode(
+            {
+                let boxed: Box<[_]> = Box::new(self);
+                boxed.into_vec()
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for [f32; 3] {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<f32>>::sse_encode(
+            {
+                let boxed: Box<[_]> = Box::new(self);
+                boxed.into_vec()
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for [f32; 4] {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -3559,6 +4843,16 @@ impl SseEncode for Vec<i32> {
     }
 }
 
+impl SseEncode for Vec<u16> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <u16>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<u32> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -3627,6 +4921,56 @@ impl SseEncode for Vec<crate::modules::crystalium::structs::Vec3> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::modules::crystalium::structs::Vec3>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::vfx::structs::VfxAnimation> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::vfx::structs::VfxAnimation>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::vfx::structs::VfxEffect> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::vfx::structs::VfxEffect>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::vfx::structs::VfxModel> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::vfx::structs::VfxModel>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::vfx::structs::VfxTexture> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::vfx::structs::VfxTexture>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::vfx::structs::VfxVertex> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::vfx::structs::VfxVertex>::sse_encode(item, serializer);
         }
     }
 }
@@ -3710,10 +5054,48 @@ impl SseEncode for crate::modules::crystalium::structs::McpPattern {
     }
 }
 
+impl SseEncode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <String>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<u32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <u32>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::modules::vfx::structs::VfxMesh> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::modules::vfx::structs::VfxMesh>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for (crate::modules::img::structs::ImgData, Vec<u8>) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <crate::modules::img::structs::ImgData>::sse_encode(self.0, serializer);
+        <Vec<u8>>::sse_encode(self.1, serializer);
+    }
+}
+
+impl SseEncode for ((u32, u32), Vec<u8>) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <(u32, u32)>::sse_encode(self.0, serializer);
         <Vec<u8>>::sse_encode(self.1, serializer);
     }
 }
@@ -3739,6 +5121,14 @@ impl SseEncode for (String, crate::modules::wdb::structs::WdbValue) {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.0, serializer);
         <crate::modules::wdb::structs::WdbValue>::sse_encode(self.1, serializer);
+    }
+}
+
+impl SseEncode for (u32, u32) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.0, serializer);
+        <u32>::sse_encode(self.1, serializer);
     }
 }
 
@@ -3823,6 +5213,137 @@ impl SseEncode for crate::modules::crystalium::structs::Vec3 {
     }
 }
 
+impl SseEncode for crate::modules::vfx::structs::VfxAnimation {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <u32>::sse_encode(self.data_size, serializer);
+        <Option<u32>>::sse_encode(self.duration_frames, serializer);
+        <Option<u32>>::sse_encode(self.keyframe_count, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxData {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.source_path, serializer);
+        <Vec<crate::modules::vfx::structs::VfxTexture>>::sse_encode(self.textures, serializer);
+        <Vec<crate::modules::vfx::structs::VfxModel>>::sse_encode(self.models, serializer);
+        <Vec<crate::modules::vfx::structs::VfxAnimation>>::sse_encode(self.animations, serializer);
+        <Vec<crate::modules::vfx::structs::VfxEffect>>::sse_encode(self.effects, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxEffect {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <u32>::sse_encode(self.data_size, serializer);
+        <Vec<String>>::sse_encode(self.controller_paths, serializer);
+        <Vec<String>>::sse_encode(self.model_refs, serializer);
+        <Vec<String>>::sse_encode(self.texture_refs, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxMaterial {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <[f32; 4]>::sse_encode(self.ambient_color, serializer);
+        <[f32; 4]>::sse_encode(self.diffuse_color, serializer);
+        <[f32; 4]>::sse_encode(self.specular_color, serializer);
+        <f32>::sse_encode(self.shininess, serializer);
+        <[f32; 4]>::sse_encode(self.fog_param, serializer);
+        <[f32; 4]>::sse_encode(self.fog_color, serializer);
+        <f32>::sse_encode(self.alpha_threshold, serializer);
+        <bool>::sse_encode(self.blend_enabled, serializer);
+        <bool>::sse_encode(self.alpha_test_enabled, serializer);
+        <bool>::sse_encode(self.back_face_culling, serializer);
+        <bool>::sse_encode(self.depth_mask_enabled, serializer);
+        <bool>::sse_encode(self.lighting_enabled, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxMesh {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::modules::vfx::structs::VfxVertex>>::sse_encode(self.vertices, serializer);
+        <Vec<u16>>::sse_encode(self.indices, serializer);
+        <crate::modules::vfx::structs::VfxPrimitiveType>::sse_encode(
+            self.primitive_type,
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxModel {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <u32>::sse_encode(self.data_size, serializer);
+        <Option<u32>>::sse_encode(self.vertex_count, serializer);
+        <Option<u32>>::sse_encode(self.index_count, serializer);
+        <crate::modules::vfx::structs::VfxMaterial>::sse_encode(self.material, serializer);
+        <Vec<String>>::sse_encode(self.texture_refs, serializer);
+        <bool>::sse_encode(self.has_shader, serializer);
+        <Option<String>>::sse_encode(self.technique_name, serializer);
+        <Option<crate::modules::vfx::structs::VfxMesh>>::sse_encode(self.mesh, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxPrimitiveType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::modules::vfx::structs::VfxPrimitiveType::TriangleList => 0,
+                crate::modules::vfx::structs::VfxPrimitiveType::TriangleStrip => 1,
+                crate::modules::vfx::structs::VfxPrimitiveType::PointSprite => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxSummary {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.source_path, serializer);
+        <usize>::sse_encode(self.texture_count, serializer);
+        <usize>::sse_encode(self.model_count, serializer);
+        <usize>::sse_encode(self.animation_count, serializer);
+        <usize>::sse_encode(self.effect_count, serializer);
+        <u64>::sse_encode(self.total_size, serializer);
+        <Vec<String>>::sse_encode(self.effect_names, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxTexture {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <u16>::sse_encode(self.width, serializer);
+        <u16>::sse_encode(self.height, serializer);
+        <u8>::sse_encode(self.format, serializer);
+        <String>::sse_encode(self.format_name, serializer);
+        <u8>::sse_encode(self.mip_count, serializer);
+        <u8>::sse_encode(self.image_type, serializer);
+        <u16>::sse_encode(self.depth, serializer);
+        <u32>::sse_encode(self.imgb_offset, serializer);
+        <u32>::sse_encode(self.imgb_size, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::vfx::structs::VfxVertex {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <[f32; 3]>::sse_encode(self.position, serializer);
+        <[f32; 2]>::sse_encode(self.uv, serializer);
+    }
+}
+
 impl SseEncode for crate::api::WbtFileEntry {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -3881,20 +5402,16 @@ impl SseEncode for crate::modules::wdb::structs::WdbValue {
                 <i32>::sse_encode(7, serializer);
                 <Vec<String>>::sse_encode(field0, serializer);
             }
-            crate::modules::wdb::structs::WdbValue::UInt64(field0) => {
-                <i32>::sse_encode(8, serializer);
-                <u64>::sse_encode(field0, serializer);
-            }
             crate::modules::wdb::structs::WdbValue::CrystalRole(field0) => {
-                <i32>::sse_encode(9, serializer);
+                <i32>::sse_encode(8, serializer);
                 <crate::modules::wdb::enums::CrystalRole>::sse_encode(field0, serializer);
             }
             crate::modules::wdb::structs::WdbValue::CrystalNodeType(field0) => {
-                <i32>::sse_encode(10, serializer);
+                <i32>::sse_encode(9, serializer);
                 <crate::modules::wdb::enums::CrystalNodeType>::sse_encode(field0, serializer);
             }
             crate::modules::wdb::structs::WdbValue::Unknown => {
-                <i32>::sse_encode(11, serializer);
+                <i32>::sse_encode(10, serializer);
             }
             _ => {
                 unimplemented!("");

@@ -178,79 +178,60 @@ class _CrystalTableState extends State<CrystalTable> {
         builder: (context, constraints) {
           final displayWidth = totalWidth + 48;
           final contentWidth = math.max(displayWidth, constraints.maxWidth);
-          final needsHorizontalScroll = displayWidth > constraints.maxWidth;
 
-          return Stack(
-            children: [
-              // Main content with both scrolls
-              Padding(
-                padding: EdgeInsets.only(
-                  right: 12, // Space for vertical scrollbar
-                  bottom: needsHorizontalScroll ? 14 : 0, // Space for horizontal scrollbar
-                ),
-                child: ScrollConfiguration(
-                  behavior: scrollBehavior,
-                  child: SingleChildScrollView(
-                    controller: _horizontalController,
-                    scrollDirection: Axis.horizontal,
-                    child: SizedBox(
-                      width: contentWidth,
-                      child: Column(
-                        children: [
-                          // Pass contentWidth - Container padding is handled internally
-                          _buildHeader(bg, accent, isFixed, contentWidth),
-                          Expanded(
-                            child: ListView.builder(
-                              controller: _verticalController,
-                              itemCount: widget.itemCount,
-                              itemBuilder: (context, row) =>
-                                  _buildRow(row, accent, bg, isFixed, contentWidth),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+          // Build the vertical list with its scrollbar
+          Widget verticalContent = RawScrollbar(
+            controller: _verticalController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            interactive: true,
+            thumbColor: accent.withValues(alpha: 0.7),
+            trackColor: Colors.black26,
+            trackBorderColor: Colors.white10,
+            thickness: 8,
+            radius: const Radius.circular(4),
+            child: ScrollConfiguration(
+              behavior: scrollBehavior,
+              child: ListView.builder(
+                controller: _verticalController,
+                itemCount: widget.itemCount,
+                itemBuilder: (context, row) =>
+                    _buildRow(row, accent, bg, isFixed, contentWidth),
               ),
-              // Vertical scrollbar - fixed at right edge
-              Positioned(
-                right: 0,
-                top: 52, // Below header
-                bottom: needsHorizontalScroll ? 14 : 0,
-                child: RawScrollbar(
-                  controller: _verticalController,
-                  thumbVisibility: true,
-                  trackVisibility: true,
-                  interactive: true,
-                  thumbColor: accent.withValues(alpha: 0.7),
-                  trackColor: Colors.black26,
-                  trackBorderColor: Colors.white10,
-                  thickness: 8,
-                  radius: const Radius.circular(4),
-                  child: const SizedBox(width: 8),
-                ),
+            ),
+          );
+
+          // Build the full content column
+          Widget content = SizedBox(
+            width: contentWidth,
+            child: Column(
+              children: [
+                _buildHeader(bg, accent, isFixed, contentWidth),
+                Expanded(child: verticalContent),
+              ],
+            ),
+          );
+
+          // Wrap with horizontal scrollbar
+          return RawScrollbar(
+            controller: _horizontalController,
+            thumbVisibility: true,
+            trackVisibility: true,
+            interactive: true,
+            thumbColor: accent,
+            trackColor: Colors.black26,
+            trackBorderColor: Colors.white10,
+            thickness: 10,
+            radius: const Radius.circular(5),
+            notificationPredicate: (notification) => notification.depth == 0,
+            child: ScrollConfiguration(
+              behavior: scrollBehavior,
+              child: SingleChildScrollView(
+                controller: _horizontalController,
+                scrollDirection: Axis.horizontal,
+                child: content,
               ),
-              // Horizontal scrollbar - fixed at bottom edge
-              if (needsHorizontalScroll)
-                Positioned(
-                  left: 0,
-                  right: 12,
-                  bottom: 0,
-                  child: RawScrollbar(
-                    controller: _horizontalController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    interactive: true,
-                    thumbColor: accent,
-                    trackColor: Colors.black26,
-                    trackBorderColor: Colors.white10,
-                    thickness: 10,
-                    radius: const Radius.circular(5),
-                    child: const SizedBox(height: 10),
-                  ),
-                ),
-            ],
+            ),
           );
         },
       );
@@ -260,39 +241,25 @@ class _CrystalTableState extends State<CrystalTable> {
         children: [
           _buildHeader(bg, accent, isFixed, null),
           Expanded(
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: ScrollConfiguration(
-                    behavior: scrollBehavior,
-                    child: ListView.builder(
-                      controller: _verticalController,
-                      itemCount: widget.itemCount,
-                      itemBuilder: (context, row) =>
-                          _buildRow(row, accent, bg, isFixed, null),
-                    ),
-                  ),
+            child: RawScrollbar(
+              controller: _verticalController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              interactive: true,
+              thumbColor: accent.withValues(alpha: 0.7),
+              trackColor: Colors.black26,
+              trackBorderColor: Colors.white10,
+              thickness: 8,
+              radius: const Radius.circular(4),
+              child: ScrollConfiguration(
+                behavior: scrollBehavior,
+                child: ListView.builder(
+                  controller: _verticalController,
+                  itemCount: widget.itemCount,
+                  itemBuilder: (context, row) =>
+                      _buildRow(row, accent, bg, isFixed, null),
                 ),
-                // Vertical scrollbar - fixed at right edge
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  child: RawScrollbar(
-                    controller: _verticalController,
-                    thumbVisibility: true,
-                    trackVisibility: true,
-                    interactive: true,
-                    thumbColor: accent.withValues(alpha: 0.7),
-                    trackColor: Colors.black26,
-                    trackBorderColor: Colors.white10,
-                    thickness: 8,
-                    radius: const Radius.circular(4),
-                    child: const SizedBox(width: 8),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],

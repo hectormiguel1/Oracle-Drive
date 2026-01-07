@@ -1,8 +1,19 @@
 import 'dart:typed_data';
-import 'package:fabula_nova_sdk/bridge_generated/modules/wdb/structs.dart' as sdk;
-import 'package:fabula_nova_sdk/bridge_generated/modules/wdb/enums.dart' as wdb_enums;
+import 'package:fabula_nova_sdk/bridge_generated/modules/wdb/structs.dart'
+    as sdk;
+import 'package:fabula_nova_sdk/bridge_generated/modules/wdb/enums.dart'
+    as wdb_enums;
 
-enum WdbColumnType { int, float, string, bool, array, crystalRole, crystalNodeType, unknown }
+enum WdbColumnType {
+  int,
+  float,
+  string,
+  bool,
+  array,
+  crystalRole,
+  crystalNodeType,
+  unknown,
+}
 
 class WdbColumn {
   final String originalName;
@@ -61,9 +72,10 @@ class WdbData {
   factory WdbData.fromSdk(sdk.WdbData sdkData) {
     final header = sdkData.header.map((k, v) => MapEntry(k, v.toDartValue()));
     final sheetName = header['sheetName'] as String? ?? "Unknown";
-    
-    final List<String> fieldNames = (header['!structitem'] as List<String>?) ?? [];
-    
+
+    final List<String> fieldNames =
+        (header['!structitem'] as List<String>?) ?? [];
+
     final rows = sdkData.records.map((record) {
       return record.map((k, v) => MapEntry(k, v.toDartValue()));
     }).toList();
@@ -73,17 +85,19 @@ class WdbData {
 
     // Add the "record" column first if it exists in the rows
     if (firstRow != null && firstRow.containsKey('record')) {
-      columns.add(WdbColumn(
-        originalName: 'record',
-        displayName: 'Record',
-        type: WdbColumnType.string,
-      ));
+      columns.add(
+        WdbColumn(
+          originalName: 'record',
+          displayName: 'Record',
+          type: WdbColumnType.string,
+        ),
+      );
     }
 
     for (int i = 0; i < fieldNames.length; i++) {
       final name = fieldNames[i];
       WdbColumnType type = WdbColumnType.unknown;
-      
+
       if (firstRow != null && firstRow.containsKey(name)) {
         final val = firstRow[name];
         if (val is wdb_enums.CrystalRole) {
@@ -111,11 +125,13 @@ class WdbData {
         type = WdbColumnType.int;
       }
 
-      columns.add(WdbColumn(
-        originalName: name,
-        displayName: WdbColumn.formatColumnName(name),
-        type: type,
-      ));
+      columns.add(
+        WdbColumn(
+          originalName: name,
+          displayName: WdbColumn.formatColumnName(name),
+          type: type,
+        ),
+      );
     }
 
     return WdbData(
@@ -158,7 +174,6 @@ class WdbData {
     if (v is Int32List) return sdk.WdbValue.intArray(v);
     if (v is Uint32List) return sdk.WdbValue.uIntArray(v);
     if (v is List<String>) return sdk.WdbValue.stringArray(v);
-    if (v is BigInt) return sdk.WdbValue.uInt64(v);
     return const sdk.WdbValue.unknown();
   }
 
@@ -186,12 +201,28 @@ class WdbData {
       case WdbColumnType.crystalRole:
         if (v is wdb_enums.CrystalRole) return sdk.WdbValue.crystalRole(v);
         // Handle conversion from int or string
-        if (v is int) return sdk.WdbValue.crystalRole(wdb_enums.CrystalRole.values[v.clamp(0, wdb_enums.CrystalRole.values.length - 1)]);
+        if (v is int) {
+          return sdk.WdbValue.crystalRole(
+            wdb_enums.CrystalRole.values[v.clamp(
+              0,
+              wdb_enums.CrystalRole.values.length - 1,
+            )],
+          );
+        }
         return sdk.WdbValue.crystalRole(wdb_enums.CrystalRole.none);
       case WdbColumnType.crystalNodeType:
-        if (v is wdb_enums.CrystalNodeType) return sdk.WdbValue.crystalNodeType(v);
+        if (v is wdb_enums.CrystalNodeType) {
+          return sdk.WdbValue.crystalNodeType(v);
+        }
         // Handle conversion from int or string
-        if (v is int) return sdk.WdbValue.crystalNodeType(wdb_enums.CrystalNodeType.values[v.clamp(0, wdb_enums.CrystalNodeType.values.length - 1)]);
+        if (v is int) {
+          return sdk.WdbValue.crystalNodeType(
+            wdb_enums.CrystalNodeType.values[v.clamp(
+              0,
+              wdb_enums.CrystalNodeType.values.length - 1,
+            )],
+          );
+        }
         return sdk.WdbValue.crystalNodeType(wdb_enums.CrystalNodeType.none);
       case WdbColumnType.unknown:
         return _inferWdbValue(v);
@@ -210,7 +241,6 @@ extension WdbValueExt on sdk.WdbValue {
       intArray: (v) => v,
       uIntArray: (v) => v,
       stringArray: (v) => v,
-      uInt64: (v) => v,
       crystalRole: (v) => v, // Returns wdb_enums.CrystalRole
       crystalNodeType: (v) => v, // Returns wdb_enums.CrystalNodeType
       unknown: () => null,
@@ -230,7 +260,6 @@ extension WdbValueDisplay on sdk.WdbValue {
       intArray: (v) => v.toString(),
       uIntArray: (v) => v.toString(),
       stringArray: (v) => v.toString(),
-      uInt64: (v) => v.toString(),
       crystalRole: (v) => v.name,
       crystalNodeType: (v) => v.name,
       unknown: () => '',

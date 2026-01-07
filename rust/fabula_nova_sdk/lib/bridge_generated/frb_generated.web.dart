@@ -13,6 +13,7 @@ import 'frb_generated.dart';
 import 'lib.dart';
 import 'modules/crystalium/structs.dart';
 import 'modules/img/structs.dart';
+import 'modules/vfx/structs.dart';
 import 'modules/wct.dart';
 import 'modules/wdb/enums.dart';
 import 'modules/wdb/structs.dart';
@@ -60,6 +61,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   McpFile dco_decode_box_autoadd_mcp_file(dynamic raw);
 
   @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  VfxMesh dco_decode_box_autoadd_vfx_mesh(dynamic raw);
+
+  @protected
   WdbData dco_decode_box_autoadd_wdb_data(dynamic raw);
 
   @protected
@@ -82,6 +89,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double dco_decode_f_32(dynamic raw);
+
+  @protected
+  F32Array2 dco_decode_f_32_array_2(dynamic raw);
+
+  @protected
+  F32Array3 dco_decode_f_32_array_3(dynamic raw);
 
   @protected
   F32Array4 dco_decode_f_32_array_4(dynamic raw);
@@ -112,6 +125,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Int32List dco_decode_list_prim_i_32_strict(dynamic raw);
 
   @protected
+  Uint16List dco_decode_list_prim_u_16_strict(dynamic raw);
+
+  @protected
   Uint32List dco_decode_list_prim_u_32_strict(dynamic raw);
 
   @protected
@@ -135,6 +151,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Vec3> dco_decode_list_vec_3(dynamic raw);
+
+  @protected
+  List<VfxAnimation> dco_decode_list_vfx_animation(dynamic raw);
+
+  @protected
+  List<VfxEffect> dco_decode_list_vfx_effect(dynamic raw);
+
+  @protected
+  List<VfxModel> dco_decode_list_vfx_model(dynamic raw);
+
+  @protected
+  List<VfxTexture> dco_decode_list_vfx_texture(dynamic raw);
+
+  @protected
+  List<VfxVertex> dco_decode_list_vfx_vertex(dynamic raw);
 
   @protected
   List<WbtFileEntry> dco_decode_list_wbt_file_entry(dynamic raw);
@@ -161,8 +192,21 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   McpPattern dco_decode_mcp_pattern(dynamic raw);
 
   @protected
+  String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
+
+  @protected
+  VfxMesh? dco_decode_opt_box_autoadd_vfx_mesh(dynamic raw);
+
+  @protected
   (ImgData, Uint8List) dco_decode_record_img_data_list_prim_u_8_strict(
       dynamic raw);
+
+  @protected
+  ((int, int), Uint8List)
+      dco_decode_record_record_u_32_u_32_list_prim_u_8_strict(dynamic raw);
 
   @protected
   (String, McpPattern) dco_decode_record_string_mcp_pattern(dynamic raw);
@@ -172,6 +216,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   (String, WdbValue) dco_decode_record_string_wdb_value(dynamic raw);
+
+  @protected
+  (int, int) dco_decode_record_u_32_u_32(dynamic raw);
 
   @protected
   TargetType dco_decode_target_type(dynamic raw);
@@ -199,6 +246,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Vec3 dco_decode_vec_3(dynamic raw);
+
+  @protected
+  VfxAnimation dco_decode_vfx_animation(dynamic raw);
+
+  @protected
+  VfxData dco_decode_vfx_data(dynamic raw);
+
+  @protected
+  VfxEffect dco_decode_vfx_effect(dynamic raw);
+
+  @protected
+  VfxMaterial dco_decode_vfx_material(dynamic raw);
+
+  @protected
+  VfxMesh dco_decode_vfx_mesh(dynamic raw);
+
+  @protected
+  VfxModel dco_decode_vfx_model(dynamic raw);
+
+  @protected
+  VfxPrimitiveType dco_decode_vfx_primitive_type(dynamic raw);
+
+  @protected
+  VfxSummary dco_decode_vfx_summary(dynamic raw);
+
+  @protected
+  VfxTexture dco_decode_vfx_texture(dynamic raw);
+
+  @protected
+  VfxVertex dco_decode_vfx_vertex(dynamic raw);
 
   @protected
   WbtFileEntry dco_decode_wbt_file_entry(dynamic raw);
@@ -271,6 +348,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   McpFile sse_decode_box_autoadd_mcp_file(SseDeserializer deserializer);
 
   @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  VfxMesh sse_decode_box_autoadd_vfx_mesh(SseDeserializer deserializer);
+
+  @protected
   WdbData sse_decode_box_autoadd_wdb_data(SseDeserializer deserializer);
 
   @protected
@@ -293,6 +376,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double sse_decode_f_32(SseDeserializer deserializer);
+
+  @protected
+  F32Array2 sse_decode_f_32_array_2(SseDeserializer deserializer);
+
+  @protected
+  F32Array3 sse_decode_f_32_array_3(SseDeserializer deserializer);
 
   @protected
   F32Array4 sse_decode_f_32_array_4(SseDeserializer deserializer);
@@ -325,6 +414,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Int32List sse_decode_list_prim_i_32_strict(SseDeserializer deserializer);
 
   @protected
+  Uint16List sse_decode_list_prim_u_16_strict(SseDeserializer deserializer);
+
+  @protected
   Uint32List sse_decode_list_prim_u_32_strict(SseDeserializer deserializer);
 
   @protected
@@ -350,6 +442,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<Vec3> sse_decode_list_vec_3(SseDeserializer deserializer);
+
+  @protected
+  List<VfxAnimation> sse_decode_list_vfx_animation(
+      SseDeserializer deserializer);
+
+  @protected
+  List<VfxEffect> sse_decode_list_vfx_effect(SseDeserializer deserializer);
+
+  @protected
+  List<VfxModel> sse_decode_list_vfx_model(SseDeserializer deserializer);
+
+  @protected
+  List<VfxTexture> sse_decode_list_vfx_texture(SseDeserializer deserializer);
+
+  @protected
+  List<VfxVertex> sse_decode_list_vfx_vertex(SseDeserializer deserializer);
 
   @protected
   List<WbtFileEntry> sse_decode_list_wbt_file_entry(
@@ -379,8 +487,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   McpPattern sse_decode_mcp_pattern(SseDeserializer deserializer);
 
   @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
+
+  @protected
+  VfxMesh? sse_decode_opt_box_autoadd_vfx_mesh(SseDeserializer deserializer);
+
+  @protected
   (ImgData, Uint8List) sse_decode_record_img_data_list_prim_u_8_strict(
       SseDeserializer deserializer);
+
+  @protected
+  ((int, int), Uint8List)
+      sse_decode_record_record_u_32_u_32_list_prim_u_8_strict(
+          SseDeserializer deserializer);
 
   @protected
   (String, McpPattern) sse_decode_record_string_mcp_pattern(
@@ -393,6 +515,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   (String, WdbValue) sse_decode_record_string_wdb_value(
       SseDeserializer deserializer);
+
+  @protected
+  (int, int) sse_decode_record_u_32_u_32(SseDeserializer deserializer);
 
   @protected
   TargetType sse_decode_target_type(SseDeserializer deserializer);
@@ -420,6 +545,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Vec3 sse_decode_vec_3(SseDeserializer deserializer);
+
+  @protected
+  VfxAnimation sse_decode_vfx_animation(SseDeserializer deserializer);
+
+  @protected
+  VfxData sse_decode_vfx_data(SseDeserializer deserializer);
+
+  @protected
+  VfxEffect sse_decode_vfx_effect(SseDeserializer deserializer);
+
+  @protected
+  VfxMaterial sse_decode_vfx_material(SseDeserializer deserializer);
+
+  @protected
+  VfxMesh sse_decode_vfx_mesh(SseDeserializer deserializer);
+
+  @protected
+  VfxModel sse_decode_vfx_model(SseDeserializer deserializer);
+
+  @protected
+  VfxPrimitiveType sse_decode_vfx_primitive_type(SseDeserializer deserializer);
+
+  @protected
+  VfxSummary sse_decode_vfx_summary(SseDeserializer deserializer);
+
+  @protected
+  VfxTexture sse_decode_vfx_texture(SseDeserializer deserializer);
+
+  @protected
+  VfxVertex sse_decode_vfx_vertex(SseDeserializer deserializer);
 
   @protected
   WbtFileEntry sse_decode_wbt_file_entry(SseDeserializer deserializer);
@@ -495,6 +650,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_mcp_file(McpFile self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_vfx_mesh(VfxMesh self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_wdb_data(WdbData self, SseSerializer serializer);
 
   @protected
@@ -520,6 +681,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_f_32(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_32_array_2(F32Array2 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_32_array_3(F32Array3 self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_32_array_4(F32Array4 self, SseSerializer serializer);
@@ -554,6 +721,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       Int32List self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_prim_u_16_strict(
+      Uint16List self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_prim_u_32_strict(
       Uint32List self, SseSerializer serializer);
 
@@ -582,6 +753,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_list_vec_3(List<Vec3> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_vfx_animation(
+      List<VfxAnimation> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_vfx_effect(
+      List<VfxEffect> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_vfx_model(List<VfxModel> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_vfx_texture(
+      List<VfxTexture> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_vfx_vertex(
+      List<VfxVertex> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_wbt_file_entry(
@@ -613,8 +803,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_mcp_pattern(McpPattern self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_vfx_mesh(
+      VfxMesh? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_record_img_data_list_prim_u_8_strict(
       (ImgData, Uint8List) self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_record_record_u_32_u_32_list_prim_u_8_strict(
+      ((int, int), Uint8List) self, SseSerializer serializer);
 
   @protected
   void sse_encode_record_string_mcp_pattern(
@@ -627,6 +831,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_record_string_wdb_value(
       (String, WdbValue) self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_record_u_32_u_32((int, int) self, SseSerializer serializer);
 
   @protected
   void sse_encode_target_type(TargetType self, SseSerializer serializer);
@@ -654,6 +861,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_vec_3(Vec3 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_animation(VfxAnimation self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_data(VfxData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_effect(VfxEffect self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_material(VfxMaterial self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_mesh(VfxMesh self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_model(VfxModel self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_primitive_type(
+      VfxPrimitiveType self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_summary(VfxSummary self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_texture(VfxTexture self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_vfx_vertex(VfxVertex self, SseSerializer serializer);
 
   @protected
   void sse_encode_wbt_file_entry(WbtFileEntry self, SseSerializer serializer);

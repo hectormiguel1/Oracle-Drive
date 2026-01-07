@@ -11,6 +11,7 @@ part 'lookup_config.g.dart';
 enum EntityCategory {
   item('item'),
   ability('ability'),
+  itemAbility('item_ability'),
   mission('mission'),
   shop('shop'),
   specialAbility('special_ability');
@@ -216,6 +217,19 @@ final LookupConfigRoot _defaultConfig = LookupConfigRoot(
       nameField: 'sStringResId',
       descriptionField: 'sInfoStResId',
     ),
+    'PassiveAbility': const LookupConfig(
+      category: 'ability',
+      nameField: 'sStringResId',
+      descriptionField: 'sInfoStResId',
+    ),
+    'SecretAbility': const LookupConfig(
+      category: 'ability',
+      nameField: 'sAbilityId',
+    ),
+    'BtRankedAbility': const LookupConfig(
+      category: 'ability',
+      nameField: 'sAbilityId',
+    ),
     // Missions (FF13)
     'mission': const LookupConfig(
       category: 'mission',
@@ -236,6 +250,14 @@ final LookupConfigRoot _defaultConfig = LookupConfigRoot(
     'SpecialAbility': const LookupConfig(
       category: 'special_ability',
       nameField: 'sAbility', // This is an ability ID, not a string ID
+    ),
+    // Item Abilities - links items to their abilities
+    'ItemAbility': const LookupConfig(
+      category: 'item_ability',
+      nameField: 'sAbilityId',
+      extraFields: {
+        'passiveAbility': 'sPasvAbility',
+      },
     ),
   },
   overrides: {

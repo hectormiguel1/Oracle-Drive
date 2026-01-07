@@ -218,8 +218,10 @@ class _FileActions extends StatelessWidget {
 
   String get _ext => file.path.split('.').last.toLowerCase();
   String get _name => file.path.split('/').last.toLowerCase();
+  // Must start with 'white_' (underscore) to be a WBT archive
+  // This excludes files like 'WhiteBaseClassJar.bin' which are WPD data files
   bool get _isWhiteBin =>
-      _name.startsWith('white') && _ext == 'bin' && !_name.contains('filelist');
+      _name.startsWith('white_') && _ext == 'bin' && !_name.contains('filelist');
   bool get _isFileList => _name.contains('filelist') && _ext == 'bin';
 
   @override

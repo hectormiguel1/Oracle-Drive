@@ -572,3 +572,320 @@ pub fn mcp_to_json(mcp: McpFile) -> Result<String> {
 pub fn mcp_from_json(json: String) -> Result<McpFile> {
     cgt_api::mcp_from_json(&json)
 }
+
+// ============================================================================
+// VFX API - Visual Effects
+// ============================================================================
+
+use crate::modules::vfx::{
+    api as vfx_api,
+    structs::{VfxData, VfxSummary, VfxTexture},
+};
+
+/// Parses a VFX XFV file and returns all effect data.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// Complete VFX data including textures, models, animations, and effects.
+pub fn vfx_parse(in_file: String) -> Result<VfxData> {
+    vfx_api::parse_vfx(&in_file)
+}
+
+/// Gets a quick summary of VFX file contents.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// Summary with counts and effect names.
+pub fn vfx_get_summary(in_file: String) -> Result<VfxSummary> {
+    vfx_api::get_vfx_summary(&in_file)
+}
+
+/// Lists all effect names in a VFX file.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// List of effect names.
+pub fn vfx_list_effects(in_file: String) -> Result<Vec<String>> {
+    vfx_api::list_vfx_effects(&in_file)
+}
+
+/// Lists all textures in a VFX file.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// List of texture info (name, dimensions, format).
+pub fn vfx_list_textures(in_file: String) -> Result<Vec<VfxTexture>> {
+    vfx_api::list_vfx_textures(&in_file)
+}
+
+/// Exports VFX data to JSON string.
+///
+/// # Arguments
+/// * `in_file` - Path to the XFV file
+///
+/// # Returns
+/// JSON string representation of VFX data.
+pub fn vfx_export_json(in_file: String) -> Result<String> {
+    let data = vfx_api::parse_vfx(&in_file)?;
+    vfx_api::vfx_to_json(&data)
+}
+
+/// Extracts VFX textures to DDS files.
+///
+/// Requires the paired IMGB file to be present.
+///
+/// # Arguments
+/// * `xfv_path` - Path to the XFV file
+/// * `output_dir` - Directory to write DDS files
+///
+/// # Returns
+/// List of extracted DDS file paths.
+pub fn vfx_extract_textures(xfv_path: String, output_dir: String) -> Result<Vec<String>> {
+    vfx_api::extract_vfx_textures(&xfv_path, &output_dir)
+}
+
+/// Extracts a single VFX texture as PNG bytes in memory.
+///
+/// This function loads only the specified texture without writing to disk.
+/// Ideal for on-demand texture preview in the UI.
+///
+/// # Arguments
+/// * `xfv_path` - Path to the XFV file
+/// * `texture_name` - Name of the texture (e.g., "v04fdfc11828acd")
+///
+/// # Returns
+/// Tuple of ((width, height), png_bytes).
+pub fn vfx_extract_texture_as_png(xfv_path: String, texture_name: String) -> Result<((u32, u32), Vec<u8>)> {
+    vfx_api::extract_vfx_texture_as_png(&xfv_path, &texture_name)
+}
+
+// ============================================================
+// DDS to PNG Conversion
+// ============================================================
+
+/// Converts a DDS file to PNG format.
+///
+/// Supports DXT1, DXT3, DXT5, and uncompressed RGBA formats.
+///
+/// # Arguments
+/// * `dds_path` - Path to input DDS file
+/// * `png_path` - Path to output PNG file
+///
+/// # Returns
+/// Tuple of (width, height) of the converted image.
+pub fn convert_dds_to_png(dds_path: String, png_path: String) -> Result<(u32, u32)> {
+    img_api::convert_dds_to_png(&dds_path, &png_path)
+}
+
+/// Converts a DDS file to PNG and returns the PNG data as bytes.
+///
+/// Useful for displaying textures directly in Flutter.
+///
+/// # Arguments
+/// * `dds_path` - Path to input DDS file
+///
+/// # Returns
+/// Tuple of ((width, height), png_bytes).
+pub fn convert_dds_to_png_bytes(dds_path: String) -> Result<((u32, u32), Vec<u8>)> {
+    img_api::convert_dds_to_png_bytes(&dds_path)
+}
+
+// ============================================================
+// VFX Player API
+// ============================================================
+//
+// GPU-based VFX effect player for real-time rendering.
+// Uses wgpu for headless rendering and streams frames to Flutter.
+
+use crate::modules::vfx::renderer::VfxPlayer;
+use std::sync::Mutex;
+use once_cell::sync::Lazy;
+
+/// Global VFX player instance (single player at a time)
+static VFX_PLAYER: Lazy<Mutex<Option<VfxPlayer>>> = Lazy::new(|| Mutex::new(None));
+
+/// Initializes the VFX player with specified render dimensions.
+///
+/// Must be called before loading models or rendering frames.
+///
+/// # Arguments
+/// * `width` - Render width in pixels
+/// * `height` - Render height in pixels
+///
+/// # Returns
+/// Ok(()) on success.
+pub fn vfx_player_init(width: u32, height: u32) -> Result<()> {
+    let player = VfxPlayer::new(width, height)?;
+    *VFX_PLAYER.lock().unwrap() = Some(player);
+    log::info!("VFX Player initialized: {}x{}", width, height);
+    Ok(())
+}
+
+/// Loads a test quad with specified color for debugging.
+///
+/// # Arguments
+/// * `r`, `g`, `b`, `a` - RGBA color (0.0 to 1.0)
+///
+/// # Returns
+/// Ok(()) on success.
+pub fn vfx_player_load_test(r: f32, g: f32, b: f32, a: f32) -> Result<()> {
+    let mut player_guard = VFX_PLAYER.lock().unwrap();
+    let player = player_guard
+        .as_mut()
+        .ok_or_else(|| anyhow::anyhow!("VFX Player not initialized"))?;
+    player.load_test_quad([r, g, b, a])
+}
+
+/// Loads a VFX model for rendering.
+///
+/// The model must exist in the VFX file, and a texture must be provided as RGBA bytes.
+///
+/// # Arguments
+/// * `xfv_path` - Path to the XFV file
+/// * `model_name` - Name of the model to load
+/// * `texture_name` - Name of the texture to use (or empty for first texture)
+///
+/// # Returns
+/// Ok(()) on success.
+pub fn vfx_player_load_model(xfv_path: String, model_name: String, texture_name: String) -> Result<()> {
+    // Parse VFX file
+    let vfx_data = vfx_api::parse_vfx(&xfv_path)?;
+
+    // Find the model
+    let model = vfx_data
+        .models
+        .iter()
+        .find(|m| m.name == model_name)
+        .ok_or_else(|| anyhow::anyhow!("Model '{}' not found", model_name))?;
+
+    // Determine which texture to use
+    // Note: model.texture_refs contains original file paths (e.g., "whiteproj\tex\fm02_jp.dds")
+    // but VFX textures are stored with hash-based names (e.g., "v04fdfc11828acd")
+    // So we need to use the hash-based texture names from vfx_data.textures
+    let tex_name = if !texture_name.is_empty() {
+        // User specified a texture name - use it directly
+        texture_name.clone()
+    } else {
+        // Try to find a texture that matches the model's texture ref by looking for partial matches
+        // or fall back to the first available texture
+        let tex = if let Some(tex_ref) = model.texture_refs.first() {
+            // Extract just the filename from path (e.g., "fm02_jp.dds" from "whiteproj\tex\fm02_jp.dds")
+            let filename = tex_ref.split(&['\\', '/'][..]).last().unwrap_or(tex_ref);
+            let basename = filename.split('.').next().unwrap_or(filename).to_lowercase();
+
+            log::debug!("Looking for texture matching '{}' (basename: '{}')", tex_ref, basename);
+
+            // Try to find a texture whose name contains the basename (unlikely but worth trying)
+            // If not found, use the first available texture
+            vfx_data.textures.first()
+                .map(|t| t.name.clone())
+        } else {
+            // No texture refs - use first available
+            vfx_data.textures.first()
+                .map(|t| t.name.clone())
+        };
+
+        tex.ok_or_else(|| anyhow::anyhow!("No textures available in VFX file"))?
+    };
+
+    log::info!("Using texture '{}' for model '{}'", tex_name, model_name);
+    if !model.texture_refs.is_empty() {
+        log::debug!("Model references textures: {:?}", model.texture_refs);
+    }
+
+    // Extract texture as PNG bytes (then convert to RGBA)
+    let ((tex_width, tex_height), png_bytes) = vfx_api::extract_vfx_texture_as_png(&xfv_path, &tex_name)?;
+
+    // Decode PNG to RGBA
+    let img = image::load_from_memory(&png_bytes)?;
+    let rgba = img.to_rgba8();
+    let rgba_bytes = rgba.into_raw();
+
+    // Load into player
+    let mut player_guard = VFX_PLAYER.lock().unwrap();
+    let player = player_guard
+        .as_mut()
+        .ok_or_else(|| anyhow::anyhow!("VFX Player not initialized"))?;
+
+    player.load_model(model, &rgba_bytes, tex_width, tex_height)?;
+
+    log::info!("Loaded model '{}' with texture '{}' ({}x{})", model_name, tex_name, tex_width, tex_height);
+    Ok(())
+}
+
+/// Renders a single frame and returns RGBA pixel data.
+///
+/// # Arguments
+/// * `delta_time` - Time elapsed since last frame (in seconds)
+///
+/// # Returns
+/// RGBA pixel data (width * height * 4 bytes).
+pub fn vfx_player_render_frame(delta_time: f32) -> Result<Vec<u8>> {
+    let mut player_guard = VFX_PLAYER.lock().unwrap();
+    let player = player_guard
+        .as_mut()
+        .ok_or_else(|| anyhow::anyhow!("VFX Player not initialized"))?;
+
+    player.render_frame(delta_time)
+}
+
+/// Gets the current animation time.
+///
+/// # Returns
+/// Current animation time in seconds.
+pub fn vfx_player_get_time() -> Result<f32> {
+    let player_guard = VFX_PLAYER.lock().unwrap();
+    let player = player_guard
+        .as_ref()
+        .ok_or_else(|| anyhow::anyhow!("VFX Player not initialized"))?;
+
+    Ok(player.animation.time)
+}
+
+/// Resets the animation to the beginning.
+pub fn vfx_player_reset() -> Result<()> {
+    let mut player_guard = VFX_PLAYER.lock().unwrap();
+    let player = player_guard
+        .as_mut()
+        .ok_or_else(|| anyhow::anyhow!("VFX Player not initialized"))?;
+
+    player.animation.reset();
+    Ok(())
+}
+
+/// Disposes of the VFX player and releases GPU resources.
+pub fn vfx_player_dispose() {
+    let mut player_guard = VFX_PLAYER.lock().unwrap();
+    if player_guard.take().is_some() {
+        log::info!("VFX Player disposed");
+    }
+}
+
+/// Checks if the VFX player is initialized.
+///
+/// # Returns
+/// True if initialized, false otherwise.
+pub fn vfx_player_is_initialized() -> bool {
+    VFX_PLAYER.lock().unwrap().is_some()
+}
+
+/// Gets the render dimensions.
+///
+/// # Returns
+/// Tuple of (width, height) in pixels.
+pub fn vfx_player_get_dimensions() -> Result<(u32, u32)> {
+    let player_guard = VFX_PLAYER.lock().unwrap();
+    let player = player_guard
+        .as_ref()
+        .ok_or_else(|| anyhow::anyhow!("VFX Player not initialized"))?;
+
+    Ok((player.frame_buffer.width, player.frame_buffer.height))
+}

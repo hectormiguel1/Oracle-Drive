@@ -149,7 +149,9 @@ class WpdState {
   bool get isWhiteBin {
     if (!isFile) return false;
     final name = selectedName.toLowerCase();
-    return name.startsWith('white') && name.endsWith('.bin') && !name.contains('filelist');
+    // Must start with 'white_' (underscore) to be a WBT archive
+    // This excludes files like 'WhiteBaseClassJar.bin' which are WPD data files
+    return name.startsWith('white_') && name.endsWith('.bin') && !name.contains('filelist');
   }
 
   bool get isFileList {

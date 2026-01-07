@@ -138,7 +138,8 @@ impl WbtRepacker {
             let is_compressed = metadata.uncompressed_size != metadata.compressed_size;
 
             let (packed_data, compressed_size) = if is_compressed && !file_data.is_empty() {
-                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+                // Use best compression (level 9) to match C# CompressionLevel.SmallestSize
+                let mut encoder = ZlibEncoder::new(Vec::new(), Compression::best());
                 encoder.write_all(&file_data).map_err(|e| e.to_string())?;
                 let data = encoder.finish().map_err(|e| e.to_string())?;
                 let size = data.len() as u32;
@@ -268,7 +269,8 @@ impl WbtRepacker {
                 let uncompressed_size = file_data.len() as u32;
 
                 let (final_data, compressed_size) = if metadata.uncompressed_size != metadata.compressed_size {
-                    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+                    // Use best compression (level 9) to match C# CompressionLevel.SmallestSize
+                    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::best());
                     encoder.write_all(&file_data).map_err(|e| e.to_string())?;
                     let data = encoder.finish().map_err(|e| e.to_string())?;
                     let size = data.len() as u32;
@@ -385,6 +387,11 @@ impl WbtRepacker {
             patched_in_place, patched_appended, unchanged
         );
 
+        // CRITICAL: Flush and close the container before building the filelist
+        // C# closes the container file (via using blocks) before BuildFilelist is called
+        container.sync_all()?;
+        drop(container);
+
         self.build_filelist(&mut filelist, new_chunks_dict)
     }
 
@@ -398,7 +405,8 @@ impl WbtRepacker {
         trace!("Compressing chunks in parallel...");
         let mut compressed_chunks: Vec<_> = (0..filelist.chunks.len() as u32).into_par_iter().map(|c| {
             let chunk_uncmp = new_chunks_dict.get(&c).unwrap();
-            let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+            // Use best compression (level 9) to match C# CompressionLevel.SmallestSize
+            let mut encoder = ZlibEncoder::new(Vec::new(), Compression::best());
             encoder.write_all(chunk_uncmp).map_err(|e| e.to_string())?;
             let chunk_cmp = encoder.finish().map_err(|e| e.to_string())?;
             Ok((c, chunk_uncmp.len() as u32, chunk_cmp))
@@ -517,10 +525,14 @@ impl WbtRepacker {
 
     /// Writes an unencrypted filelist (FF13-1 format).
     ///
-    /// IMPORTANT: This follows the C# approach:
-    /// 1. Write header (chunk_info_offset, chunk_data_offset, total_files)
-    /// 2. Write entries with file_code, chunk_number, and the pre-calculated path_string_pos
-    /// 3. Write chunk info and chunk data
+    /// IMPORTANT: This follows the C# approach EXACTLY:
+    /// 1. First session: Write header, EntriesData, chunk_info, chunk_data
+    /// 2. Close file (flush all data)
+    /// 3. Second session: Reopen and PATCH only path_string_pos in each entry
+    ///
+    /// C# Reference: RepackFilelistData.BuildFilelist()
+    /// - Lines 67-91: First write session with FileMode.Append
+    /// - Lines 99-175: Second pass with FileMode.Open to patch path_string_pos
     fn build_unencrypted_filelist(
         &self,
         filelist: &Filelist,
@@ -531,47 +543,82 @@ impl WbtRepacker {
         chunk_data: &[u8],
     ) -> Result<(), WbtError> {
         trace!("Writing unencrypted filelist: {:?}", self.filelist_path);
-        let mut new_filelist = File::create(&self.filelist_path)?;
 
-        // Step 1: Write header
-        new_filelist.write_le(&chunk_info_offset)?;
-        new_filelist.write_le(&chunk_data_offset)?;
-        new_filelist.write_le(&total_files)?;
+        // ========================================
+        // FIRST SESSION: Write all data (C# lines 67-91)
+        // ========================================
+        {
+            let mut new_filelist = File::create(&self.filelist_path)?;
 
-        // Step 2: Write entries with file_code, chunk_number, and path_string_pos
-        // The path_string_pos values were already calculated in build_filelist
-        for (i, entry) in filelist.entries.iter().enumerate() {
-            new_filelist.write_le(&entry.file_code)?;
-            match self.game_code {
-                GameCode::FF13_1 => {
-                    new_filelist.write_le(&(entry.chunk_number as u16))?;
-                    new_filelist.write_le(&(entry.path_string_pos as u16))?;
+            // Write header: chunkInfoOffset, chunkDataOffset, TotalFiles
+            new_filelist.write_le(&chunk_info_offset)?;
+            new_filelist.write_le(&chunk_data_offset)?;
+            new_filelist.write_le(&total_files)?;
 
-                    if i < 5 {
-                        trace!(
-                            "Entry {}: file_code=0x{:08X}, chunk={}, path_pos={}",
-                            i, entry.file_code, entry.chunk_number, entry.path_string_pos
-                        );
-                    }
-                }
-                _ => {
-                    // For FF13-2/LR: if the original entry had the 32768 flag,
-                    // we need to add 32768 back to the new path_string_pos
-                    let final_path_string_pos = if entry.has_continuation_flag {
-                        entry.path_string_pos as u16 + 32768
-                    } else {
-                        entry.path_string_pos as u16
-                    };
-                    new_filelist.write_le(&final_path_string_pos)?;
-                    new_filelist.write_le(&(entry.chunk_number as u8))?;
-                    new_filelist.write_le(&entry.file_type_id.unwrap_or(0))?;
-                }
+            // Write EntriesData (raw bytes from original filelist)
+            // C#: newFilelistChunks.Write(filelistVariables.EntriesData, 0, filelistVariables.EntriesData.Length);
+            for entry in &filelist.entries {
+                new_filelist.write_all(&entry.raw_entry_data)?;
             }
+
+            // Write chunk info and chunk data
+            new_filelist.write_all(chunk_info_data)?;
+            new_filelist.write_all(chunk_data)?;
+
+            // Ensure all data is flushed to disk before closing
+            new_filelist.sync_all()?;
+            // File is closed when new_filelist goes out of scope
         }
 
-        // Step 3: Write chunk info and data
-        new_filelist.write_all(chunk_info_data)?;
-        new_filelist.write_all(chunk_data)?;
+        // ========================================
+        // SECOND SESSION: Patch path_string_pos (C# lines 99-175)
+        // C#: using (var newEntryWriter = new BinaryWriter(File.Open(repackVariables.NewFilelistFile, FileMode.Open, FileAccess.Write)))
+        // ========================================
+        {
+            let mut entry_writer = OpenOptions::new()
+                .write(true)
+                .open(&self.filelist_path)?;
+
+            // C# iterates through chunks and path strings, we iterate through entries
+            // For FF13-1: newEntryWriterPos starts at 12, fixedEntryWriterPos = newEntryWriterPos + 6
+            // So path_string_pos is written at offset 12 + (entryIndex * 8) + 6
+            for (i, entry) in filelist.entries.iter().enumerate() {
+                let entry_offset = 12 + (i * 8) as u64;
+
+                match self.game_code {
+                    GameCode::FF13_1 => {
+                        // C#: fixedEntryWriterPos = newEntryWriterPos + 6;
+                        let path_pos_offset = entry_offset + 6;
+                        entry_writer.seek(SeekFrom::Start(path_pos_offset))?;
+                        // C#: newEntryWriter.WriteBytesUInt16(posInChunkVal, false); // false = little-endian
+                        entry_writer.write_le(&(entry.path_string_pos as u16))?;
+
+                        if i < 5 {
+                            trace!(
+                                "Entry {}: patched path_pos at offset 0x{:X} = {}",
+                                i, path_pos_offset, entry.path_string_pos
+                            );
+                        }
+                    }
+                    _ => {
+                        // C#: fixedEntryWriterPos -= 2; (so it becomes newEntryWriterPos + 4)
+                        let path_pos_offset = entry_offset + 4;
+                        entry_writer.seek(SeekFrom::Start(path_pos_offset))?;
+
+                        // C# adds 32768 back if original had it
+                        let final_path_string_pos = if entry.has_continuation_flag {
+                            entry.path_string_pos as u16 + 32768
+                        } else {
+                            entry.path_string_pos as u16
+                        };
+                        entry_writer.write_le(&final_path_string_pos)?;
+                    }
+                }
+            }
+            // Ensure all patches are flushed to disk
+            entry_writer.sync_all()?;
+            // File is closed when entry_writer goes out of scope
+        }
 
         let entries_size = total_files * 8;
         let filelist_size = 12 + entries_size as usize + chunk_info_data.len() + chunk_data.len();
@@ -587,6 +634,10 @@ impl WbtRepacker {
     ///
     /// Re-encrypts the filelist using the original encryption header
     /// to preserve the same seed.
+    ///
+    /// IMPORTANT: This follows the C# approach exactly:
+    /// 1. Write RAW entry bytes (preserves original data)
+    /// 2. Patch only path_string_pos values
     #[allow(clippy::too_many_arguments)]
     fn build_encrypted_filelist(
         &self,
@@ -608,25 +659,34 @@ impl WbtRepacker {
         body.extend_from_slice(&chunk_data_offset.to_le_bytes());
         body.extend_from_slice(&total_files.to_le_bytes());
 
-        // Write entries
+        // Write RAW entry bytes (preserves original data exactly like C#)
         for entry in &filelist.entries {
-            body.extend_from_slice(&entry.file_code.to_le_bytes());
+            body.extend_from_slice(&entry.raw_entry_data);
+        }
+
+        // Patch path_string_pos values in the body (C# does this in a second pass)
+        for (i, entry) in filelist.entries.iter().enumerate() {
+            let entry_offset = 12 + (i * 8); // Header is 12 bytes, each entry is 8 bytes
+
             match self.game_code {
                 GameCode::FF13_1 => {
-                    body.extend_from_slice(&(entry.chunk_number as u16).to_le_bytes());
-                    body.extend_from_slice(&(entry.path_string_pos as u16).to_le_bytes());
+                    // path_string_pos is at offset 6 within the entry
+                    let path_pos_offset = entry_offset + 6;
+                    let pos_bytes = (entry.path_string_pos as u16).to_le_bytes();
+                    body[path_pos_offset] = pos_bytes[0];
+                    body[path_pos_offset + 1] = pos_bytes[1];
                 }
                 _ => {
-                    // For FF13-2/LR: if the original entry had the 32768 flag,
-                    // we need to add 32768 back to the new path_string_pos
+                    // For FF13-2/LR: path_string_pos is at offset 4 within the entry
+                    let path_pos_offset = entry_offset + 4;
                     let final_path_string_pos = if entry.has_continuation_flag {
                         entry.path_string_pos as u16 + 32768
                     } else {
                         entry.path_string_pos as u16
                     };
-                    body.extend_from_slice(&final_path_string_pos.to_le_bytes());
-                    body.push(entry.chunk_number as u8);
-                    body.push(entry.file_type_id.unwrap_or(0));
+                    let pos_bytes = final_path_string_pos.to_le_bytes();
+                    body[path_pos_offset] = pos_bytes[0];
+                    body[path_pos_offset + 1] = pos_bytes[1];
                 }
             }
         }

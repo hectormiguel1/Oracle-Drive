@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:oracle_drive/src/services/navigation_service.dart';
@@ -17,12 +18,26 @@ import 'package:fabula_nova_sdk/bridge_generated/modules/wct.dart'
     as wct_sdk; // Import WCT enums
 import 'package:fabula_nova_sdk/bridge_generated/modules/crystalium/structs.dart'
     as cgt_sdk;
+import 'package:fabula_nova_sdk/bridge_generated/modules/vfx/structs.dart'
+    as vfx_sdk;
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show Uint64List;
 
 import 'package:oracle_drive/src/services/app_database.dart';
 import 'package:oracle_drive/src/isar/common/lookup_config.dart';
 import 'package:oracle_drive/src/isar/common/models.dart';
+
+enum LogLevel {
+  off(0),
+  error(1),
+  warning(2),
+  info(3),
+  debug(4),
+  trace(5);
+
+  final int level;
+  const LogLevel(this.level);
+}
 
 class NativeService {
   static NativeService? _instance;
@@ -104,7 +119,7 @@ class NativeService {
 
     _logger.info("NativeService initialized (using fabula_nova_sdk).");
     await sdk.testLog(message: "NativeService initialized successfully.");
-    sdk.setLogLevel(level: 4);
+    sdk.setLogLevel(level: LogLevel.info.level);
   }
 
   /// Poll for new logs from Rust (less frequent in debug mode to reduce overhead)
@@ -675,6 +690,200 @@ class NativeService {
       return await sdk.cgtValidate(cgt: cgt);
     } catch (e) {
       _showErrorDialog("CGT Validation Error", e.toString());
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // VFX (Visual Effects) Operations
+  // ============================================================
+
+  /// Parse a VFX XFV file
+  Future<vfx_sdk.VfxData> parseVfx(String filePath) async {
+    try {
+      return await sdk.vfxParse(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("VFX Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Get a quick summary of VFX file contents
+  Future<vfx_sdk.VfxSummary> getVfxSummary(String filePath) async {
+    try {
+      return await sdk.vfxGetSummary(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("VFX Summary Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// List all effect names in a VFX file
+  Future<List<String>> listVfxEffects(String filePath) async {
+    try {
+      return await sdk.vfxListEffects(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("VFX List Effects Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// List all textures in a VFX file
+  Future<List<vfx_sdk.VfxTexture>> listVfxTextures(String filePath) async {
+    try {
+      return await sdk.vfxListTextures(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("VFX List Textures Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Export VFX data to JSON string
+  Future<String> exportVfxJson(String filePath) async {
+    try {
+      return await sdk.vfxExportJson(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("VFX Export Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Extract VFX textures to DDS files
+  Future<List<String>> extractVfxTextures(String xfvPath, String outputDir) async {
+    try {
+      return await sdk.vfxExtractTextures(xfvPath: xfvPath, outputDir: outputDir);
+    } catch (e) {
+      _showErrorDialog("VFX Extract Textures Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Extracts a single VFX texture as PNG bytes in memory.
+  /// Returns ((width, height), pngBytes) - ready for Image.memory() display.
+  Future<((int, int), Uint8List)> extractVfxTextureAsPng(
+    String xfvPath,
+    String textureName,
+  ) async {
+    try {
+      final result = await sdk.vfxExtractTextureAsPng(
+        xfvPath: xfvPath,
+        textureName: textureName,
+      );
+      return (
+        (result.$1.$1.toInt(), result.$1.$2.toInt()),
+        Uint8List.fromList(result.$2),
+      );
+    } catch (e) {
+      _showErrorDialog("VFX Texture Extract Error", e.toString());
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // VFX Player API
+  // ============================================================
+
+  /// Initialize the VFX player with render dimensions
+  Future<void> vfxPlayerInit(int width, int height) async {
+    try {
+      await sdk.vfxPlayerInit(width: width, height: height);
+    } catch (e) {
+      _showErrorDialog("VFX Player Init Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Load a test quad with specified color for debugging
+  Future<void> vfxPlayerLoadTest(double r, double g, double b, double a) async {
+    try {
+      await sdk.vfxPlayerLoadTest(r: r, g: g, b: b, a: a);
+    } catch (e) {
+      _showErrorDialog("VFX Player Load Test Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Load a VFX model for rendering
+  Future<void> vfxPlayerLoadModel(String xfvPath, String modelName, {String textureName = ''}) async {
+    try {
+      await sdk.vfxPlayerLoadModel(xfvPath: xfvPath, modelName: modelName, textureName: textureName);
+    } catch (e) {
+      _showErrorDialog("VFX Player Load Model Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Render a single frame and return RGBA pixel data
+  Future<Uint8List> vfxPlayerRenderFrame(double deltaTime) async {
+    try {
+      final result = await sdk.vfxPlayerRenderFrame(deltaTime: deltaTime);
+      return Uint8List.fromList(result);
+    } catch (e) {
+      _showErrorDialog("VFX Player Render Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Get the current animation time
+  Future<double> vfxPlayerGetTime() async {
+    try {
+      return await sdk.vfxPlayerGetTime();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Reset the animation to the beginning
+  Future<void> vfxPlayerReset() async {
+    try {
+      await sdk.vfxPlayerReset();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Dispose of the VFX player and release GPU resources
+  void vfxPlayerDispose() {
+    sdk.vfxPlayerDispose();
+  }
+
+  /// Check if the VFX player is initialized
+  Future<bool> vfxPlayerIsInitialized() async {
+    return await sdk.vfxPlayerIsInitialized();
+  }
+
+  /// Get the render dimensions
+  Future<(int, int)> vfxPlayerGetDimensions() async {
+    try {
+      final result = await sdk.vfxPlayerGetDimensions();
+      return (result.$1.toInt(), result.$2.toInt());
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // DDS to PNG Conversion
+  // ============================================================
+
+  /// Converts a DDS file to PNG format
+  Future<(int, int)> convertDdsToPng(String ddsPath, String pngPath) async {
+    try {
+      final result = await sdk.convertDdsToPng(ddsPath: ddsPath, pngPath: pngPath);
+      return (result.$1.toInt(), result.$2.toInt());
+    } catch (e) {
+      _showErrorDialog("DDS Convert Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Converts a DDS file to PNG and returns the bytes
+  Future<((int, int), Uint8List)> convertDdsToPngBytes(String ddsPath) async {
+    try {
+      final result = await sdk.convertDdsToPngBytes(ddsPath: ddsPath);
+      return ((result.$1.$1.toInt(), result.$1.$2.toInt()), Uint8List.fromList(result.$2));
+    } catch (e) {
+      _showErrorDialog("DDS Convert Error", e.toString());
       rethrow;
     }
   }
