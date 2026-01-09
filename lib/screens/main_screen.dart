@@ -90,6 +90,8 @@ class _MainScreenState extends ConsumerState<MainScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Cache theme extension to avoid repeated lookups
+    final theme = Theme.of(context).extension<CrystalTheme>()!;
     final selectedGame = ref.watch(selectedGameProvider);
     final selectedIndex = ref.watch(navigationIndexProvider);
     final screens = _buildScreens(selectedGame);
@@ -125,9 +127,7 @@ class _MainScreenState extends ConsumerState<MainScreen>
                       children: [
                         Icon(
                           Icons.diamond,
-                          color: Theme.of(
-                            context,
-                          ).extension<CrystalTheme>()!.accent,
+                          color: theme.accent,
                           size: 32,
                         ),
                         const SizedBox(height: 20),
@@ -243,8 +243,30 @@ class _MainScreenState extends ConsumerState<MainScreen>
   }
 
   Widget _buildNavButton(int index, String label, IconData icon) {
-    final selectedIndex = ref.watch(navigationIndexProvider);
-    final isSelected = selectedIndex == index;
+    return _NavButton(index: index, label: label, icon: icon);
+  }
+}
+
+/// Extracted navigation button widget for better performance.
+/// Each button only rebuilds when its selection state changes.
+class _NavButton extends ConsumerWidget {
+  final int index;
+  final String label;
+  final IconData icon;
+
+  const _NavButton({
+    required this.index,
+    required this.label,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Only watch if THIS button is selected, not the entire index
+    final isSelected = ref.watch(
+      navigationIndexProvider.select((idx) => idx == index),
+    );
+
     return AnimatedPadding(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeOut,

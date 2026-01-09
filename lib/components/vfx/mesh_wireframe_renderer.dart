@@ -176,7 +176,7 @@ class _WireframePainter extends CustomPainter {
 
     // Draw wireframe edges
     final wirePaint = Paint()
-      ..color = wireColor.withOpacity(0.8)
+      ..color = wireColor.withValues(alpha: 0.8)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
@@ -196,7 +196,7 @@ class _WireframePainter extends CustomPainter {
         // Calculate average Z for depth-based coloring
         final avgZ = (zDepths[i0] + zDepths[i1] + zDepths[i2]) / 3;
         final depthFactor = (1.0 - avgZ * 0.2).clamp(0.3, 1.0);
-        wirePaint.color = wireColor.withOpacity(0.8 * depthFactor);
+        wirePaint.color = wireColor.withValues(alpha: 0.8 * depthFactor);
 
         // Draw triangle edges
         canvas.drawLine(p0, p1, wirePaint);
@@ -213,7 +213,7 @@ class _WireframePainter extends CustomPainter {
     for (var i = 0; i < projectedVertices.length; i++) {
       final p = projectedVertices[i];
       final depthFactor = (1.0 - zDepths[i] * 0.2).clamp(0.3, 1.0);
-      vertexPaint.color = vertexColor.withOpacity(depthFactor);
+      vertexPaint.color = vertexColor.withValues(alpha: depthFactor);
       canvas.drawCircle(p, 2.5, vertexPaint);
     }
   }
@@ -225,7 +225,7 @@ class _WireframePainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // X axis (red)
-    axisPaint.color = Colors.red.withOpacity(0.3);
+    axisPaint.color = Colors.red.withValues(alpha: 0.3);
     var cosY = math.cos(rotationY);
     var sinY = math.sin(rotationY);
     var endX = center.dx + axisLength * cosY;
@@ -233,13 +233,13 @@ class _WireframePainter extends CustomPainter {
     canvas.drawLine(center, Offset(endX, endY), axisPaint);
 
     // Y axis (green)
-    axisPaint.color = Colors.green.withOpacity(0.3);
+    axisPaint.color = Colors.green.withValues(alpha: 0.3);
     var cosX = math.cos(rotationX);
     endY = center.dy - axisLength * cosX;
     canvas.drawLine(center, Offset(center.dx, endY), axisPaint);
 
     // Z axis (blue)
-    axisPaint.color = Colors.blue.withOpacity(0.3);
+    axisPaint.color = Colors.blue.withValues(alpha: 0.3);
     var zX = -sinY * math.cos(rotationX);
     var zY = math.sin(rotationX);
     endX = center.dx + axisLength * zX;

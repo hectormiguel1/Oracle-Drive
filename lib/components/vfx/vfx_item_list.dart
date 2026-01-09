@@ -1,5 +1,3 @@
-import 'package:fabula_nova_sdk/bridge_generated/modules/vfx/structs.dart'
-    as vfx_sdk;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oracle_drive/providers/vfx_provider.dart';
@@ -39,8 +37,8 @@ class VfxItemList extends ConsumerWidget {
             .map((m) => _VfxItem(
                   name: m.name,
                   subtitle: m.vertexCount != null
-                      ? '${m.vertexCount} verts'
-                      : '${_formatBytes(m.dataSize)}',
+                      ? '${m.vertexCount!} verts'
+                      : _formatBytes(m.dataSize),
                   icon: Icons.view_in_ar_outlined,
                 ))
             .toList();
@@ -50,8 +48,8 @@ class VfxItemList extends ConsumerWidget {
             .map((a) => _VfxItem(
                   name: a.name,
                   subtitle: a.durationFrames != null
-                      ? '${a.durationFrames} frames'
-                      : '${_formatBytes(a.dataSize)}',
+                      ? '${a.durationFrames!} frames'
+                      : _formatBytes(a.dataSize),
                   icon: Icons.animation_outlined,
                 ))
             .toList();
@@ -100,7 +98,7 @@ class VfxItemList extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.cyan.withOpacity(0.15) : null,
+                color: isSelected ? Colors.cyan.withValues(alpha: 0.15) : null,
                 border: Border(
                   left: BorderSide(
                     color: isSelected ? Colors.cyan : Colors.transparent,

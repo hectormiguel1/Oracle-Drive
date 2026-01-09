@@ -1,5 +1,68 @@
 import 'package:flutter/material.dart';
 
+/// Animated version of CrystalContainer that smoothly transitions colors.
+class AnimatedCrystalContainer extends ImplicitlyAnimatedWidget {
+  final Widget child;
+  final Color color;
+  final Color borderColor;
+  final double skew;
+
+  const AnimatedCrystalContainer({
+    super.key,
+    required this.child,
+    this.color = const Color(0xFF020b19),
+    this.borderColor = Colors.white24,
+    this.skew = 20.0,
+    super.duration = const Duration(milliseconds: 200),
+    super.curve = Curves.easeOut,
+  });
+
+  @override
+  ImplicitlyAnimatedWidgetState<AnimatedCrystalContainer> createState() =>
+      _AnimatedCrystalContainerState();
+}
+
+class _AnimatedCrystalContainerState
+    extends AnimatedWidgetBaseState<AnimatedCrystalContainer> {
+  ColorTween? _colorTween;
+  ColorTween? _borderColorTween;
+
+  @override
+  void forEachTween(TweenVisitor<dynamic> visitor) {
+    _colorTween = visitor(
+      _colorTween,
+      widget.color,
+      (value) => ColorTween(begin: value as Color),
+    ) as ColorTween?;
+    _borderColorTween = visitor(
+      _borderColorTween,
+      widget.borderColor,
+      (value) => ColorTween(begin: value as Color),
+    ) as ColorTween?;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double horizontalPad = widget.skew.abs();
+    return CustomPaint(
+      painter: _SlantedPainter(
+        _colorTween?.evaluate(animation) ?? widget.color,
+        _borderColorTween?.evaluate(animation) ?? widget.borderColor,
+        widget.skew,
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          widget.skew < 0 ? horizontalPad + 20 : 20,
+          10,
+          widget.skew > 0 ? horizontalPad + 20 : 20,
+          10,
+        ),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
 class CrystalContainer extends StatelessWidget {
   final Widget child;
   final Color color;
@@ -72,5 +135,8 @@ class _SlantedPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _SlantedPainter oldDelegate) =>
+      color != oldDelegate.color ||
+      borderColor != oldDelegate.borderColor ||
+      skew != oldDelegate.skew;
 }

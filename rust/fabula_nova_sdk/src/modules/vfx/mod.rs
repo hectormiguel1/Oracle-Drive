@@ -46,13 +46,11 @@
 pub mod structs;
 pub mod reader;
 pub mod api;
-pub mod renderer;
 
 // Re-export public items
 pub use structs::*;
 pub use reader::*;
 pub use api::*;
-pub use renderer::{VfxPlayer, AnimationState, LoadedModel};
 
 #[cfg(test)]
 mod tests {

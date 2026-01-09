@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:oracle_drive/models/crystalium/cgt_file.dart';
 import 'package:oracle_drive/models/crystalium/mcp_file.dart';
-import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/formats/cgt_service.dart';
 import 'package:oracle_drive/src/utils/crystalium/cgt_modifier.dart';
 import 'package:path/path.dart' as p;
 
@@ -127,8 +127,7 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
   }
 
   Future<void> _loadMcpFile(Uint8List bytes) async {
-    // Use NativeService to parse MCP via Rust
-    final sdkMcp = await NativeService.instance.parseMcpFromMemory(bytes);
+    final sdkMcp = await CgtService.instance.parseMcpFromMemory(bytes);
     final mcp = McpFile.fromSdk(sdkMcp);
 
     state = state.copyWith(
@@ -139,8 +138,7 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
   }
 
   Future<void> _loadCgtFile(String filePath, Uint8List bytes) async {
-    // Use NativeService to parse CGT via Rust
-    final sdkCgt = await NativeService.instance.parseCgtFromMemory(bytes);
+    final sdkCgt = await CgtService.instance.parseCgtFromMemory(bytes);
     final cgt = CgtFile.fromSdk(sdkCgt);
 
     // Try to load patterns file from same directory
@@ -148,7 +146,7 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
     final patternsPath = p.join(p.dirname(filePath), 'patterns.mcp');
     if (await File(patternsPath).exists()) {
       final pBytes = await File(patternsPath).readAsBytes();
-      final sdkPatterns = await NativeService.instance.parseMcpFromMemory(pBytes);
+      final sdkPatterns = await CgtService.instance.parseMcpFromMemory(pBytes);
       patterns = McpFile.fromSdk(sdkPatterns);
     }
 
@@ -202,8 +200,7 @@ class CrystaliumNotifier extends StateNotifier<CrystaliumState> {
     if (state.cgtFile == null) return;
 
     final fileToSave = _modifier != null ? _modifier!.build() : state.cgtFile!;
-    // Use NativeService to write CGT via Rust
-    final bytes = await NativeService.instance.writeCgtToMemory(fileToSave.toSdk());
+    final bytes = await CgtService.instance.writeCgtToMemory(fileToSave.toSdk());
     await File(outputPath).writeAsBytes(bytes);
 
     state = state.copyWith(

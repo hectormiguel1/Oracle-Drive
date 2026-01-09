@@ -56,7 +56,9 @@ class _EventScreenState extends ConsumerState<EventScreen>
     );
 
     if (result != null && result.files.single.path != null) {
-      await ref.read(eventNotifierProvider).loadEvent(result.files.single.path!);
+      await ref
+          .read(eventNotifierProvider)
+          .loadEvent(result.files.single.path!);
     }
   }
 
@@ -79,10 +81,9 @@ class _EventScreenState extends ConsumerState<EventScreen>
     );
 
     if (outputDir != null) {
-      final result = await ref.read(eventNotifierProvider).extractEvent(
-            path,
-            outputDir,
-          );
+      final result = await ref
+          .read(eventNotifierProvider)
+          .extractEvent(path, outputDir);
 
       if (mounted) {
         if (result != null && result.extractedFiles.isNotEmpty) {
@@ -140,8 +141,8 @@ class _EventScreenState extends ConsumerState<EventScreen>
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : data == null
-                    ? _buildEmptyState()
-                    : _buildContent(data),
+                ? _buildEmptyState()
+                : _buildContent(data),
           ),
         ],
       ),
@@ -149,14 +150,180 @@ class _EventScreenState extends ConsumerState<EventScreen>
   }
 
   Widget _buildHeader(String displayName, bool hasData, bool isLoading) {
+    return _EventHeader(
+      displayName: displayName,
+      hasData: hasData,
+      isLoading: isLoading,
+      onExtract: _extractEvent,
+      onExportJson: _exportJson,
+      onPickFile: _pickEventFile,
+      onPickDirectory: _pickEventDirectory,
+    );
+  }
+
+  Widget _buildError(String error) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red.shade300, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              error,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.movie_outlined, size: 64, color: Colors.white24),
+          const SizedBox(width: 16),
+          const Text(
+            'No event loaded',
+            style: TextStyle(color: Colors.white38, fontSize: 16),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CrystalButton(
+                label: 'Load File',
+                icon: Icons.insert_drive_file,
+                onPressed: _pickEventFile,
+              ),
+              const SizedBox(width: 12),
+              CrystalButton(
+                label: 'Load Directory',
+                icon: Icons.folder,
+                onPressed: _pickEventDirectory,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent(event_sdk.EventMetadata data) {
+    return Column(
+      children: [
+        // Tabs
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.black26,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TabBar(
+                  controller: _tabController,
+                  isScrollable: false,
+                  tabs: [
+                    _buildTab('Info', ref.watch(eventWpdRecordCountProvider)),
+                    _buildTab('Actors', ref.watch(eventActorCountProvider)),
+                    _buildTab('Blocks', ref.watch(eventBlockCountProvider)),
+                    _buildTab(
+                      'External',
+                      ref.watch(eventExternalResourceCountProvider),
+                    ),
+                    _buildTab(
+                      'Resources',
+                      ref.watch(eventResourceCountProvider),
+                    ),
+                    _buildTab(
+                      'Dialogue',
+                      ref.watch(eventDialogueCountProvider),
+                    ),
+                    _buildTab('Sound', ref.watch(eventSoundCountProvider)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        // Tab content
+        Expanded(child: EventDetailPanel()),
+      ],
+    );
+  }
+
+  Widget _buildTab(String label, int count) {
+    return Tab(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label),
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white12,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text('$count', style: const TextStyle(fontSize: 10)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Extracted event header widget for better performance with selective rebuilds.
+class _EventHeader extends ConsumerWidget {
+  final String displayName;
+  final bool hasData;
+  final bool isLoading;
+  final VoidCallback onExtract;
+  final VoidCallback onExportJson;
+  final VoidCallback onPickFile;
+  final VoidCallback onPickDirectory;
+
+  const _EventHeader({
+    required this.displayName,
+    required this.hasData,
+    required this.isLoading,
+    required this.onExtract,
+    required this.onExportJson,
+    required this.onPickFile,
+    required this.onPickDirectory,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Use selective watches - only rebuild when these specific values change
     final actorCount = ref.watch(eventActorCountProvider);
     final blockCount = ref.watch(eventBlockCountProvider);
     final dialogueCount = ref.watch(eventDialogueCountProvider);
     final totalDuration = ref.watch(eventTotalDurationProvider);
-    final data = ref.watch(eventDataProvider);
-    final hasDataset = data?.dataset != null;
-    final motionCount = data?.dataset?.motionBlocks.length ?? 0;
-    final cameraCount = data?.dataset?.cameraBlocks.length ?? 0;
+    final hasDataset = ref.watch(
+      eventDataProvider.select((data) => data?.dataset != null),
+    );
+    final motionCount = ref.watch(
+      eventDataProvider.select(
+        (data) => data?.dataset?.motionBlocks.length ?? 0,
+      ),
+    );
+    final cameraCount = ref.watch(
+      eventDataProvider.select(
+        (data) => data?.dataset?.cameraBlocks.length ?? 0,
+      ),
+    );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -184,15 +351,23 @@ class _EventScreenState extends ConsumerState<EventScreen>
                     if (hasDataset) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.teal.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: Colors.teal.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: Colors.teal.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Text(
                           'DataSet',
-                          style: TextStyle(color: Colors.teal.shade300, fontSize: 10),
+                          style: TextStyle(
+                            color: Colors.teal.shade300,
+                            fontSize: 10,
+                          ),
                         ),
                       ),
                     ],
@@ -207,7 +382,10 @@ class _EventScreenState extends ConsumerState<EventScreen>
                   if (hasDataset)
                     Text(
                       '$motionCount motion blocks, $cameraCount camera blocks',
-                      style: TextStyle(color: Colors.teal.shade400, fontSize: 11),
+                      style: TextStyle(
+                        color: Colors.teal.shade400,
+                        fontSize: 11,
+                      ),
                     ),
                 ],
               ],
@@ -217,13 +395,13 @@ class _EventScreenState extends ConsumerState<EventScreen>
             IconButton(
               icon: const Icon(Icons.folder_open_outlined),
               tooltip: 'Extract to Folder',
-              onPressed: isLoading ? null : _extractEvent,
+              onPressed: isLoading ? null : onExtract,
               color: Colors.white70,
             ),
             IconButton(
               icon: const Icon(Icons.data_object),
               tooltip: 'Export JSON',
-              onPressed: isLoading ? null : _exportJson,
+              onPressed: isLoading ? null : onExportJson,
               color: Colors.white70,
             ),
             const SizedBox(width: 8),
@@ -231,174 +409,13 @@ class _EventScreenState extends ConsumerState<EventScreen>
           CrystalButton(
             label: hasData ? 'Load File' : 'Load Event',
             icon: Icons.insert_drive_file,
-            onPressed: isLoading ? null : _pickEventFile,
+            onPressed: isLoading ? null : onPickFile,
           ),
           const SizedBox(width: 8),
           CrystalButton(
             label: 'Load Dir',
             icon: Icons.folder,
-            onPressed: isLoading ? null : _pickEventDirectory,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildError(String error) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.error_outline, color: Colors.red.shade300, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              error,
-              style: TextStyle(color: Colors.red.shade300, fontSize: 13),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 18),
-            onPressed: () {
-              ref.read(eventErrorProvider.notifier).state = null;
-            },
-            color: Colors.red.shade300,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.movie_creation_outlined, size: 80, color: Colors.white10),
-          const SizedBox(height: 24),
-          Text(
-            'Event Viewer',
-            style: CrystalStyles.title.copyWith(color: Colors.white24),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Load an event to view cutscene metadata',
-            style: TextStyle(color: Colors.white38),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CrystalButton(
-                label: 'Load Event File',
-                icon: Icons.insert_drive_file,
-                onPressed: _pickEventFile,
-              ),
-              const SizedBox(width: 12),
-              CrystalButton(
-                label: 'Load Directory',
-                icon: Icons.folder,
-                isPrimary: true,
-                onPressed: _pickEventDirectory,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Load a directory to include DataSet animation/camera data',
-            style: TextStyle(color: Colors.white24, fontSize: 11),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContent(event_sdk.EventMetadata data) {
-    return Row(
-      children: [
-        // Left: Tabs + Item List
-        Expanded(
-          flex: 4,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black26,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Column(
-              children: [
-                // Tab Bar
-                Container(
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: Colors.white12),
-                    ),
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicatorColor: Colors.amber,
-                    labelColor: Colors.amber,
-                    unselectedLabelColor: Colors.white54,
-                    labelStyle: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    isScrollable: true,
-                    tabs: [
-                      _buildTab('Info', ref.watch(eventWpdRecordCountProvider)),
-                      _buildTab('Actors', ref.watch(eventActorCountProvider)),
-                      _buildTab('Blocks', ref.watch(eventBlockCountProvider)),
-                      _buildTab('External', ref.watch(eventExternalResourceCountProvider)),
-                      _buildTab('Resources', ref.watch(eventResourceCountProvider)),
-                      _buildTab('Dialogue', ref.watch(eventDialogueCountProvider)),
-                      _buildTab('Sound', ref.watch(eventSoundCountProvider)),
-                    ],
-                  ),
-                ),
-                // Item List
-                const Expanded(child: EventItemList()),
-              ],
-            ),
-          ),
-        ),
-        const CrystalVerticalDivider.subtle(width: 1),
-        // Right: Detail Panel
-        Expanded(
-          flex: 6,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black12,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: const EventDetailPanel(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTab(String label, int count) {
-    return Tab(
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label),
-          const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-            decoration: BoxDecoration(
-              color: Colors.white12,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              '$count',
-              style: const TextStyle(fontSize: 10),
-            ),
+            onPressed: isLoading ? null : onPickDirectory,
           ),
         ],
       ),

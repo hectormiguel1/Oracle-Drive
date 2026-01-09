@@ -19,48 +19,41 @@ final _journalRepositoryProvider = Provider<JournalRepository>((ref) {
   return AppDatabase.instance.journalRepository;
 });
 
-/// Provider for undo availability.
-final canUndoProvider = StateProvider<bool>((ref) {
-  final service = ref.watch(undoRedoServiceProvider);
-  return service.canUndo;
+/// Provider for undo availability - derived from notifier state.
+final canUndoProvider = Provider<bool>((ref) {
+  return ref.watch(undoRedoNotifierProvider.select((s) => s.canUndo));
 });
 
-/// Provider for redo availability.
-final canRedoProvider = StateProvider<bool>((ref) {
-  final service = ref.watch(undoRedoServiceProvider);
-  return service.canRedo;
+/// Provider for redo availability - derived from notifier state.
+final canRedoProvider = Provider<bool>((ref) {
+  return ref.watch(undoRedoNotifierProvider.select((s) => s.canRedo));
 });
 
-/// Provider for the undo description.
-final undoDescriptionProvider = StateProvider<String?>((ref) {
-  final service = ref.watch(undoRedoServiceProvider);
-  return service.getUndoDescription();
+/// Provider for the undo description - derived from notifier state.
+final undoDescriptionProvider = Provider<String?>((ref) {
+  return ref.watch(undoRedoNotifierProvider.select((s) => s.undoDescription));
 });
 
-/// Provider for the redo description.
-final redoDescriptionProvider = StateProvider<String?>((ref) {
-  final service = ref.watch(undoRedoServiceProvider);
-  return service.getRedoDescription();
+/// Provider for the redo description - derived from notifier state.
+final redoDescriptionProvider = Provider<String?>((ref) {
+  return ref.watch(undoRedoNotifierProvider.select((s) => s.redoDescription));
 });
 
-/// Provider for undo count.
-final undoCountProvider = StateProvider<int>((ref) {
-  final service = ref.watch(undoRedoServiceProvider);
-  return service.undoCount;
+/// Provider for undo count - derived from notifier state.
+final undoCountProvider = Provider<int>((ref) {
+  return ref.watch(undoRedoNotifierProvider.select((s) => s.undoCount));
 });
 
-/// Provider for redo count.
-final redoCountProvider = StateProvider<int>((ref) {
-  final service = ref.watch(undoRedoServiceProvider);
-  return service.redoCount;
+/// Provider for redo count - derived from notifier state.
+final redoCountProvider = Provider<int>((ref) {
+  return ref.watch(undoRedoNotifierProvider.select((s) => s.redoCount));
 });
 
 /// Notifier for managing undo/redo operations.
 class UndoRedoNotifier extends StateNotifier<UndoRedoState> {
   final UndoRedoService _service;
-  final Ref _ref;
 
-  UndoRedoNotifier(this._service, this._ref) : super(UndoRedoState.initial()) {
+  UndoRedoNotifier(this._service) : super(UndoRedoState.initial()) {
     // Initialize the service on creation
     _service.initialize();
     _refreshState();
@@ -100,6 +93,7 @@ class UndoRedoNotifier extends StateNotifier<UndoRedoState> {
   }
 
   /// Refresh the state from the service.
+  /// Derived providers (canUndoProvider, etc.) automatically update via select().
   void _refreshState() {
     state = UndoRedoState(
       canUndo: _service.canUndo,
@@ -109,14 +103,6 @@ class UndoRedoNotifier extends StateNotifier<UndoRedoState> {
       undoDescription: _service.getUndoDescription(),
       redoDescription: _service.getRedoDescription(),
     );
-
-    // Also update the simple providers
-    _ref.read(canUndoProvider.notifier).state = _service.canUndo;
-    _ref.read(canRedoProvider.notifier).state = _service.canRedo;
-    _ref.read(undoDescriptionProvider.notifier).state = _service.getUndoDescription();
-    _ref.read(redoDescriptionProvider.notifier).state = _service.getRedoDescription();
-    _ref.read(undoCountProvider.notifier).state = _service.undoCount;
-    _ref.read(redoCountProvider.notifier).state = _service.redoCount;
   }
 
   /// Set callback for applying WDB changes during undo/redo.
@@ -178,5 +164,5 @@ class UndoRedoState {
 final undoRedoNotifierProvider =
     StateNotifierProvider<UndoRedoNotifier, UndoRedoState>((ref) {
   final service = ref.read(undoRedoServiceProvider);
-  return UndoRedoNotifier(service, ref);
+  return UndoRedoNotifier(service);
 });

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:fabula_nova_sdk/bridge_generated/modules/vfx/structs.dart'
+    as vfx_sdk;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -195,8 +197,8 @@ class _VfxScreenState extends ConsumerState<VfxScreen>
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
+        color: Colors.red.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
@@ -248,7 +250,7 @@ class _VfxScreenState extends ConsumerState<VfxScreen>
     );
   }
 
-  Widget _buildContent(data) {
+  Widget _buildContent(vfx_sdk.VfxData data) {
     return Row(
       children: [
         // Left: Tabs + Item List

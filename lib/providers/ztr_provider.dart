@@ -4,7 +4,8 @@ import 'package:oracle_drive/models/ztr_model.dart';
 import 'package:oracle_drive/providers/journal_provider.dart';
 import 'package:oracle_drive/providers/undo_redo_provider.dart';
 import 'package:oracle_drive/src/services/app_database.dart';
-import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/formats/ztr_service.dart';
+import 'package:oracle_drive/src/isar/common/models.dart';
 import 'package:fabula_nova_sdk/bridge_generated/modules/ztr/structs.dart'
     as ztr_sdk;
 import 'package:flutter_riverpod/legacy.dart';
@@ -26,6 +27,12 @@ final ztrFilterProvider = StateProvider.family<String, AppGameCode>(
 );
 
 final ztrIsLoadingProvider = StateProvider.family<bool, AppGameCode>(
+  (ref, game) => false,
+);
+
+/// Tracks whether the initial database check has been performed for each game.
+/// Starts as false, set to true after first database check completes.
+final ztrInitializedProvider = StateProvider.family<bool, AppGameCode>(
   (ref, game) => false,
 );
 
@@ -124,9 +131,25 @@ class ZtrNotifier {
 
     try {
       await AppDatabase.ensureInitialized();
-      _logger.info("Extracting ZTR: $filePath for game ${_gameCode.displayName}");
-      await NativeService.instance.extractZtrData(filePath, _gameCode);
-      _logger.info("ZTR extracted and loaded into database.");
+      _logger.info("Parsing ZTR: $filePath for game ${_gameCode.displayName}");
+
+      // Parse the ZTR file using the service
+      final ztrData = await ZtrService.instance.parse(filePath, _gameCode);
+      _logger.info("ZTR parsed: ${ztrData.entries.length} entries");
+
+      // Convert to Strings with source file tracking and insert into database
+      final repo = AppDatabase.instance.getRepositoryForGame(_gameCode);
+      final stringsToInsert = ztrData.entries
+          .map((e) => Strings(
+            strResourceId: e.id,
+            value: e.text,
+            sourceFile: filePath,
+          ))
+          .toList();
+
+      repo.insertStringsWithSource(stringsToInsert);
+      _logger.info("Inserted ${stringsToInsert.length} strings into database.");
+
       await fetchStrings();
     } catch (e, stack) {
       _logger.severe("Error loading ZTR: $e\n$stack");
@@ -146,8 +169,20 @@ class ZtrNotifier {
     try {
       await AppDatabase.ensureInitialized();
       _logger.info("Dumping ZTR data from DB to $outputPath for game ${_gameCode.displayName}");
-      await NativeService.instance.dumpZtrFileFromDb(_gameCode, outputPath);
-      _logger.info("ZTR data dumped successfully.");
+
+      // Read all strings from database
+      final Map<String, String> strings = {};
+      final stream = AppDatabase.instance
+          .getRepositoryForGame(_gameCode)
+          .getStrings();
+      await for (final chunk in stream) {
+        strings.addAll(chunk);
+      }
+
+      // Pack to ZTR file using the service
+      final entries = strings.entries.map((e) => (e.key, e.value)).toList();
+      await ZtrService.instance.packToFile(entries, outputPath, _gameCode);
+      _logger.info("ZTR data dumped successfully (${entries.length} entries).");
     } catch (e, stack) {
       _logger.severe("Error dumping ZTR: $e\n$stack");
       rethrow;
@@ -166,8 +201,19 @@ class ZtrNotifier {
     try {
       await AppDatabase.ensureInitialized();
       _logger.info("Dumping ZTR data from DB to $outputPath as text for game ${_gameCode.displayName}");
-      await NativeService.instance.dumpTxtFileFromDb(_gameCode, outputPath);
-      _logger.info("ZTR data dumped to text successfully.");
+
+      // Read all strings from database
+      final Map<String, String> strings = {};
+      final stream = AppDatabase.instance
+          .getRepositoryForGame(_gameCode)
+          .getStrings();
+      await for (final chunk in stream) {
+        strings.addAll(chunk);
+      }
+
+      // Export to text file using the service
+      await ZtrService.instance.exportMapToTextFile(strings, outputPath);
+      _logger.info("ZTR data dumped to text successfully (${strings.length} entries).");
     } catch (e, stack) {
       _logger.severe("Error dumping ZTR to text: $e\n$stack");
       rethrow;
@@ -187,9 +233,9 @@ class ZtrNotifier {
     _ref.read(ztrIsLoadingProvider(_gameCode).notifier).state = true;
 
     try {
-      final entries = filteredEntries.map((e) => (e.id, e.text)).toList();
-      _logger.info("Dumping ${entries.length} filtered ZTR entries to $outputPath as text");
-      await NativeService.instance.dumpFilteredTxtFile(entries, outputPath);
+      final strings = {for (final e in filteredEntries) e.id: e.text};
+      _logger.info("Dumping ${strings.length} filtered ZTR entries to $outputPath as text");
+      await ZtrService.instance.exportMapToTextFile(strings, outputPath);
       _logger.info("Filtered ZTR data dumped to text successfully.");
     } catch (e, stack) {
       _logger.severe("Error dumping filtered ZTR to text: $e\n$stack");
@@ -212,7 +258,7 @@ class ZtrNotifier {
     try {
       final entries = filteredEntries.map((e) => (e.id, e.text)).toList();
       _logger.info("Dumping ${entries.length} filtered ZTR entries to $outputPath");
-      await NativeService.instance.dumpFilteredZtrFile(entries, outputPath, _gameCode);
+      await ZtrService.instance.packToFile(entries, outputPath, _gameCode);
       _logger.info("Filtered ZTR data dumped successfully.");
     } catch (e, stack) {
       _logger.severe("Error dumping filtered ZTR: $e\n$stack");
@@ -380,19 +426,57 @@ class ZtrNotifier {
         "${filePattern != null ? ' (filter: $filePattern)' : ''}",
       );
 
-      // Stream progress updates from Rust
-      final progressStream = NativeService.instance.extractZtrDirectory(
+      // Stream progress updates for UI feedback
+      final progressStream = ZtrService.instance.parseDirectoryWithProgress(
         dirPath,
         _gameCode,
-        filePattern: filePattern,
       );
 
       await for (final progress in progressStream) {
         _ref.read(ztrDirectoryProgressProvider(_gameCode).notifier).state =
             progress;
+
+        if (progress.stage == "complete") {
+          _logger.info(
+            "ZTR directory scan complete: ${progress.successCount} files, "
+            "${progress.errorCount} errors",
+          );
+        }
       }
 
-      _logger.info("ZTR directory loaded and entries inserted into database.");
+      // Get all entries using the simple (non-streaming) version
+      final result = await ZtrService.instance.parseDirectory(dirPath, _gameCode);
+
+      if (result.entries.isNotEmpty) {
+        final repo = AppDatabase.instance.getRepositoryForGame(_gameCode);
+
+        // Filter entries by file pattern if specified
+        var entriesToInsert = result.entries;
+        if (filePattern != null && filePattern.isNotEmpty) {
+          entriesToInsert = result.entries
+              .where((e) => e.sourceFile.endsWith(filePattern))
+              .toList();
+          _logger.info(
+            "Filtered entries: ${entriesToInsert.length} of ${result.entries.length} "
+            "(pattern: $filePattern)",
+          );
+        }
+
+        if (entriesToInsert.isNotEmpty) {
+          // Convert to Strings with source file tracking and insert
+          final stringsToInsert = entriesToInsert
+              .map((e) => Strings(
+                strResourceId: e.id,
+                value: e.text,
+                sourceFile: e.sourceFile,
+              ))
+              .toList();
+
+          repo.insertStringsWithSource(stringsToInsert);
+          _logger.info("Inserted ${stringsToInsert.length} strings into database.");
+        }
+      }
+
       await fetchStrings();
     } catch (e, stack) {
       _logger.severe("Error loading ZTR directory: $e\n$stack");
@@ -409,12 +493,12 @@ class ZtrNotifier {
 
     try {
       await AppDatabase.ensureInitialized();
-      await NativeService.instance.dumpZtrFileFromDbBySource(
-        _gameCode,
-        sourceFile,
-        outputPath,
-      );
-      _logger.info("Dumped ZTR from source $sourceFile to $outputPath");
+      final repo = AppDatabase.instance.getRepositoryForGame(_gameCode);
+      final strings = repo.getStringsBySourceFile(sourceFile);
+
+      final entries = strings.entries.map((e) => (e.key, e.value)).toList();
+      await ZtrService.instance.packToFile(entries, outputPath, _gameCode);
+      _logger.info("Dumped ${entries.length} ZTR entries from source $sourceFile to $outputPath");
     } catch (e, stack) {
       _logger.severe("Error dumping ZTR by source: $e\n$stack");
       rethrow;
@@ -425,7 +509,8 @@ class ZtrNotifier {
 
   /// Refreshes the list of available source files.
   void refreshSourceFiles() {
-    final files = NativeService.instance.getZtrSourceFiles(_gameCode);
+    final repo = AppDatabase.instance.getRepositoryForGame(_gameCode);
+    final files = repo.getDistinctSourceFiles();
     _ref.read(ztrSourceFilesProvider(_gameCode).notifier).state = files;
   }
 }

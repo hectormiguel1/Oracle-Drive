@@ -5,7 +5,9 @@ import 'package:oracle_drive/models/wdb_model.dart';
 import 'package:oracle_drive/providers/journal_provider.dart';
 import 'package:oracle_drive/providers/undo_redo_provider.dart';
 import 'package:oracle_drive/src/services/app_database.dart';
-import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/formats/wdb_service.dart';
+import 'package:oracle_drive/src/isar/common/lookup_config.dart';
+import 'package:oracle_drive/src/isar/common/models.dart';
 import 'package:oracle_drive/src/utils/ztr_text_renderer.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,14 +67,43 @@ class WdbNotifier {
 
     try {
       _logger.info("Parsing WDB: $filePath with game code ${_gameCode.displayName}");
-      final data = await NativeService.instance.parseWdb(filePath, _gameCode);
+      final data = await WdbService.instance.parse(filePath, _gameCode);
       _ref.read(wdbDataProvider(_gameCode).notifier).state = data;
       _logger.info("Parsed ${data.rows.length} records.");
+
+      // Extract and upsert lookups if this sheet has a LookupConfig
+      await _extractAndUpsertLookups(data);
     } catch (e) {
       _logger.severe("Error loading WDB: $e");
       rethrow;
     } finally {
       _ref.read(wdbIsProcessingProvider(_gameCode).notifier).state = false;
+    }
+  }
+
+  /// Extract lookups from WDB data and upsert to database.
+  Future<void> _extractAndUpsertLookups(WdbData data) async {
+    final sheetName = data.sheetName;
+    final lookupConfig = LookupConfigRegistry.instance.resolve(_gameCode, sheetName);
+
+    if (lookupConfig == null) {
+      return; // No lookup config for this sheet
+    }
+
+    final lookups = <EntityLookup>[];
+    for (final row in data.rows) {
+      if (!row.containsKey('record')) continue;
+      final record = row['record'] as String;
+      final lookup = lookupConfig.extractFromRow(record, row);
+      if (lookup != null) {
+        lookups.add(lookup);
+      }
+    }
+
+    if (lookups.isNotEmpty) {
+      final repo = AppDatabase.instance.getRepositoryForGame(_gameCode);
+      repo.upsertLookups(lookups);
+      _logger.info("Upserted ${lookups.length} lookups for sheet $sheetName");
     }
   }
 
@@ -82,7 +113,7 @@ class WdbNotifier {
 
     _ref.read(wdbIsProcessingProvider(_gameCode).notifier).state = true;
     try {
-      await NativeService.instance.saveWdb(outputPath, _gameCode, wdbData);
+      await WdbService.instance.save(outputPath, wdbData);
       _logger.info("Saved WDB to $outputPath");
     } catch (e) {
       _logger.severe("Error saving WDB: $e");
@@ -98,7 +129,7 @@ class WdbNotifier {
 
     _ref.read(wdbIsProcessingProvider(_gameCode).notifier).state = true;
     try {
-      await NativeService.instance.saveWdbJson(outputPath, wdbData);
+      await WdbService.instance.saveAsJson(outputPath, wdbData);
       _logger.info("Saved JSON to $outputPath");
     } catch (e) {
       _logger.severe("Error saving JSON: $e");

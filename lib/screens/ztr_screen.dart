@@ -31,16 +31,29 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    // Check database count synchronously first, then fetch entries
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final gameCode = ref.read(selectedGameProvider);
-      // Sync check: update count from database immediately to avoid showing "Load" buttons
+    // Initial load will be triggered by build() checking ztrInitializedProvider
+  }
+
+  /// Initialize ZTR data for the given game code if not already initialized.
+  Future<void> _initializeIfNeeded(dynamic gameCode) async {
+    final isInitialized = ref.read(ztrInitializedProvider(gameCode));
+    if (isInitialized) return;
+
+    // Mark as loading during initialization
+    ref.read(ztrIsLoadingProvider(gameCode).notifier).state = true;
+
+    try {
       await AppDatabase.ensureInitialized();
       final dbCount = AppDatabase.instance.getRepositoryForGame(gameCode).getStringCount();
       ref.read(ztrStringCountProvider(gameCode).notifier).state = dbCount;
-      // Then fetch the actual entries for display
-      ref.read(ztrNotifierProvider(gameCode)).fetchStrings();
-    });
+      // Only fetch entries if there are strings in the database
+      if (dbCount > 0) {
+        await ref.read(ztrNotifierProvider(gameCode)).fetchStrings();
+      }
+    } finally {
+      ref.read(ztrInitializedProvider(gameCode).notifier).state = true;
+      ref.read(ztrIsLoadingProvider(gameCode).notifier).state = false;
+    }
   }
 
   @override
@@ -433,6 +446,7 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
   @override
   Widget build(BuildContext context) {
     final gameCode = ref.watch(selectedGameProvider);
+    final isInitialized = ref.watch(ztrInitializedProvider(gameCode));
     final isLoading = ref.watch(ztrIsLoadingProvider(gameCode));
     final stringCount = ref.watch(ztrStringCountProvider(gameCode));
     final filteredEntries = ref.watch(filteredZtrEntriesProvider(gameCode));
@@ -440,9 +454,20 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
     final sourceFiles = ref.watch(ztrSourceFilesProvider(gameCode));
     final sourceFileFilter = ref.watch(ztrSourceFileFilterProvider(gameCode));
 
+    // Trigger initialization if needed (runs once per game code)
+    if (!isInitialized && !isLoading) {
+      // Use addPostFrameCallback to avoid calling setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _initializeIfNeeded(gameCode);
+      });
+    }
+
+    // Show loading spinner during initialization or ongoing operations
+    final showLoading = !isInitialized || isLoading;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: isLoading
+      body: showLoading
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

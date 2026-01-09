@@ -37,20 +37,9 @@ bytemuck = { version = "1.21", features = ["derive"] }
 lewton = { version = "0.10", optional = true }
 ogg = { version = "0.9", optional = true }
 
-# Speech translation with SeamlessM4T via Candle (git version for SeamlessM4T support)
-candle-core = { git = "https://github.com/huggingface/candle.git", optional = true }
-candle-nn = { git = "https://github.com/huggingface/candle.git", optional = true }
-candle-transformers = { git = "https://github.com/huggingface/candle.git", optional = true }
-hf-hub = { version = "0.3", optional = true }
-tokenizers = { version = "0.19", optional = true }
-hound = { version = "3.5", optional = true }  # WAV file handling
-
 [dev-dependencies]
 glob = "0.3"
 
 [features]
 default = ["vorbis"]
 vorbis = ["lewton", "ogg"]
-translation = ["candle-core", "candle-nn", "candle-transformers", "hf-hub", "tokenizers", "hound"]
-cuda = ["candle-core/cuda", "candle-nn/cuda"]
-rocm = ["cuda"]  # ROCm maps to CUDA interface

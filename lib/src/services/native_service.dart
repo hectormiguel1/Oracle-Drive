@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:oracle_drive/src/services/navigation_service.dart';
@@ -823,89 +822,6 @@ class NativeService {
   }
 
   // ============================================================
-  // VFX Player API
-  // ============================================================
-
-  /// Initialize the VFX player with render dimensions
-  Future<void> vfxPlayerInit(int width, int height) async {
-    try {
-      await sdk.vfxPlayerInit(width: width, height: height);
-    } catch (e) {
-      _showErrorDialog("VFX Player Init Error", e.toString());
-      rethrow;
-    }
-  }
-
-  /// Load a test quad with specified color for debugging
-  Future<void> vfxPlayerLoadTest(double r, double g, double b, double a) async {
-    try {
-      await sdk.vfxPlayerLoadTest(r: r, g: g, b: b, a: a);
-    } catch (e) {
-      _showErrorDialog("VFX Player Load Test Error", e.toString());
-      rethrow;
-    }
-  }
-
-  /// Load a VFX model for rendering
-  Future<void> vfxPlayerLoadModel(String xfvPath, String modelName, {String textureName = ''}) async {
-    try {
-      await sdk.vfxPlayerLoadModel(xfvPath: xfvPath, modelName: modelName, textureName: textureName);
-    } catch (e) {
-      _showErrorDialog("VFX Player Load Model Error", e.toString());
-      rethrow;
-    }
-  }
-
-  /// Render a single frame and return RGBA pixel data
-  Future<Uint8List> vfxPlayerRenderFrame(double deltaTime) async {
-    try {
-      final result = await sdk.vfxPlayerRenderFrame(deltaTime: deltaTime);
-      return Uint8List.fromList(result);
-    } catch (e) {
-      _showErrorDialog("VFX Player Render Error", e.toString());
-      rethrow;
-    }
-  }
-
-  /// Get the current animation time
-  Future<double> vfxPlayerGetTime() async {
-    try {
-      return await sdk.vfxPlayerGetTime();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Reset the animation to the beginning
-  Future<void> vfxPlayerReset() async {
-    try {
-      await sdk.vfxPlayerReset();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Dispose of the VFX player and release GPU resources
-  void vfxPlayerDispose() {
-    sdk.vfxPlayerDispose();
-  }
-
-  /// Check if the VFX player is initialized
-  Future<bool> vfxPlayerIsInitialized() async {
-    return await sdk.vfxPlayerIsInitialized();
-  }
-
-  /// Get the render dimensions
-  Future<(int, int)> vfxPlayerGetDimensions() async {
-    try {
-      final result = await sdk.vfxPlayerGetDimensions();
-      return (result.$1.toInt(), result.$2.toInt());
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // ============================================================
   // DDS to PNG Conversion
   // ============================================================
 
@@ -1059,28 +975,6 @@ class NativeService {
       await sdk.wavToScd(wavPath: wavPath, scdPath: scdPath);
     } catch (e) {
       _showErrorDialog("WAV to SCD Error", e.toString());
-      rethrow;
-    }
-  }
-
-  /// Translate WAV audio to target language using SeamlessM4T
-  /// Returns path to the translated WAV file
-  Future<String> translateWav(String inputPath, String targetLang) async {
-    try {
-      // Output path: input_translated_eng.wav
-      final dir = File(inputPath).parent.path;
-      final baseName = File(inputPath).uri.pathSegments.last;
-      final nameWithoutExt = baseName.replaceAll(RegExp(r'\.wav$', caseSensitive: false), '');
-      final outputPath = '$dir/${nameWithoutExt}_translated_$targetLang.wav';
-
-      await sdk.translateWav(
-        inputPath: inputPath,
-        outputPath: outputPath,
-        targetLang: targetLang,
-      );
-      return outputPath;
-    } catch (e) {
-      _showErrorDialog("Translation Error", e.toString());
       rethrow;
     }
   }

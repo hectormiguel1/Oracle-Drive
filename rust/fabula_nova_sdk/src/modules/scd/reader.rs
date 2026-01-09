@@ -2,7 +2,7 @@
 
 use std::io::{Cursor, Read, Seek, SeekFrom};
 use byteorder::{LittleEndian, BigEndian, ReadBytesExt};
-use anyhow::{Result, bail, Context};
+use anyhow::{Result, bail};
 
 use super::structs::*;
 
@@ -125,7 +125,7 @@ fn read_sub_header(cursor: &mut Cursor<&[u8]>, big_endian: bool) -> Result<ScdSu
 }
 
 fn read_stream_info(cursor: &mut Cursor<&[u8]>, big_endian: bool, index: u32) -> Result<Option<ScdStreamInfo>> {
-    let stream_header_start = cursor.position();
+    let _stream_header_start = cursor.position();
 
     let (data_size, channels, sample_rate, codec_raw, loop_start, loop_end, extra_data_size, aux_chunk_count) = if big_endian {
         (

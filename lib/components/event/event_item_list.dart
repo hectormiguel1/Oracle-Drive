@@ -42,6 +42,7 @@ class EventItemList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      cacheExtent: 500.0,
       itemCount: data.wpdRecords.length,
       itemBuilder: (context, index) {
         final record = data.wpdRecords[index];
@@ -70,6 +71,7 @@ class EventItemList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      cacheExtent: 500.0,
       itemCount: resources.length,
       itemBuilder: (context, index) {
         final resource = resources[index];
@@ -101,6 +103,7 @@ class EventItemList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      cacheExtent: 500.0,
       itemCount: totalCount,
       itemBuilder: (context, index) {
         final isSelected = selectedIndex == index;
@@ -146,6 +149,7 @@ class EventItemList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      cacheExtent: 500.0,
       itemCount: actors.length,
       itemBuilder: (context, index) {
         final actor = actors[index];
@@ -173,6 +177,7 @@ class EventItemList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      cacheExtent: 500.0,
       itemCount: blocks.length,
       itemBuilder: (context, index) {
         final block = blocks[index];
@@ -203,6 +208,7 @@ class EventItemList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      cacheExtent: 500.0,
       itemCount: resources.length,
       itemBuilder: (context, index) {
         final resource = resources[index];
@@ -241,6 +247,7 @@ class EventItemList extends ConsumerWidget {
     }
 
     return ListView.builder(
+      cacheExtent: 500.0,
       itemCount: dialogues.length,
       itemBuilder: (context, index) {
         final dialogue = dialogues[index];
@@ -416,7 +423,7 @@ class _ListTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.amber.withOpacity(0.15) : null,
+          color: isSelected ? Colors.amber.withValues(alpha: 0.15) : null,
           border: Border(
             left: BorderSide(
               color: isSelected ? Colors.amber : Colors.transparent,

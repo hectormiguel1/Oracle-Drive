@@ -1,7 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:oracle_drive/components/widgets/crystal_container.dart';
 import 'package:oracle_drive/components/widgets/style.dart';
 import 'package:oracle_drive/theme/crystal_theme.dart';
-import 'package:flutter/material.dart';
 
 class CrystalButton extends StatefulWidget {
   final String label;
@@ -51,45 +51,47 @@ class _CrystalButtonState extends State<CrystalButton> {
           scale: _isHovered ? 1.05 : 1.0,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutBack,
-          child: TweenAnimationBuilder<Color?>(
-            tween: ColorTween(begin: targetBgColor, end: targetBgColor),
-            duration: const Duration(milliseconds: 200),
-            builder: (context, bgColor, _) {
-              return TweenAnimationBuilder<Color?>(
-                tween: ColorTween(
-                  begin: targetContentColor,
-                  end: targetContentColor,
-                ),
-                duration: const Duration(milliseconds: 200),
-                builder: (context, contentColor, _) {
-                  return CrystalContainer(
-                    skew: 20,
-                    color: bgColor ?? targetBgColor,
-                    borderColor: targetBorderColor,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (widget.icon != null) ...[
-                          Icon(widget.icon, color: contentColor, size: 16),
-                          const SizedBox(width: 4),
-                        ] else if (widget.isPrimary) ...[
-                          Icon(Icons.play_arrow, color: contentColor, size: 16),
-                          const SizedBox(width: 4),
-                        ],
-                        Text(
-                          widget.label,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: contentColor,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                      ],
+          child: AnimatedCrystalContainer(
+            skew: 20,
+            color: targetBgColor,
+            borderColor: targetBorderColor,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.icon != null) ...[
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 150),
+                    child: Icon(
+                      widget.icon,
+                      key: ValueKey(targetContentColor),
+                      color: targetContentColor,
+                      size: 16,
                     ),
-                  );
-                },
-              );
-            },
+                  ),
+                  const SizedBox(width: 4),
+                ] else if (widget.isPrimary) ...[
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 150),
+                    child: Icon(
+                      Icons.play_arrow,
+                      key: ValueKey(targetContentColor),
+                      color: targetContentColor,
+                      size: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                ],
+                AnimatedDefaultTextStyle(
+                  duration: const Duration(milliseconds: 200),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: targetContentColor,
+                    letterSpacing: 1.2,
+                  ),
+                  child: Text(widget.label),
+                ),
+              ],
+            ),
           ),
         ),
       ),

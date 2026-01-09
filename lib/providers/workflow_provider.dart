@@ -12,7 +12,7 @@ import '../src/services/app_database.dart';
 import '../src/workflow/execution/workflow_engine.dart';
 
 import '../models/wdb_model.dart';
-import '../src/services/native_service.dart';
+import '../src/services/formats/wdb_service.dart';
 
 final _logger = Logger('WorkflowProvider');
 
@@ -140,6 +140,56 @@ final workflowEditorProvider =
     StateNotifierProvider<WorkflowEditorNotifier, WorkflowEditorState>((ref) {
       return WorkflowEditorNotifier(ref);
     });
+
+// ============================================================
+// Derived Providers (for efficient selective rebuilds)
+// ============================================================
+// Use these instead of workflowEditorProvider when only specific fields are needed.
+
+/// Current workflow being edited.
+final editorWorkflowProvider = Provider<Workflow?>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.workflow));
+});
+
+/// Currently selected node ID.
+final editorSelectedNodeIdProvider = Provider<String?>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.selectedNodeId));
+});
+
+/// Currently selected node.
+final editorSelectedNodeProvider = Provider<WorkflowNode?>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.selectedNode));
+});
+
+/// Whether a connection is being drawn.
+final editorIsConnectingProvider = Provider<bool>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.isConnecting));
+});
+
+/// Canvas offset for pan/zoom.
+final editorCanvasOffsetProvider = Provider<Offset>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.canvasOffset));
+});
+
+/// Canvas scale for zoom.
+final editorCanvasScaleProvider = Provider<double>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.canvasScale));
+});
+
+/// Whether workflow has unsaved changes.
+final editorIsDirtyProvider = Provider<bool>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.isDirty));
+});
+
+/// Whether undo is available.
+final editorCanUndoProvider = Provider<bool>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.canUndo));
+});
+
+/// Whether redo is available.
+final editorCanRedoProvider = Provider<bool>((ref) {
+  return ref.watch(workflowEditorProvider.select((s) => s.canRedo));
+});
 
 class WorkflowEditorNotifier extends StateNotifier<WorkflowEditorState> {
   final Ref _ref;
@@ -1222,10 +1272,14 @@ class WdbMetadataCache {
 final _wdbMetadataCache = WdbMetadataCache();
 
 /// Provider for fetching WDB metadata (columns) for workflow editing.
+/// Uses keepAlive to prevent re-fetching when downstream nodes access columns.
 final wdbMetadataProvider = FutureProvider.family<List<WdbColumn>?, WdbMetadataRequest>((
   ref,
   request,
 ) async {
+  // Keep this provider alive to prevent re-fetching when nodes access column list
+  ref.keepAlive();
+
   if (request.filePath == null || request.filePath!.isEmpty) return null;
 
   // Resolve the file path
@@ -1236,14 +1290,17 @@ final wdbMetadataProvider = FutureProvider.family<List<WdbColumn>?, WdbMetadataR
     resolvedPath = '${request.workspaceDir}/$resolvedPath';
   }
 
-  // Check cache
+  // Check cache first - this provides immediate response if already cached
   final cacheKey = '${request.gameCode.index}:$resolvedPath';
   final cached = _wdbMetadataCache.get(cacheKey);
-  if (cached != null) return cached;
+  if (cached != null) {
+    _logger.fine('WDB metadata cache hit: $resolvedPath');
+    return cached;
+  }
 
   try {
     _logger.info('Fetching WDB metadata: $resolvedPath');
-    final wdbData = await NativeService.instance.parseWdb(
+    final wdbData = await WdbService.instance.parse(
       resolvedPath,
       request.gameCode,
     );

@@ -39,12 +39,18 @@ class ConnectionPainter extends CustomPainter {
   /// Key format: "nodeId:portId:isInput" (e.g., "node123:output:false")
   final Map<String, Offset> portPositions;
 
+  /// Pre-built node map for O(1) lookups instead of O(n) list searches.
+  late final Map<String, WorkflowNode> _nodeMap;
+
   ConnectionPainter({
     required this.connections,
     required this.nodes,
     this.highlightedConnectionId,
     this.portPositions = const {},
-  });
+  }) {
+    // Build node map once at construction for O(1) lookups
+    _nodeMap = {for (final node in nodes) node.id: node};
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -54,8 +60,9 @@ class ConnectionPainter extends CustomPainter {
   }
 
   void _paintConnection(Canvas canvas, WorkflowConnection connection) {
-    final sourceNode = _findNode(connection.sourceNodeId);
-    final targetNode = _findNode(connection.targetNodeId);
+    // O(1) lookups using node map
+    final sourceNode = _nodeMap[connection.sourceNodeId];
+    final targetNode = _nodeMap[connection.targetNodeId];
 
     if (sourceNode == null || targetNode == null) return;
 
@@ -169,14 +176,6 @@ class ConnectionPainter extends CustomPainter {
     arrowPath.close();
 
     canvas.drawPath(arrowPath, paint);
-  }
-
-  WorkflowNode? _findNode(String id) {
-    try {
-      return nodes.firstWhere((n) => n.id == id);
-    } catch (e) {
-      return null;
-    }
   }
 
   Offset _getOutputPortPosition(WorkflowNode node, String portId) {

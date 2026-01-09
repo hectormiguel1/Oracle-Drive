@@ -249,7 +249,7 @@ fn decode_ms_adpcm_block(
 
 /// Decode Ogg Vorbis audio.
 /// Note: FF13-2 and LR have XOR-encrypted Vorbis headers.
-fn decode_ogg_vorbis(data: &[u8], info: &ScdStreamInfo, extra_data: &[u8]) -> Result<DecodedAudio> {
+fn decode_ogg_vorbis(data: &[u8], _info: &ScdStreamInfo, extra_data: &[u8]) -> Result<DecodedAudio> {
     // Check for OggS magic
     let is_raw_ogg = data.len() >= 4 && &data[0..4] == b"OggS";
 

@@ -13,6 +13,10 @@ import 'package:oracle_drive/providers/wdb_provider.dart';
 import 'package:oracle_drive/src/services/batch_decompilation_service.dart';
 import 'package:oracle_drive/src/services/java_decompiler_service.dart';
 import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/formats/wpd_service.dart';
+import 'package:oracle_drive/src/services/formats/img_service.dart';
+import 'package:oracle_drive/src/services/formats/wct_service.dart';
+import 'package:oracle_drive/src/services/formats/wdb_service.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:fabula_nova_sdk/bridge_generated/modules/wct.dart' as wct_sdk;
@@ -249,7 +253,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
         wpdFile.parent.path,
         p.basenameWithoutExtension(wpdFile.path),
       );
-      await NativeService.instance.unpackWpd(wpdFile.path, outputDir);
+      await WpdService.instance.unpack(wpdFile.path, outputDir);
       _logger.info("Unpack finished: $outputDir");
     } catch (e) {
       _logger.severe("Error unpacking WPD: $e");
@@ -261,7 +265,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
     try {
       _logger.info("Repacking ${p.basename(dir.path)}...");
       String outputFile = "${dir.path}.wpd";
-      await NativeService.instance.repackWpd(dir.path, outputFile);
+      await WpdService.instance.repack(dir.path, outputFile);
       _logger.info("Repack finished: $outputFile");
     } catch (e) {
       _logger.severe("Error repacking WPD: $e");
@@ -276,7 +280,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
         binFile.parent.path,
         p.basenameWithoutExtension(binFile.path),
       );
-      await NativeService.instance.unpackWpd(binFile.path, outputDir);
+      await WpdService.instance.unpack(binFile.path, outputDir);
       _logger.info("Bin Unpack complete.");
     } catch (e) {
       _logger.severe("Error unpacking bin: $e");
@@ -305,7 +309,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
       );
 
       _logger.info("Extracting IMG: $basename");
-      await NativeService.instance.unpackImg(
+      await ImgService.instance.unpack(
         headerFile.path,
         imgbFile.path,
         outDds,
@@ -329,7 +333,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
       }
 
       _logger.info("Repacking IMG from $ddsPath");
-      await NativeService.instance.repackImg(
+      await ImgService.instance.repack(
         headerFile.path,
         imgbFile.path,
         ddsPath,
@@ -370,7 +374,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
 
     try {
       _logger.info("WCT Processing ${file.path} ($action)...");
-      await NativeService.instance.processWct(file.path, target, action);
+      await WctService.instance.process(target, action, file.path);
       _logger.info("WCT Operation complete.");
     } catch (e) {
       _logger.severe("Error WCT process: $e");
@@ -415,7 +419,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
       _updateProgress(i + 1, '$actionName: ${i + 1}/${files.length} - ${p.basename(file.path)}');
 
       try {
-        await NativeService.instance.processWct(file.path, target, action);
+        await WctService.instance.process(target, action, file.path);
         successCount++;
       } catch (e) {
         _logger.severe("Error processing ${file.path}: $e");
@@ -527,7 +531,7 @@ class WpdNotifier extends StateNotifier<WpdState> {
       _ref.read(wdbFilterProvider(_gameCode).notifier).state = '';
 
       // Parse the WDB
-      final data = await NativeService.instance.parseWdb(wdbFile.path, _gameCode);
+      final data = await WdbService.instance.parse(wdbFile.path, _gameCode);
       _ref.read(wdbDataProvider(_gameCode).notifier).state = data;
 
       _logger.info("Parsed ${data.rows.length} records.");

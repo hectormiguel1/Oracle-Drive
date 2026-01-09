@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -447743656;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1916094208;
 
 // Section: executor
 
@@ -1425,47 +1425,6 @@ fn wire__crate__api__test_log_impl(
         },
     )
 }
-fn wire__crate__api__translate_wav_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "translate_wav",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api__input_path = <String>::sse_decode(&mut deserializer);
-            let api__output_path = <String>::sse_decode(&mut deserializer);
-            let api__target_lang = <String>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok = crate::api::translate_wav(
-                            api__input_path,
-                            api__output_path,
-                            api__target_lang,
-                        )?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
 fn wire__crate__api__vfx_export_json_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -1708,325 +1667,6 @@ fn wire__crate__api__vfx_parse_impl(
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || {
                         let output_ok = crate::api::vfx_parse(api_in_file)?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_dispose_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_dispose",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let output_ok = Result::<_, ()>::Ok({
-                        crate::api::vfx_player_dispose();
-                    })?;
-                    Ok(output_ok)
-                })())
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_get_dimensions_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_get_dimensions",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok = crate::api::vfx_player_get_dimensions()?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_get_time_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_get_time",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok = crate::api::vfx_player_get_time()?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_init_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_init",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_width = <u32>::sse_decode(&mut deserializer);
-            let api_height = <u32>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok = crate::api::vfx_player_init(api_width, api_height)?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_is_initialized_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_is_initialized",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let output_ok = Result::<_, ()>::Ok(crate::api::vfx_player_is_initialized())?;
-                    Ok(output_ok)
-                })())
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_load_model_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_load_model",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_xfv_path = <String>::sse_decode(&mut deserializer);
-            let api_model_name = <String>::sse_decode(&mut deserializer);
-            let api_texture_name = <String>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok = crate::api::vfx_player_load_model(
-                            api_xfv_path,
-                            api_model_name,
-                            api_texture_name,
-                        )?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_load_test_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_load_test",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_r = <f32>::sse_decode(&mut deserializer);
-            let api_g = <f32>::sse_decode(&mut deserializer);
-            let api_b = <f32>::sse_decode(&mut deserializer);
-            let api_a = <f32>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok =
-                            crate::api::vfx_player_load_test(api_r, api_g, api_b, api_a)?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_render_frame_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_render_frame",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_delta_time = <f32>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok = crate::api::vfx_player_render_frame(api_delta_time)?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
-        },
-    )
-}
-fn wire__crate__api__vfx_player_reset_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "vfx_player_reset",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok = crate::api::vfx_player_reset()?;
                         Ok(output_ok)
                     })(),
                 )
@@ -5047,50 +4687,40 @@ fn pde_ffi_dispatcher_primary_impl(
         37 => wire__crate__api__scd_to_wav_impl(port, ptr, rust_vec_len, data_len),
         38 => wire__crate__api__set_log_level_impl(port, ptr, rust_vec_len, data_len),
         39 => wire__crate__api__test_log_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__translate_wav_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__vfx_export_json_impl(port, ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__vfx_extract_texture_as_png_impl(port, ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__vfx_extract_textures_impl(port, ptr, rust_vec_len, data_len),
-        44 => wire__crate__api__vfx_get_summary_impl(port, ptr, rust_vec_len, data_len),
-        45 => wire__crate__api__vfx_list_effects_impl(port, ptr, rust_vec_len, data_len),
-        46 => wire__crate__api__vfx_list_textures_impl(port, ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__vfx_parse_impl(port, ptr, rust_vec_len, data_len),
-        48 => wire__crate__api__vfx_player_dispose_impl(port, ptr, rust_vec_len, data_len),
-        49 => wire__crate__api__vfx_player_get_dimensions_impl(port, ptr, rust_vec_len, data_len),
-        50 => wire__crate__api__vfx_player_get_time_impl(port, ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__vfx_player_init_impl(port, ptr, rust_vec_len, data_len),
-        52 => wire__crate__api__vfx_player_is_initialized_impl(port, ptr, rust_vec_len, data_len),
-        53 => wire__crate__api__vfx_player_load_model_impl(port, ptr, rust_vec_len, data_len),
-        54 => wire__crate__api__vfx_player_load_test_impl(port, ptr, rust_vec_len, data_len),
-        55 => wire__crate__api__vfx_player_render_frame_impl(port, ptr, rust_vec_len, data_len),
-        56 => wire__crate__api__vfx_player_reset_impl(port, ptr, rust_vec_len, data_len),
-        57 => wire__crate__api__wav_to_scd_impl(port, ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
-        59 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
-        60 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
-        61 => {
+        40 => wire__crate__api__vfx_export_json_impl(port, ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__vfx_extract_texture_as_png_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__vfx_extract_textures_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__vfx_get_summary_impl(port, ptr, rust_vec_len, data_len),
+        44 => wire__crate__api__vfx_list_effects_impl(port, ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__vfx_list_textures_impl(port, ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__vfx_parse_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__wav_to_scd_impl(port, ptr, rust_vec_len, data_len),
+        48 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
+        51 => {
             wire__crate__api__wbt_extract_files_by_indices_impl(port, ptr, rust_vec_len, data_len)
         }
-        62 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
-        63 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
-        64 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
-        65 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
-        66 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
-        67 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
-        68 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
-        69 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
-        70 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
-        71 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
-        72 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
-        73 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
-        74 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
-        75 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
-        76 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
-        77 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
-        78 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
-        79 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
-        80 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
-        81 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
+        52 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
+        54 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
+        61 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
+        66 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
+        67 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        71 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

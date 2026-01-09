@@ -69,4 +69,5 @@ pub mod modules;
 pub mod ffi;
 
 /// Public API surface for Flutter Rust Bridge.
+/// Organized into submodules by file format.
 pub mod api;

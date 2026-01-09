@@ -233,9 +233,9 @@ class ExpressionEvaluator {
 
   /// Evaluate a boolean condition.
   /// Supports filter expressions like:
-  /// - ${row.column}.startsWith("value")
-  /// - ${row.column}.contains("value")
-  /// - ${row.column} == "value"
+  /// - String methods: ${row.column}.startsWith("value"), .contains(), .endsWith()
+  /// - String comparison: ${row.column} == "value", ${row.column} != "value"
+  /// - Numeric comparison: ${row.column} > 1, >= 1, < 1, <= 1, == 1, != 1
   /// - Compound: expr1 || expr2, expr1 && expr2
   bool evaluateCondition(dynamic expression) {
     if (expression == null) return false;
@@ -395,6 +395,126 @@ class ExpressionEvaluator {
       if (obj is Map) {
         final value = obj[propName]?.toString() ?? '';
         return value != expected;
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} >= number (must check before >)
+    final gtePattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*>=\s*(-?[\d.]+)');
+    final gteMatch = gtePattern.firstMatch(expr);
+    if (gteMatch != null) {
+      final varName = gteMatch.group(1)!;
+      final propName = gteMatch.group(2)!;
+      final threshold = num.tryParse(gteMatch.group(3)!);
+      if (threshold == null) return false;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName];
+        if (value is num) return value >= threshold;
+        if (value is String) {
+          final numValue = num.tryParse(value);
+          if (numValue != null) return numValue >= threshold;
+        }
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} <= number (must check before <)
+    final ltePattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*<=\s*(-?[\d.]+)');
+    final lteMatch = ltePattern.firstMatch(expr);
+    if (lteMatch != null) {
+      final varName = lteMatch.group(1)!;
+      final propName = lteMatch.group(2)!;
+      final threshold = num.tryParse(lteMatch.group(3)!);
+      if (threshold == null) return false;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName];
+        if (value is num) return value <= threshold;
+        if (value is String) {
+          final numValue = num.tryParse(value);
+          if (numValue != null) return numValue <= threshold;
+        }
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} > number
+    final gtPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*>\s*(-?[\d.]+)');
+    final gtMatch = gtPattern.firstMatch(expr);
+    if (gtMatch != null) {
+      final varName = gtMatch.group(1)!;
+      final propName = gtMatch.group(2)!;
+      final threshold = num.tryParse(gtMatch.group(3)!);
+      if (threshold == null) return false;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName];
+        if (value is num) return value > threshold;
+        if (value is String) {
+          final numValue = num.tryParse(value);
+          if (numValue != null) return numValue > threshold;
+        }
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} < number
+    final ltPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*<\s*(-?[\d.]+)');
+    final ltMatch = ltPattern.firstMatch(expr);
+    if (ltMatch != null) {
+      final varName = ltMatch.group(1)!;
+      final propName = ltMatch.group(2)!;
+      final threshold = num.tryParse(ltMatch.group(3)!);
+      if (threshold == null) return false;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName];
+        if (value is num) return value < threshold;
+        if (value is String) {
+          final numValue = num.tryParse(value);
+          if (numValue != null) return numValue < threshold;
+        }
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} == number (numeric equality)
+    final numEqualsPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*==\s*(-?[\d.]+)');
+    final numEqualsMatch = numEqualsPattern.firstMatch(expr);
+    if (numEqualsMatch != null) {
+      final varName = numEqualsMatch.group(1)!;
+      final propName = numEqualsMatch.group(2)!;
+      final expected = num.tryParse(numEqualsMatch.group(3)!);
+      if (expected == null) return false;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName];
+        if (value is num) return value == expected;
+        if (value is String) {
+          final numValue = num.tryParse(value);
+          if (numValue != null) return numValue == expected;
+        }
+      }
+      return false;
+    }
+
+    // Pattern: ${row.column} != number (numeric inequality)
+    final numNotEqualsPattern = RegExp(r'\$\{(\w+)\.(\w+)\}\s*!=\s*(-?[\d.]+)');
+    final numNotEqualsMatch = numNotEqualsPattern.firstMatch(expr);
+    if (numNotEqualsMatch != null) {
+      final varName = numNotEqualsMatch.group(1)!;
+      final propName = numNotEqualsMatch.group(2)!;
+      final expected = num.tryParse(numNotEqualsMatch.group(3)!);
+      if (expected == null) return false;
+      final obj = context.getVariable(varName);
+      if (obj is Map) {
+        final value = obj[propName];
+        if (value is num) return value != expected;
+        if (value is String) {
+          final numValue = num.tryParse(value);
+          if (numValue != null) return numValue != expected;
+        }
       }
       return false;
     }

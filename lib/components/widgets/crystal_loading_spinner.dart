@@ -117,12 +117,41 @@ class _CrystalSpinnerPainter extends CustomPainter {
   final double strokeWidth;
   final bool showGlow;
 
+  // Cache Paint objects to avoid recreating on every frame
+  late final Paint _bgPaint;
+  late final Paint _arcPaint;
+  late final Paint? _glowPaint;
+  late final Paint _pointPaint;
+
   _CrystalSpinnerPainter({
     required this.progress,
     required this.color,
     required this.strokeWidth,
     required this.showGlow,
-  });
+  }) {
+    _bgPaint = Paint()
+      ..color = color.withValues(alpha: 0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    _arcPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    _glowPaint = showGlow
+        ? (Paint()
+          ..color = color.withValues(alpha: 0.3)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeWidth + 4
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4))
+        : null;
+
+    _pointPaint = Paint()
+      ..color = color.withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -130,24 +159,13 @@ class _CrystalSpinnerPainter extends CustomPainter {
     final radius = (size.width - strokeWidth) / 2;
 
     // Draw background ring
-    final bgPaint = Paint()
-      ..color = color.withValues(alpha: 0.15)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth;
-
-    canvas.drawCircle(center, radius, bgPaint);
-
-    // Draw spinning arc
-    final arcPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, _bgPaint);
 
     // Create gradient along the arc
     final sweepAngle = math.pi * 0.75; // 135 degrees
     final startAngle = 2 * math.pi * progress - math.pi / 2;
 
-    arcPaint.shader = SweepGradient(
+    _arcPaint.shader = SweepGradient(
       center: Alignment.center,
       startAngle: startAngle,
       endAngle: startAngle + sweepAngle,
@@ -161,20 +179,13 @@ class _CrystalSpinnerPainter extends CustomPainter {
     ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     // Add glow effect
-    if (showGlow) {
-      final glowPaint = Paint()
-        ..color = color.withValues(alpha: 0.3)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth + 4
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-
+    if (_glowPaint != null) {
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
         startAngle,
         sweepAngle,
         false,
-        glowPaint,
+        _glowPaint,
       );
     }
 
@@ -184,7 +195,7 @@ class _CrystalSpinnerPainter extends CustomPainter {
       startAngle,
       sweepAngle,
       false,
-      arcPaint,
+      _arcPaint,
     );
 
     // Draw crystal points (small diamonds at cardinal points)
@@ -193,9 +204,6 @@ class _CrystalSpinnerPainter extends CustomPainter {
 
   void _drawCrystalPoints(
       Canvas canvas, Offset center, double radius, double progress) {
-    final pointPaint = Paint()
-      ..color = color.withValues(alpha: 0.6)
-      ..style = PaintingStyle.fill;
 
     // Draw 4 crystal points that pulse
     for (int i = 0; i < 4; i++) {
@@ -214,7 +222,7 @@ class _CrystalSpinnerPainter extends CustomPainter {
         ..lineTo(x - pointSize, y)
         ..close();
 
-      canvas.drawPath(path, pointPaint);
+      canvas.drawPath(path, _pointPaint);
     }
   }
 

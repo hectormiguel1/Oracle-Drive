@@ -2,7 +2,7 @@ import 'package:fabula_nova_sdk/bridge_generated/modules/vfx/structs.dart'
     as vfx_sdk;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/formats/vfx_service.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
@@ -58,7 +58,7 @@ class VfxNotifier {
 
     try {
       _logger.info("Loading VFX: $filePath");
-      final data = await NativeService.instance.parseVfx(filePath);
+      final data = await VfxService.instance.parse(filePath);
       _ref.read(vfxDataProvider.notifier).state = data;
       _logger.info(
         "VFX loaded: ${data.textures.length} textures, "
@@ -77,7 +77,7 @@ class VfxNotifier {
   /// Get a quick summary of a VFX file.
   Future<vfx_sdk.VfxSummary?> getSummary(String filePath) async {
     try {
-      return await NativeService.instance.getVfxSummary(filePath);
+      return await VfxService.instance.getSummary(filePath);
     } catch (e) {
       _logger.severe("Error getting VFX summary: $e");
       return null;
@@ -87,7 +87,7 @@ class VfxNotifier {
   /// Export VFX data to JSON.
   Future<String?> exportToJson(String filePath) async {
     try {
-      return await NativeService.instance.exportVfxJson(filePath);
+      return await VfxService.instance.exportJson(filePath);
     } catch (e) {
       _logger.severe("Error exporting VFX to JSON: $e");
       return null;
@@ -98,7 +98,7 @@ class VfxNotifier {
   Future<List<String>> extractTextures(String xfvPath, String outputDir) async {
     try {
       _logger.info("Extracting VFX textures to: $outputDir");
-      final paths = await NativeService.instance.extractVfxTextures(
+      final paths = await VfxService.instance.extractTextures(
         xfvPath,
         outputDir,
       );

@@ -26,8 +26,19 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
 
   @override
   Widget build(BuildContext context) {
-    final editorState = ref.watch(workflowEditorProvider);
-    final workflow = editorState.workflow;
+    // Use selective watches for better performance - only rebuild when specific fields change
+    final workflow = ref.watch(editorWorkflowProvider);
+    final selectedNodeId = ref.watch(editorSelectedNodeIdProvider);
+    final isConnecting = ref.watch(editorIsConnectingProvider);
+    final connectingFromNodeId = ref.watch(
+      workflowEditorProvider.select((s) => s.connectingFromNodeId),
+    );
+    final connectingFromPort = ref.watch(
+      workflowEditorProvider.select((s) => s.connectingFromPort),
+    );
+    final portPositions = ref.watch(
+      workflowEditorProvider.select((s) => s.portPositions),
+    );
 
     if (workflow == null) {
       return const Center(
@@ -50,14 +61,14 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
           ref.read(workflowEditorProvider.notifier).selectNode(null);
           ref.read(workflowEditorProvider.notifier).cancelConnection();
         },
-        onPanUpdate: editorState.isConnecting
+        onPanUpdate: isConnecting
             ? (details) {
                 setState(() {
                   _pendingConnectionEnd = details.localPosition;
                 });
               }
             : null,
-        onPanEnd: editorState.isConnecting
+        onPanEnd: isConnecting
             ? (_) {
                 ref.read(workflowEditorProvider.notifier).cancelConnection();
                 setState(() {
@@ -89,7 +100,7 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
                 minScale: 0.25,
                 maxScale: 3.0,
                 onInteractionUpdate: (details) {
-                  if (!editorState.isConnecting) {
+                  if (!isConnecting) {
                     final matrix = _transformController.value;
                     final offset = Offset(matrix.entry(0, 3), matrix.entry(1, 3));
                     final scale = matrix.entry(0, 0);
@@ -102,8 +113,8 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      // Grid background
-                      Positioned.fill(
+                      // Grid background - const painter for no rebuilds
+                      const Positioned.fill(
                         child: CustomPaint(
                           painter: _GridPainter(),
                         ),
@@ -117,8 +128,8 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
                             top: node.position.dy,
                             child: WorkflowNodeWidget(
                               node: node,
-                              isSelected: node.id == editorState.selectedNodeId,
-                              isConnecting: editorState.isConnecting,
+                              isSelected: node.id == selectedNodeId,
+                              isConnecting: isConnecting,
                             ),
                           )),
                       // Connection lines (on top of nodes)
@@ -128,22 +139,22 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
                             painter: ConnectionPainter(
                               connections: workflow.connections,
                               nodes: workflow.nodes,
-                              portPositions: editorState.portPositions,
+                              portPositions: portPositions,
                             ),
                           ),
                         ),
                       ),
                       // Pending connection line (on top of everything)
-                      if (editorState.isConnecting && _pendingConnectionEnd != null)
+                      if (isConnecting && _pendingConnectionEnd != null)
                         Positioned.fill(
                           child: IgnorePointer(
                             child: CustomPaint(
                               painter: _PendingConnectionPainter(
-                                startNodeId: editorState.connectingFromNodeId!,
-                                startPort: editorState.connectingFromPort!,
+                                startNodeId: connectingFromNodeId!,
+                                startPort: connectingFromPort!,
                                 endPoint: _pendingConnectionEnd!,
                                 nodes: workflow.nodes,
-                                portPositions: editorState.portPositions,
+                                portPositions: portPositions,
                               ),
                             ),
                           ),
@@ -184,28 +195,31 @@ class _WorkflowCanvasState extends ConsumerState<WorkflowCanvas> {
 }
 
 /// Paints a subtle grid pattern on the canvas.
+/// Made const with static Paint for optimal performance.
 class _GridPainter extends CustomPainter {
+  const _GridPainter();
+
+  static final _paint = Paint()
+    ..color = Colors.white.withValues(alpha: 0.03)
+    ..strokeWidth = 1;
+
+  static const _gridSize = 50.0;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.03)
-      ..strokeWidth = 1;
-
-    const gridSize = 50.0;
-
     // Vertical lines
-    for (double x = 0; x < size.width; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    for (double x = 0; x < size.width; x += _gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), _paint);
     }
 
     // Horizontal lines
-    for (double y = 0; y < size.height; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    for (double y = 0; y < size.height; y += _gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), _paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _GridPainter oldDelegate) => false;
 }
 
 /// Paints the connection being drawn.

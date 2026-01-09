@@ -502,89 +502,6 @@ Future<((int, int), Uint8List)> convertDdsToPngBytes(
         {required String ddsPath}) =>
     RustLib.instance.api.crateApiConvertDdsToPngBytes(ddsPath: ddsPath);
 
-/// Initializes the VFX player with specified render dimensions.
-///
-/// Must be called before loading models or rendering frames.
-///
-/// # Arguments
-/// * `width` - Render width in pixels
-/// * `height` - Render height in pixels
-///
-/// # Returns
-/// Ok(()) on success.
-Future<void> vfxPlayerInit({required int width, required int height}) =>
-    RustLib.instance.api.crateApiVfxPlayerInit(width: width, height: height);
-
-/// Loads a test quad with specified color for debugging.
-///
-/// # Arguments
-/// * `r`, `g`, `b`, `a` - RGBA color (0.0 to 1.0)
-///
-/// # Returns
-/// Ok(()) on success.
-Future<void> vfxPlayerLoadTest(
-        {required double r,
-        required double g,
-        required double b,
-        required double a}) =>
-    RustLib.instance.api.crateApiVfxPlayerLoadTest(r: r, g: g, b: b, a: a);
-
-/// Loads a VFX model for rendering.
-///
-/// The model must exist in the VFX file, and a texture must be provided as RGBA bytes.
-///
-/// # Arguments
-/// * `xfv_path` - Path to the XFV file
-/// * `model_name` - Name of the model to load
-/// * `texture_name` - Name of the texture to use (or empty for first texture)
-///
-/// # Returns
-/// Ok(()) on success.
-Future<void> vfxPlayerLoadModel(
-        {required String xfvPath,
-        required String modelName,
-        required String textureName}) =>
-    RustLib.instance.api.crateApiVfxPlayerLoadModel(
-        xfvPath: xfvPath, modelName: modelName, textureName: textureName);
-
-/// Renders a single frame and returns RGBA pixel data.
-///
-/// # Arguments
-/// * `delta_time` - Time elapsed since last frame (in seconds)
-///
-/// # Returns
-/// RGBA pixel data (width * height * 4 bytes).
-Future<Uint8List> vfxPlayerRenderFrame({required double deltaTime}) =>
-    RustLib.instance.api.crateApiVfxPlayerRenderFrame(deltaTime: deltaTime);
-
-/// Gets the current animation time.
-///
-/// # Returns
-/// Current animation time in seconds.
-Future<double> vfxPlayerGetTime() =>
-    RustLib.instance.api.crateApiVfxPlayerGetTime();
-
-/// Resets the animation to the beginning.
-Future<void> vfxPlayerReset() => RustLib.instance.api.crateApiVfxPlayerReset();
-
-/// Disposes of the VFX player and releases GPU resources.
-Future<void> vfxPlayerDispose() =>
-    RustLib.instance.api.crateApiVfxPlayerDispose();
-
-/// Checks if the VFX player is initialized.
-///
-/// # Returns
-/// True if initialized, false otherwise.
-Future<bool> vfxPlayerIsInitialized() =>
-    RustLib.instance.api.crateApiVfxPlayerIsInitialized();
-
-/// Gets the render dimensions.
-///
-/// # Returns
-/// Tuple of (width, height) in pixels.
-Future<(int, int)> vfxPlayerGetDimensions() =>
-    RustLib.instance.api.crateApiVfxPlayerGetDimensions();
-
 /// Parses an event file and extracts metadata (in-memory, no extraction).
 ///
 /// This is the primary function for quick viewing of cutscene contents.
@@ -801,14 +718,6 @@ Future<void> scdExtractToWav(
 /// * `scd_path` - Path to output SCD file
 Future<void> wavToScd({required String wavPath, required String scdPath}) =>
     RustLib.instance.api.crateApiWavToScd(wavPath: wavPath, scdPath: scdPath);
-
-/// Placeholder for when translation feature is disabled
-Future<void> translateWav(
-        {required String inputPath,
-        required String outputPath,
-        required String targetLang}) =>
-    RustLib.instance.api.crateApiTranslateWav(
-        inputPath: inputPath, outputPath: outputPath, targetLang: targetLang);
 
 /// File metadata for a single entry in a WBT archive.
 /// Mirrors the Rust struct for flutter_rust_bridge serialization.

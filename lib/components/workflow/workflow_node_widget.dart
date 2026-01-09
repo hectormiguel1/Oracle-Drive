@@ -320,10 +320,12 @@ class _PortWidgetState extends ConsumerState<_PortWidget> {
         Offset(circleBox.size.width / 2, circleBox.size.height / 2),
       );
       final nodeGlobal = nodeBox!.localToGlobal(Offset.zero);
-      final offsetInNode = circleGlobal - nodeGlobal;
+      // offsetInNode is in screen space (affected by zoom)
+      final offsetInNodeScreen = circleGlobal - nodeGlobal;
 
-      // Get the node's position from the workflow state
-      final workflow = ref.read(workflowEditorProvider).workflow;
+      // Get the canvas scale to convert from screen space to canvas space
+      final editorState = ref.read(workflowEditorProvider);
+      final workflow = editorState.workflow;
       if (workflow == null) return;
 
       final node = workflow.nodes.cast<WorkflowNode?>().firstWhere(
@@ -332,8 +334,12 @@ class _PortWidgetState extends ConsumerState<_PortWidget> {
           );
       if (node == null) return;
 
-      // Final position = node position + offset within node
-      final canvasPos = node.position + offsetInNode;
+      // Convert offset from screen space to canvas space by dividing by scale
+      final scale = editorState.canvasScale;
+      final offsetInNodeCanvas = offsetInNodeScreen / scale;
+
+      // Final position = node position (canvas space) + offset (canvas space)
+      final canvasPos = node.position + offsetInNodeCanvas;
 
       ref.read(workflowEditorProvider.notifier).updatePortPosition(
             widget.nodeId,

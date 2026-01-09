@@ -2,7 +2,7 @@ import 'package:fabula_nova_sdk/bridge_generated/modules/event/structs.dart'
     as event_sdk;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:oracle_drive/src/services/native_service.dart';
+import 'package:oracle_drive/src/services/formats/event_service.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
@@ -58,7 +58,7 @@ class EventNotifier {
 
     try {
       _logger.info("Loading Event: $filePath");
-      final data = await NativeService.instance.parseEvent(filePath);
+      final data = await EventService.instance.parse(filePath);
       _ref.read(eventDataProvider.notifier).state = data;
       _logger.info(
         "Event loaded: ${data.actors.length} actors, "
@@ -85,7 +85,7 @@ class EventNotifier {
 
     try {
       _logger.info("Loading Event Directory: $dirPath");
-      final data = await NativeService.instance.parseEventDirectory(dirPath);
+      final data = await EventService.instance.parseDirectory(dirPath);
       _ref.read(eventDataProvider.notifier).state = data;
 
       final datasetInfo = data.dataset != null
@@ -109,7 +109,7 @@ class EventNotifier {
   /// Get a quick summary of an event file.
   Future<event_sdk.EventSummary?> getSummary(String filePath) async {
     try {
-      return await NativeService.instance.getEventSummary(filePath);
+      return await EventService.instance.getSummary(filePath);
     } catch (e) {
       _logger.severe("Error getting event summary: $e");
       return null;
@@ -119,7 +119,7 @@ class EventNotifier {
   /// Export event data to JSON.
   Future<String?> exportToJson(String filePath) async {
     try {
-      return await NativeService.instance.exportEventJson(filePath);
+      return await EventService.instance.exportJson(filePath);
     } catch (e) {
       _logger.severe("Error exporting event to JSON: $e");
       return null;
@@ -133,7 +133,7 @@ class EventNotifier {
   ) async {
     try {
       _logger.info("Extracting event to: $outDir");
-      final result = await NativeService.instance.extractEvent(inFile, outDir);
+      final result = await EventService.instance.extract(inFile, outDir);
       _logger.info("Extracted ${result.extractedFiles.length} files");
       return result;
     } catch (e) {

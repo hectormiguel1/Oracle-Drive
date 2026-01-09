@@ -566,11 +566,6 @@ class _FileActions extends StatelessWidget {
                 tooltip: 'Convert to SCD',
                 onPressed: isProcessing ? null : _convertWavToScd,
               ),
-              CrystalAction(
-                icon: Icons.translate,
-                tooltip: 'Translate Audio',
-                onPressed: isProcessing ? null : _translateWav,
-              ),
             ],
           ),
       ],
@@ -729,29 +724,6 @@ class _FileActions extends StatelessWidget {
       showSnackBar('Playback stopped');
     } catch (e) {
       showSnackBar('Error stopping playback: $e', isError: true);
-    }
-  }
-
-  Future<void> _translateWav() async {
-    if (_isZeroByteFile()) return;
-    try {
-      showSnackBar('Translation starting... (this may take a while)');
-
-      // Call the translation API
-      final translatedWavPath = await NativeService.instance.translateWav(
-        file.path,
-        'eng', // Target language: English
-      );
-
-      onTreeRebuild();
-      showSnackBar('Translated to: ${p.basename(translatedWavPath)}');
-
-      // Optionally play the translated audio
-      _audioPlayer?.dispose();
-      _audioPlayer = AudioPlayer();
-      await _audioPlayer!.play(DeviceFileSource(translatedWavPath));
-    } catch (e) {
-      showSnackBar('Translation error: $e', isError: true);
     }
   }
 

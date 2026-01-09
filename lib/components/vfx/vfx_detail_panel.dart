@@ -5,7 +5,6 @@ import 'package:fabula_nova_sdk/bridge_generated/modules/vfx/structs.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:oracle_drive/components/vfx/mesh_wireframe_renderer.dart';
-import 'package:oracle_drive/components/vfx/vfx_player_widget.dart';
 import 'package:oracle_drive/components/widgets/crystal_button.dart';
 import 'package:oracle_drive/components/widgets/style.dart';
 import 'package:oracle_drive/providers/vfx_provider.dart';
@@ -144,7 +143,7 @@ class _TextureDetailsState extends ConsumerState<_TextureDetails> {
           Text('IMGB REFERENCE', style: CrystalStyles.sectionHeader),
           const SizedBox(height: 16),
           _DetailRow('Offset', '0x${widget.texture.imgbOffset.toRadixString(16).toUpperCase()}'),
-          _DetailRow('Size', '${_formatBytes(widget.texture.imgbSize)}'),
+          _DetailRow('Size', _formatBytes(widget.texture.imgbSize)),
           const Divider(color: Colors.white24, height: 32),
           Text('PREVIEW', style: CrystalStyles.sectionHeader),
           const SizedBox(height: 16),
@@ -178,7 +177,7 @@ class _TextureDetailsState extends ConsumerState<_TextureDetails> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.red.withOpacity(0.1),
+          color: Colors.red.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Column(
@@ -283,13 +282,11 @@ class _ModelDetails extends ConsumerStatefulWidget {
 }
 
 class _ModelDetailsState extends ConsumerState<_ModelDetails> {
-  bool _showGpuPreview = false;
   String? _selectedTexture;
 
   @override
   Widget build(BuildContext context) {
     final mat = widget.model.material;
-    final vfxPath = ref.watch(vfxPathProvider);
     final vfxData = ref.watch(vfxDataProvider);
     final availableTextures = vfxData?.textures ?? [];
 
@@ -340,7 +337,7 @@ class _ModelDetailsState extends ConsumerState<_ModelDetails> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: Colors.white24),
               ),
@@ -377,72 +374,10 @@ class _ModelDetailsState extends ConsumerState<_ModelDetails> {
           ],
           // Preview Section
           const Divider(color: Colors.white24, height: 32),
-          Row(
-            children: [
-              Text('PREVIEW', style: CrystalStyles.sectionHeader),
-              const Spacer(),
-              // Toggle between wireframe and GPU preview
-              if (widget.model.mesh != null) ...[
-                InkWell(
-                  onTap: () => setState(() => _showGpuPreview = false),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: !_showGpuPreview ? Colors.cyan.withOpacity(0.2) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.grid_3x3, size: 14,
-                          color: !_showGpuPreview ? Colors.cyan : Colors.white38),
-                        const SizedBox(width: 4),
-                        Text('Wire', style: TextStyle(
-                          fontSize: 11,
-                          color: !_showGpuPreview ? Colors.cyan : Colors.white38,
-                        )),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 4),
-              ],
-              if (vfxPath != null)
-                InkWell(
-                  onTap: () => setState(() => _showGpuPreview = true),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _showGpuPreview ? Colors.cyan.withOpacity(0.2) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.memory, size: 14,
-                          color: _showGpuPreview ? Colors.cyan : Colors.white38),
-                        const SizedBox(width: 4),
-                        Text('GPU', style: TextStyle(
-                          fontSize: 11,
-                          color: _showGpuPreview ? Colors.cyan : Colors.white38,
-                        )),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          Text('PREVIEW', style: CrystalStyles.sectionHeader),
           const SizedBox(height: 16),
-          // Preview content
-          if (_showGpuPreview && vfxPath != null)
-            VfxPlayerWidget(
-              key: ValueKey('${vfxPath}_${widget.model.name}_${_selectedTexture ?? "auto"}'),
-              xfvPath: vfxPath,
-              modelName: widget.model.name,
-              textureName: _selectedTexture ?? '',
-              size: 220,
-            )
-          else if (widget.model.mesh != null)
+          // Preview content (wireframe)
+          if (widget.model.mesh != null)
             MeshWireframeRenderer(
               mesh: widget.model.mesh!,
               size: 220,
@@ -451,7 +386,7 @@ class _ModelDetailsState extends ConsumerState<_ModelDetails> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Row(
