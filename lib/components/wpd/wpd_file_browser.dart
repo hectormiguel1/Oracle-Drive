@@ -7,9 +7,11 @@ import 'package:oracle_drive/components/widgets/crystal_compact_button.dart';
 import 'package:oracle_drive/components/widgets/crystal_icon_button.dart';
 import 'package:oracle_drive/components/widgets/crystal_loading_spinner.dart';
 import 'package:oracle_drive/components/widgets/crystal_panel.dart';
+import 'package:oracle_drive/components/widgets/crystal_snackbar.dart';
 import 'package:oracle_drive/models/app_game_code.dart';
 import 'package:oracle_drive/providers/wpd_provider.dart';
 import 'package:oracle_drive/components/wpd/wpd_file_utils.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
 import 'package:path/path.dart' as p;
 
 /// Wrapper for FileSystemEntity with path-based equality.
@@ -52,11 +54,49 @@ class WpdFileBrowser extends ConsumerStatefulWidget {
 class WpdFileBrowserState extends ConsumerState<WpdFileBrowser> {
   TreeController<FileNode>? _treeController;
   String? _currentRootPath;
+  bool _hideZeroByteFiles = false;
+  bool _isBatchProcessing = false;
 
   @override
   void dispose() {
     _treeController?.dispose();
     super.dispose();
+  }
+
+  void _toggleHideZeroByteFiles() {
+    setState(() {
+      _hideZeroByteFiles = !_hideZeroByteFiles;
+    });
+    // Rebuild tree with new filter
+    if (_currentRootPath != null) {
+      _reloadTree(_currentRootPath);
+    }
+  }
+
+  /// Check if a directory contains any non-zero-byte files (recursively)
+  bool _hasNonZeroByteFiles(Directory dir) {
+    try {
+      for (final entity in dir.listSync()) {
+        if (entity is File) {
+          try {
+            if (entity.lengthSync() > 0) {
+              return true;
+            }
+          } catch (_) {
+            // Can't read file, assume it's valid
+            return true;
+          }
+        } else if (entity is Directory) {
+          if (_hasNonZeroByteFiles(entity)) {
+            return true;
+          }
+        }
+      }
+    } catch (_) {
+      // Can't read directory, assume it has content
+      return true;
+    }
+    return false;
   }
 
   void _reloadTree(String? rootPath) {
@@ -86,14 +126,32 @@ class WpdFileBrowserState extends ConsumerState<WpdFileBrowser> {
           if (parent.isDirectory) {
             try {
               final dir = parent.entity as Directory;
-              final list = dir.listSync()
-                ..sort((a, b) {
-                  final aIsDir = a is Directory;
-                  final bIsDir = b is Directory;
-                  if (aIsDir && !bIsDir) return -1;
-                  if (!aIsDir && bIsDir) return 1;
-                  return a.path.compareTo(b.path);
-                });
+              var list = dir.listSync();
+
+              // Filter out 0-byte files and empty directories if enabled
+              if (_hideZeroByteFiles) {
+                list = list.where((entity) {
+                  if (entity is File) {
+                    try {
+                      return entity.lengthSync() > 0;
+                    } catch (_) {
+                      return true; // Keep files we can't read
+                    }
+                  } else if (entity is Directory) {
+                    // Hide directories that only contain 0-byte files
+                    return _hasNonZeroByteFiles(entity);
+                  }
+                  return true;
+                }).toList();
+              }
+
+              list.sort((a, b) {
+                final aIsDir = a is Directory;
+                final bIsDir = b is Directory;
+                if (aIsDir && !bIsDir) return -1;
+                if (!aIsDir && bIsDir) return 1;
+                return a.path.compareTo(b.path);
+              });
               return list.map((e) => FileNode(e));
             } catch (e) {
               return [];
@@ -128,6 +186,116 @@ class WpdFileBrowserState extends ConsumerState<WpdFileBrowser> {
 
   void _navigateToPath(String path) {
     ref.read(wpdProvider(widget.gameCode).notifier).setRootDirPath(path);
+  }
+
+  Future<void> _convertAllScdToWav() async {
+    if (_currentRootPath == null || _isBatchProcessing) return;
+
+    setState(() => _isBatchProcessing = true);
+
+    try {
+      final dir = Directory(_currentRootPath!);
+      int successCount = 0;
+      int errorCount = 0;
+
+      // Find all .scd files recursively
+      final scdFiles = dir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.toLowerCase().endsWith('.scd'))
+          .toList();
+
+      if (scdFiles.isEmpty) {
+        if (mounted) {
+          context.showWarningSnackBar('No SCD files found in workspace');
+        }
+        return;
+      }
+
+      if (mounted) {
+        context.showSuccessSnackBar('Converting ${scdFiles.length} SCD files to WAV...');
+      }
+
+      for (final scdFile in scdFiles) {
+        try {
+          final wavPath = '${scdFile.path.substring(0, scdFile.path.length - 4)}.wav';
+          await NativeService.instance.extractScdToWav(scdFile.path, wavPath);
+          successCount++;
+        } catch (e) {
+          errorCount++;
+        }
+      }
+
+      rebuild();
+      if (mounted) {
+        if (errorCount > 0) {
+          context.showErrorSnackBar('SCD→WAV: $successCount succeeded, $errorCount failed');
+        } else {
+          context.showSuccessSnackBar('SCD→WAV: $successCount files converted');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showErrorSnackBar('Error: $e');
+      }
+    } finally {
+      setState(() => _isBatchProcessing = false);
+    }
+  }
+
+  Future<void> _convertAllWavToScd() async {
+    if (_currentRootPath == null || _isBatchProcessing) return;
+
+    setState(() => _isBatchProcessing = true);
+
+    try {
+      final dir = Directory(_currentRootPath!);
+      int successCount = 0;
+      int errorCount = 0;
+
+      // Find all .wav files recursively
+      final wavFiles = dir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.toLowerCase().endsWith('.wav'))
+          .toList();
+
+      if (wavFiles.isEmpty) {
+        if (mounted) {
+          context.showWarningSnackBar('No WAV files found in workspace');
+        }
+        return;
+      }
+
+      if (mounted) {
+        context.showSuccessSnackBar('Converting ${wavFiles.length} WAV files to SCD...');
+      }
+
+      for (final wavFile in wavFiles) {
+        try {
+          final scdPath = '${wavFile.path.substring(0, wavFile.path.length - 4)}.scd';
+          await NativeService.instance.convertWavToScd(wavFile.path, scdPath);
+          successCount++;
+        } catch (e) {
+          errorCount++;
+        }
+      }
+
+      rebuild();
+      if (mounted) {
+        if (errorCount > 0) {
+          context.showErrorSnackBar('WAV→SCD: $successCount succeeded, $errorCount failed');
+        } else {
+          context.showSuccessSnackBar('WAV→SCD: $successCount files converted');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showErrorSnackBar('Error: $e');
+      }
+    } finally {
+      setState(() => _isBatchProcessing = false);
+    }
   }
 
   List<_BreadcrumbSegment> _buildBreadcrumbs(String rootPath) {
@@ -191,6 +359,17 @@ class WpdFileBrowserState extends ConsumerState<WpdFileBrowser> {
                       label: "Open",
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  CrystalIconButton(
+                    onPressed: _toggleHideZeroByteFiles,
+                    icon: _hideZeroByteFiles
+                        ? Icons.filter_alt
+                        : Icons.filter_alt_off,
+                    tooltip: _hideZeroByteFiles
+                        ? "Show all files"
+                        : "Hide 0-byte files",
+                    isSelected: _hideZeroByteFiles,
+                  ),
                 ],
               ),
               // Breadcrumb bar
@@ -199,6 +378,27 @@ class WpdFileBrowserState extends ConsumerState<WpdFileBrowser> {
                 _BreadcrumbBar(
                   segments: _buildBreadcrumbs(state.rootDirPath!),
                   onNavigate: _navigateToPath,
+                ),
+                // Batch sound operations row
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CrystalCompactButton(
+                        onPressed: _isBatchProcessing ? null : _convertAllScdToWav,
+                        icon: Icons.music_note,
+                        label: "Extract All SCD",
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: CrystalCompactButton(
+                        onPressed: _isBatchProcessing ? null : _convertAllWavToScd,
+                        icon: Icons.transform,
+                        label: "Convert All WAV",
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ],
@@ -372,12 +572,35 @@ class _TreeNode extends StatefulWidget {
 class _TreeNodeState extends State<_TreeNode> {
   bool _isHovered = false;
 
+  /// Format file size in bytes with appropriate unit
+  String _formatFileSize(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    } else {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final node = widget.entry.node;
     final isDir = node.isDirectory;
     final name = node.name;
     final isExpanded = widget.entry.isExpanded;
+
+    // Get file size for files
+    int? fileSize;
+    if (!isDir) {
+      try {
+        fileSize = (node.entity as File).lengthSync();
+      } catch (_) {
+        // Ignore errors reading file size
+      }
+    }
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -433,6 +656,17 @@ class _TreeNodeState extends State<_TreeNode> {
                     maxLines: 1,
                   ),
                 ),
+                // File size for files
+                if (fileSize != null) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatFileSize(fileSize),
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

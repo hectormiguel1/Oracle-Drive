@@ -1,3 +1,4 @@
+import 'package:oracle_drive/src/services/app_database.dart';
 import 'package:oracle_drive/components/widgets/crystal_button.dart';
 import 'package:oracle_drive/components/widgets/crystal_dialog.dart';
 import 'package:oracle_drive/components/widgets/crystal_dropdowns.dart';
@@ -30,9 +31,14 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
-    // Fetch strings on first build
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Check database count synchronously first, then fetch entries
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final gameCode = ref.read(selectedGameProvider);
+      // Sync check: update count from database immediately to avoid showing "Load" buttons
+      await AppDatabase.ensureInitialized();
+      final dbCount = AppDatabase.instance.getRepositoryForGame(gameCode).getStringCount();
+      ref.read(ztrStringCountProvider(gameCode).notifier).state = dbCount;
+      // Then fetch the actual entries for display
       ref.read(ztrNotifierProvider(gameCode)).fetchStrings();
     });
   }
@@ -197,6 +203,9 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
 
   Future<void> _dumpZtrFile() async {
     final gameCode = ref.read(selectedGameProvider);
+    final notifier = ref.read(ztrNotifierProvider(gameCode));
+    final hasFilters = notifier.hasActiveFilters;
+    final filteredEntries = ref.read(filteredZtrEntriesProvider(gameCode));
     final stringCount = ref.read(ztrStringCountProvider(gameCode));
 
     if (stringCount == 0) {
@@ -204,17 +213,30 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
       return;
     }
 
+    if (hasFilters && filteredEntries.isEmpty) {
+      _showWarningSnackBar("No entries match current filters.");
+      return;
+    }
+
+    final count = hasFilters ? filteredEntries.length : stringCount;
+    final suffix = hasFilters ? '_filtered' : '_dump';
+
     final savePath = await FilePicker.platform.saveFile(
-      dialogTitle: 'Save ZTR file',
-      fileName: '${gameCode.name}_dump.ztr',
+      dialogTitle: 'Save ZTR file ($count entries)',
+      fileName: '${gameCode.name}$suffix.ztr',
       type: FileType.custom,
       allowedExtensions: ['ztr'],
     );
 
     if (savePath != null) {
       try {
-        await ref.read(ztrNotifierProvider(gameCode)).dumpZtrFile(savePath);
-        _showSuccessSnackBar("ZTR data dumped successfully!");
+        if (hasFilters) {
+          await notifier.dumpFilteredZtrFile(savePath);
+          _showSuccessSnackBar("${filteredEntries.length} filtered entries dumped to ZTR!");
+        } else {
+          await notifier.dumpZtrFile(savePath);
+          _showSuccessSnackBar("ZTR data dumped successfully!");
+        }
       } catch (e) {
         _showErrorSnackBar("Error dumping ZTR: $e");
       }
@@ -223,6 +245,9 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
 
   Future<void> _dumpTxtFile() async {
     final gameCode = ref.read(selectedGameProvider);
+    final notifier = ref.read(ztrNotifierProvider(gameCode));
+    final hasFilters = notifier.hasActiveFilters;
+    final filteredEntries = ref.read(filteredZtrEntriesProvider(gameCode));
     final stringCount = ref.read(ztrStringCountProvider(gameCode));
 
     if (stringCount == 0) {
@@ -230,17 +255,30 @@ class _ZtrScreenState extends ConsumerState<ZtrScreen> {
       return;
     }
 
+    if (hasFilters && filteredEntries.isEmpty) {
+      _showWarningSnackBar("No entries match current filters.");
+      return;
+    }
+
+    final count = hasFilters ? filteredEntries.length : stringCount;
+    final suffix = hasFilters ? '_filtered' : '_dump';
+
     final savePath = await FilePicker.platform.saveFile(
-      dialogTitle: 'Save Text file',
-      fileName: '${gameCode.name}_dump.txt',
+      dialogTitle: 'Save Text file ($count entries)',
+      fileName: '${gameCode.name}$suffix.txt',
       type: FileType.custom,
       allowedExtensions: ['txt'],
     );
 
     if (savePath != null) {
       try {
-        await ref.read(ztrNotifierProvider(gameCode)).dumpTxtFile(savePath);
-        _showSuccessSnackBar("ZTR data dumped to text successfully!");
+        if (hasFilters) {
+          await notifier.dumpFilteredTxtFile(savePath);
+          _showSuccessSnackBar("${filteredEntries.length} filtered entries dumped to text!");
+        } else {
+          await notifier.dumpTxtFile(savePath);
+          _showSuccessSnackBar("ZTR data dumped to text successfully!");
+        }
       } catch (e) {
         _showErrorSnackBar("Error dumping ZTR to text: $e");
       }

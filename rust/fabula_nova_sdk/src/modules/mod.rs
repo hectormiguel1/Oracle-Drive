@@ -1,6 +1,10 @@
 pub mod clb;
 pub mod crystalium;
+pub mod event;
 pub mod img;
+pub mod scd;
+#[cfg(feature = "translation")]
+pub mod translation;
 pub mod vfx;
 pub mod wbt;
 pub mod wct;

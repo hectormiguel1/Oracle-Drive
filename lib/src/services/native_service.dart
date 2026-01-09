@@ -20,6 +20,10 @@ import 'package:fabula_nova_sdk/bridge_generated/modules/crystalium/structs.dart
     as cgt_sdk;
 import 'package:fabula_nova_sdk/bridge_generated/modules/vfx/structs.dart'
     as vfx_sdk;
+import 'package:fabula_nova_sdk/bridge_generated/modules/event/structs.dart'
+    as event_sdk;
+import 'package:fabula_nova_sdk/bridge_generated/modules/scd/structs.dart'
+    as scd_sdk;
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show Uint64List;
 
@@ -501,6 +505,45 @@ class NativeService {
     }
   }
 
+  /// Dumps a list of ZTR entries to a text file.
+  /// Used for exporting filtered/searched entries.
+  Future<void> dumpFilteredTxtFile(
+    List<(String id, String text)> entries,
+    String outPath,
+  ) async {
+    try {
+      final sdkEntries = entries
+          .map((e) => ztr_sdk.ZtrEntry(id: e.$1, text: e.$2))
+          .toList();
+      final ztrData = ztr_sdk.ZtrData(entries: sdkEntries, mappings: []);
+      final text = await sdk.ztrToTextString(data: ztrData);
+
+      await File(outPath).writeAsString(text);
+    } catch (e) {
+      _showErrorDialog("ZTR Text Dump Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Dumps a list of ZTR entries to a ZTR file.
+  /// Used for exporting filtered/searched entries.
+  Future<void> dumpFilteredZtrFile(
+    List<(String id, String text)> entries,
+    String outPath,
+    AppGameCode game,
+  ) async {
+    try {
+      await sdk.ztrPackFromData(
+        entries: entries,
+        outFile: outPath,
+        gameCode: game.index,
+      );
+    } catch (e) {
+      _showErrorDialog("ZTR Dump Error", e.toString());
+      rethrow;
+    }
+  }
+
   /// Loads all ZTR files from a directory recursively.
   /// Returns a stream of progress updates.
   /// When complete, inserts all strings into the database.
@@ -884,6 +927,160 @@ class NativeService {
       return ((result.$1.$1.toInt(), result.$1.$2.toInt()), Uint8List.fromList(result.$2));
     } catch (e) {
       _showErrorDialog("DDS Convert Error", e.toString());
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // Event (Cutscene) Operations
+  // ============================================================
+
+  /// Parse an event file and extract metadata (in-memory)
+  Future<event_sdk.EventMetadata> parseEvent(String filePath) async {
+    try {
+      return await sdk.eventParse(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("Event Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Get a quick summary of event file contents
+  Future<event_sdk.EventSummary> getEventSummary(String filePath) async {
+    try {
+      return await sdk.eventGetSummary(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("Event Summary Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Extract event file to directory and return metadata
+  Future<event_sdk.ExtractedEvent> extractEvent(
+    String inFile,
+    String outDir,
+  ) async {
+    try {
+      return await sdk.eventExtract(inFile: inFile, outDir: outDir);
+    } catch (e) {
+      _showErrorDialog("Event Extract Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Export event metadata to JSON string
+  Future<String> exportEventJson(String filePath) async {
+    try {
+      return await sdk.eventExportJson(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("Event Export Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Parse an event from a directory (including DataSet if present)
+  ///
+  /// This parses the full event directory structure including:
+  /// - bin/*.xwb - Main schedule
+  /// - DataSet/*.bin - Motion and camera control blocks
+  Future<event_sdk.EventMetadata> parseEventDirectory(String dirPath) async {
+    try {
+      return await sdk.eventParseDirectory(dirPath: dirPath);
+    } catch (e) {
+      _showErrorDialog("Event Directory Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  // ============================================================
+  // SCD (Sound Container) Operations
+  // ============================================================
+
+  /// Parse SCD file metadata without decoding audio
+  Future<scd_sdk.ScdMetadata> parseScd(String filePath) async {
+    try {
+      return await sdk.scdParse(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("SCD Parse Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Decode all audio streams from an SCD file
+  Future<scd_sdk.ScdExtractResult> decodeScd(String filePath) async {
+    try {
+      return await sdk.scdDecode(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("SCD Decode Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Decode a specific audio stream from an SCD file
+  Future<scd_sdk.DecodedAudio> decodeScdStream(
+    String filePath,
+    int streamIndex,
+  ) async {
+    try {
+      return await sdk.scdDecodeStream(
+        inFile: filePath,
+        streamIndex: streamIndex,
+      );
+    } catch (e) {
+      _showErrorDialog("SCD Decode Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Convert SCD file to WAV bytes (first stream)
+  /// Returns complete WAV file data ready for playback
+  Future<Uint8List> scdToWav(String filePath) async {
+    try {
+      return await sdk.scdToWav(inFile: filePath);
+    } catch (e) {
+      _showErrorDialog("SCD Convert Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Extract SCD to WAV file on disk
+  Future<void> extractScdToWav(String scdPath, String wavPath) async {
+    try {
+      await sdk.scdExtractToWav(scdPath: scdPath, wavPath: wavPath);
+    } catch (e) {
+      _showErrorDialog("SCD Extract Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Convert WAV file to SCD format
+  Future<void> convertWavToScd(String wavPath, String scdPath) async {
+    try {
+      await sdk.wavToScd(wavPath: wavPath, scdPath: scdPath);
+    } catch (e) {
+      _showErrorDialog("WAV to SCD Error", e.toString());
+      rethrow;
+    }
+  }
+
+  /// Translate WAV audio to target language using SeamlessM4T
+  /// Returns path to the translated WAV file
+  Future<String> translateWav(String inputPath, String targetLang) async {
+    try {
+      // Output path: input_translated_eng.wav
+      final dir = File(inputPath).parent.path;
+      final baseName = File(inputPath).uri.pathSegments.last;
+      final nameWithoutExt = baseName.replaceAll(RegExp(r'\.wav$', caseSensitive: false), '');
+      final outputPath = '$dir/${nameWithoutExt}_translated_$targetLang.wav';
+
+      await sdk.translateWav(
+        inputPath: inputPath,
+        outputPath: outputPath,
+        targetLang: targetLang,
+      );
+      return outputPath;
+    } catch (e) {
+      _showErrorDialog("Translation Error", e.toString());
       rethrow;
     }
   }

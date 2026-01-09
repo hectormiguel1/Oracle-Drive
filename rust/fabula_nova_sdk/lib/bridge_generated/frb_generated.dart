@@ -11,7 +11,9 @@ import 'frb_generated.io.dart'
     if (dart.library.js_interop) 'frb_generated.web.dart';
 import 'lib.dart';
 import 'modules/crystalium/structs.dart';
+import 'modules/event/structs.dart';
 import 'modules/img/structs.dart';
+import 'modules/scd/structs.dart';
 import 'modules/vfx/structs.dart';
 import 'modules/wct.dart';
 import 'modules/wdb/enums.dart';
@@ -77,7 +79,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => 1786907440;
+  int get rustContentHash => -447743656;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -113,6 +115,20 @@ abstract class RustLibApi extends BaseApi {
 
   Stream<String> crateApiCreateLogStream();
 
+  Future<String> crateApiEventExportJson({required String inFile});
+
+  Future<ExtractedEvent> crateApiEventExtract(
+      {required String inFile, required String outDir});
+
+  Future<EventSummary> crateApiEventGetSummary({required String inFile});
+
+  Future<EventMetadata> crateApiEventParse({required String inFile});
+
+  Future<EventMetadata> crateApiEventParseDirectory({required String dirPath});
+
+  Future<EventMetadata> crateApiEventParseFromMemory(
+      {required List<int> data, String? name});
+
   Future<List<String>> crateApiFetchLogs();
 
   Future<List<String>> crateApiGetAllBufferedLogs();
@@ -144,9 +160,35 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiResetLogReadIndex();
 
+  Future<Uint8List> crateApiScdBytesToWav(
+      {required List<int> data, required String name});
+
+  Future<ScdExtractResult> crateApiScdDecode({required String inFile});
+
+  Future<ScdExtractResult> crateApiScdDecodeFromMemory(
+      {required List<int> data, required String name});
+
+  Future<DecodedAudio> crateApiScdDecodeStream(
+      {required String inFile, required int streamIndex});
+
+  Future<void> crateApiScdExtractToWav(
+      {required String scdPath, required String wavPath});
+
+  Future<ScdMetadata> crateApiScdParse({required String inFile});
+
+  Future<ScdMetadata> crateApiScdParseFromMemory(
+      {required List<int> data, required String name});
+
+  Future<Uint8List> crateApiScdToWav({required String inFile});
+
   Future<void> crateApiSetLogLevel({required int level});
 
   Future<void> crateApiTestLog({required String message});
+
+  Future<void> crateApiTranslateWav(
+      {required String inputPath,
+      required String outputPath,
+      required String targetLang});
 
   Future<String> crateApiVfxExportJson({required String inFile});
 
@@ -188,6 +230,9 @@ abstract class RustLibApi extends BaseApi {
   Future<Uint8List> crateApiVfxPlayerRenderFrame({required double deltaTime});
 
   Future<void> crateApiVfxPlayerReset();
+
+  Future<void> crateApiWavToScd(
+      {required String wavPath, required String scdPath});
 
   Future<void> crateApiWbtExtract(
       {required String filelistPath,
@@ -573,12 +618,162 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<String> crateApiEventExportJson({required String inFile}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 12, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_String,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiEventExportJsonConstMeta,
+      argValues: [inFile],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiEventExportJsonConstMeta => const TaskConstMeta(
+        debugName: "event_export_json",
+        argNames: ["inFile"],
+      );
+
+  @override
+  Future<ExtractedEvent> crateApiEventExtract(
+      {required String inFile, required String outDir}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        sse_encode_String(outDir, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 13, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_extracted_event,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiEventExtractConstMeta,
+      argValues: [inFile, outDir],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiEventExtractConstMeta => const TaskConstMeta(
+        debugName: "event_extract",
+        argNames: ["inFile", "outDir"],
+      );
+
+  @override
+  Future<EventSummary> crateApiEventGetSummary({required String inFile}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 14, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_event_summary,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiEventGetSummaryConstMeta,
+      argValues: [inFile],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiEventGetSummaryConstMeta => const TaskConstMeta(
+        debugName: "event_get_summary",
+        argNames: ["inFile"],
+      );
+
+  @override
+  Future<EventMetadata> crateApiEventParse({required String inFile}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 15, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_event_metadata,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiEventParseConstMeta,
+      argValues: [inFile],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiEventParseConstMeta => const TaskConstMeta(
+        debugName: "event_parse",
+        argNames: ["inFile"],
+      );
+
+  @override
+  Future<EventMetadata> crateApiEventParseDirectory({required String dirPath}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(dirPath, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 16, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_event_metadata,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiEventParseDirectoryConstMeta,
+      argValues: [dirPath],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiEventParseDirectoryConstMeta =>
+      const TaskConstMeta(
+        debugName: "event_parse_directory",
+        argNames: ["dirPath"],
+      );
+
+  @override
+  Future<EventMetadata> crateApiEventParseFromMemory(
+      {required List<int> data, String? name}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_list_prim_u_8_loose(data, serializer);
+        sse_encode_opt_String(name, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 17, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_event_metadata,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiEventParseFromMemoryConstMeta,
+      argValues: [data, name],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiEventParseFromMemoryConstMeta =>
+      const TaskConstMeta(
+        debugName: "event_parse_from_memory",
+        argNames: ["data", "name"],
+      );
+
+  @override
   Future<List<String>> crateApiFetchLogs() {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 12, port: port_);
+            funcId: 18, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_String,
@@ -601,7 +796,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 13, port: port_);
+            funcId: 19, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_String,
@@ -624,7 +819,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 14, port: port_);
+            funcId: 20, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_i_32,
@@ -653,7 +848,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(imgbFile, serializer);
         sse_encode_String(inDds, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 15, port: port_);
+            funcId: 21, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -682,7 +877,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(imgbFile, serializer);
         sse_encode_String(outDds, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 16, port: port_);
+            funcId: 22, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_img_data,
@@ -708,7 +903,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(headerFile, serializer);
         sse_encode_String(imgbFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 17, port: port_);
+            funcId: 23, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_record_img_data_list_prim_u_8_strict,
@@ -731,7 +926,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 18, port: port_);
+            funcId: 24, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -755,7 +950,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(json, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 19, port: port_);
+            funcId: 25, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_mcp_file,
@@ -779,7 +974,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(inFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 20, port: port_);
+            funcId: 26, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_mcp_file,
@@ -803,7 +998,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_list_prim_u_8_loose(data, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 21, port: port_);
+            funcId: 27, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_mcp_file,
@@ -827,7 +1022,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_box_autoadd_mcp_file(mcp, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 22, port: port_);
+            funcId: 28, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -850,7 +1045,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 23, port: port_);
+            funcId: 29, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -868,13 +1063,216 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<Uint8List> crateApiScdBytesToWav(
+      {required List<int> data, required String name}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_list_prim_u_8_loose(data, serializer);
+        sse_encode_String(name, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 30, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_prim_u_8_strict,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdBytesToWavConstMeta,
+      argValues: [data, name],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdBytesToWavConstMeta => const TaskConstMeta(
+        debugName: "scd_bytes_to_wav",
+        argNames: ["data", "name"],
+      );
+
+  @override
+  Future<ScdExtractResult> crateApiScdDecode({required String inFile}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 31, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_scd_extract_result,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdDecodeConstMeta,
+      argValues: [inFile],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdDecodeConstMeta => const TaskConstMeta(
+        debugName: "scd_decode",
+        argNames: ["inFile"],
+      );
+
+  @override
+  Future<ScdExtractResult> crateApiScdDecodeFromMemory(
+      {required List<int> data, required String name}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_list_prim_u_8_loose(data, serializer);
+        sse_encode_String(name, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 32, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_scd_extract_result,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdDecodeFromMemoryConstMeta,
+      argValues: [data, name],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdDecodeFromMemoryConstMeta =>
+      const TaskConstMeta(
+        debugName: "scd_decode_from_memory",
+        argNames: ["data", "name"],
+      );
+
+  @override
+  Future<DecodedAudio> crateApiScdDecodeStream(
+      {required String inFile, required int streamIndex}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        sse_encode_u_32(streamIndex, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 33, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_decoded_audio,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdDecodeStreamConstMeta,
+      argValues: [inFile, streamIndex],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdDecodeStreamConstMeta => const TaskConstMeta(
+        debugName: "scd_decode_stream",
+        argNames: ["inFile", "streamIndex"],
+      );
+
+  @override
+  Future<void> crateApiScdExtractToWav(
+      {required String scdPath, required String wavPath}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(scdPath, serializer);
+        sse_encode_String(wavPath, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 34, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdExtractToWavConstMeta,
+      argValues: [scdPath, wavPath],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdExtractToWavConstMeta => const TaskConstMeta(
+        debugName: "scd_extract_to_wav",
+        argNames: ["scdPath", "wavPath"],
+      );
+
+  @override
+  Future<ScdMetadata> crateApiScdParse({required String inFile}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 35, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_scd_metadata,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdParseConstMeta,
+      argValues: [inFile],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdParseConstMeta => const TaskConstMeta(
+        debugName: "scd_parse",
+        argNames: ["inFile"],
+      );
+
+  @override
+  Future<ScdMetadata> crateApiScdParseFromMemory(
+      {required List<int> data, required String name}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_list_prim_u_8_loose(data, serializer);
+        sse_encode_String(name, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 36, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_scd_metadata,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdParseFromMemoryConstMeta,
+      argValues: [data, name],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdParseFromMemoryConstMeta => const TaskConstMeta(
+        debugName: "scd_parse_from_memory",
+        argNames: ["data", "name"],
+      );
+
+  @override
+  Future<Uint8List> crateApiScdToWav({required String inFile}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inFile, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 37, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_prim_u_8_strict,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiScdToWavConstMeta,
+      argValues: [inFile],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiScdToWavConstMeta => const TaskConstMeta(
+        debugName: "scd_to_wav",
+        argNames: ["inFile"],
+      );
+
+  @override
   Future<void> crateApiSetLogLevel({required int level}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_i_32(level, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 24, port: port_);
+            funcId: 38, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -898,7 +1296,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(message, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 25, port: port_);
+            funcId: 39, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -916,13 +1314,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiTranslateWav(
+      {required String inputPath,
+      required String outputPath,
+      required String targetLang}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(inputPath, serializer);
+        sse_encode_String(outputPath, serializer);
+        sse_encode_String(targetLang, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 40, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiTranslateWavConstMeta,
+      argValues: [inputPath, outputPath, targetLang],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiTranslateWavConstMeta => const TaskConstMeta(
+        debugName: "translate_wav",
+        argNames: ["inputPath", "outputPath", "targetLang"],
+      );
+
+  @override
   Future<String> crateApiVfxExportJson({required String inFile}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(inFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 26, port: port_);
+            funcId: 41, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -948,7 +1375,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(xfvPath, serializer);
         sse_encode_String(textureName, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 27, port: port_);
+            funcId: 42, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData:
@@ -976,7 +1403,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(xfvPath, serializer);
         sse_encode_String(outputDir, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 28, port: port_);
+            funcId: 43, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_String,
@@ -1000,7 +1427,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(inFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 29, port: port_);
+            funcId: 44, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_vfx_summary,
@@ -1024,7 +1451,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(inFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 30, port: port_);
+            funcId: 45, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_String,
@@ -1048,7 +1475,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(inFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 31, port: port_);
+            funcId: 46, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_vfx_texture,
@@ -1072,7 +1499,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(inFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 32, port: port_);
+            funcId: 47, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_vfx_data,
@@ -1095,7 +1522,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 33, port: port_);
+            funcId: 48, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1118,7 +1545,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 34, port: port_);
+            funcId: 49, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_record_u_32_u_32,
@@ -1142,7 +1569,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 35, port: port_);
+            funcId: 50, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_f_32,
@@ -1168,7 +1595,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_u_32(width, serializer);
         sse_encode_u_32(height, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 36, port: port_);
+            funcId: 51, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1191,7 +1618,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 37, port: port_);
+            funcId: 52, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_bool,
@@ -1221,7 +1648,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(modelName, serializer);
         sse_encode_String(textureName, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 38, port: port_);
+            funcId: 53, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1252,7 +1679,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_f_32(b, serializer);
         sse_encode_f_32(a, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 39, port: port_);
+            funcId: 54, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1276,7 +1703,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_f_32(deltaTime, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 40, port: port_);
+            funcId: 55, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_prim_u_8_strict,
@@ -1300,7 +1727,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 41, port: port_);
+            funcId: 56, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1318,6 +1745,32 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiWavToScd(
+      {required String wavPath, required String scdPath}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(wavPath, serializer);
+        sse_encode_String(scdPath, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 57, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiWavToScdConstMeta,
+      argValues: [wavPath, scdPath],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiWavToScdConstMeta => const TaskConstMeta(
+        debugName: "wav_to_scd",
+        argNames: ["wavPath", "scdPath"],
+      );
+
+  @override
   Future<void> crateApiWbtExtract(
       {required String filelistPath,
       required String containerPath,
@@ -1331,7 +1784,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outDir, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 42, port: port_);
+            funcId: 58, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1364,7 +1817,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outputDir, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 43, port: port_);
+            funcId: 59, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_usize,
@@ -1404,7 +1857,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outputDir, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 44, port: port_);
+            funcId: 60, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1444,7 +1897,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outputDir, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 45, port: port_);
+            funcId: 61, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_usize,
@@ -1484,7 +1937,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outputPath, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 46, port: port_);
+            funcId: 62, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1523,7 +1976,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(filelistPath, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 47, port: port_);
+            funcId: 63, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_wbt_file_entry,
@@ -1554,7 +2007,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(extractedDir, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 48, port: port_);
+            funcId: 64, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1585,7 +2038,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_list_record_string_string(filesToPatch, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 49, port: port_);
+            funcId: 65, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1618,7 +2071,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(fileToInject, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 50, port: port_);
+            funcId: 66, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1659,7 +2112,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_action(action, serializer);
         sse_encode_String(inputFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 51, port: port_);
+            funcId: 67, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1683,7 +2136,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(json, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 52, port: port_);
+            funcId: 68, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_wdb_data,
@@ -1709,7 +2162,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(inFile, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 53, port: port_);
+            funcId: 69, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_wdb_data,
@@ -1735,7 +2188,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_box_autoadd_wdb_data(data, serializer);
         sse_encode_String(outFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 54, port: port_);
+            funcId: 70, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1759,7 +2212,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_box_autoadd_wdb_data(data, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 55, port: port_);
+            funcId: 71, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -1785,7 +2238,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(inDir, serializer);
         sse_encode_String(outFile, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 56, port: port_);
+            funcId: 72, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1811,7 +2264,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(inFile, serializer);
         sse_encode_String(outDir, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 57, port: port_);
+            funcId: 73, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_wpd_data,
@@ -1840,7 +2293,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outFile, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 58, port: port_);
+            funcId: 74, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1869,7 +2322,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outFile, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 59, port: port_);
+            funcId: 75, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1896,7 +2349,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(outFile, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 60, port: port_);
+            funcId: 76, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -1922,7 +2375,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(inFile, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 61, port: port_);
+            funcId: 77, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_ztr_data,
@@ -1950,7 +2403,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_i_32(gameCode, serializer);
         sse_encode_StreamSink_ztr_parse_progress_Sse(progressSink, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 62, port: port_);
+            funcId: 78, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_ztr_directory_result,
@@ -1977,7 +2430,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(dirPath, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 63, port: port_);
+            funcId: 79, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_ztr_directory_result,
@@ -2004,7 +2457,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_list_prim_u_8_loose(data, serializer);
         sse_encode_i_32(gameCode, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 64, port: port_);
+            funcId: 80, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_ztr_data,
@@ -2028,7 +2481,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_box_autoadd_ztr_data(data, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 65, port: port_);
+            funcId: 81, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -2091,6 +2544,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ActorType dco_decode_actor_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return ActorType_Camera();
+      case 1:
+        return ActorType_Sound();
+      case 2:
+        return ActorType_Effect();
+      case 3:
+        return ActorType_Bgm();
+      case 4:
+        return ActorType_Proxy();
+      case 5:
+        return ActorType_System();
+      case 6:
+        return ActorType_Character(
+          dco_decode_String(raw[1]),
+        );
+      case 7:
+        return ActorType_Unknown(
+          dco_decode_String(raw[1]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  BlockTrack dco_decode_block_track(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return BlockTrack(
+      size: dco_decode_u_16(arr[0]),
+      trackType: dco_decode_track_type(arr[1]),
+      typeCode: dco_decode_u_16(arr[2]),
+      flags: dco_decode_u_32(arr[3]),
+      index: dco_decode_u_32(arr[4]),
+      reference: dco_decode_opt_String(arr[5]),
+      startFrame: dco_decode_opt_box_autoadd_u_32(arr[6]),
+      durationFrames: dco_decode_opt_box_autoadd_u_32(arr[7]),
+      floatValues: dco_decode_list_prim_f_32_strict(arr[8]),
+    );
+  }
+
+  @protected
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
@@ -2103,9 +2604,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  EventDataSet dco_decode_box_autoadd_event_data_set(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_event_data_set(raw);
+  }
+
+  @protected
   McpFile dco_decode_box_autoadd_mcp_file(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_mcp_file(raw);
+  }
+
+  @protected
+  ScheduleHeader dco_decode_box_autoadd_schedule_header(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_schedule_header(raw);
   }
 
   @protected
@@ -2130,6 +2643,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ZtrData dco_decode_box_autoadd_ztr_data(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_ztr_data(raw);
+  }
+
+  @protected
+  CameraControlBlock dco_decode_camera_control_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return CameraControlBlock(
+      name: dco_decode_String(arr[0]),
+      sourceFile: dco_decode_String(arr[1]),
+      headerSize: dco_decode_u_32(arr[2]),
+      dataSize: dco_decode_u_32(arr[3]),
+      flags: dco_decode_u_32(arr[4]),
+    );
   }
 
   @protected
@@ -2200,6 +2728,162 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  DecodedAudio dco_decode_decoded_audio(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return DecodedAudio(
+      sampleRate: dco_decode_u_32(arr[0]),
+      channels: dco_decode_u_16(arr[1]),
+      bitsPerSample: dco_decode_u_16(arr[2]),
+      pcmData: dco_decode_list_prim_u_8_strict(arr[3]),
+      durationSeconds: dco_decode_f_32(arr[4]),
+      originalCodec: dco_decode_String(arr[5]),
+    );
+  }
+
+  @protected
+  DialogueEntry dco_decode_dialogue_entry(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return DialogueEntry(
+      recordName: dco_decode_String(arr[0]),
+      rawContent: dco_decode_String(arr[1]),
+      ztrKey: dco_decode_String(arr[2]),
+    );
+  }
+
+  @protected
+  EventActor dco_decode_event_actor(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return EventActor(
+      name: dco_decode_String(arr[0]),
+      actorType: dco_decode_actor_type(arr[1]),
+      index: dco_decode_u_16(arr[2]),
+      flags: dco_decode_u_32(arr[3]),
+    );
+  }
+
+  @protected
+  EventBlock dco_decode_event_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return EventBlock(
+      name: dco_decode_String(arr[0]),
+      id: dco_decode_u_16(arr[1]),
+      durationFrames: dco_decode_u_32(arr[2]),
+      durationSeconds: dco_decode_f_32(arr[3]),
+      trackCount: dco_decode_u_32(arr[4]),
+      tracks: dco_decode_list_block_track(arr[5]),
+    );
+  }
+
+  @protected
+  EventDataSet dco_decode_event_data_set(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return EventDataSet(
+      motionBlocks: dco_decode_list_motion_control_block(arr[0]),
+      cameraBlocks: dco_decode_list_camera_control_block(arr[1]),
+      sourceFiles: dco_decode_list_String(arr[2]),
+    );
+  }
+
+  @protected
+  EventMetadata dco_decode_event_metadata(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 15)
+      throw Exception('unexpected arr length: expect 15 but see ${arr.length}');
+    return EventMetadata(
+      name: dco_decode_String(arr[0]),
+      sourcePath: dco_decode_String(arr[1]),
+      fileSize: dco_decode_u_64(arr[2]),
+      recordCount: dco_decode_usize(arr[3]),
+      wpdRecords: dco_decode_list_wpd_record_info(arr[4]),
+      scheduleHeader: dco_decode_opt_box_autoadd_schedule_header(arr[5]),
+      sectionCounts: dco_decode_section_counts(arr[6]),
+      externalResources: dco_decode_list_external_resource(arr[7]),
+      actors: dco_decode_list_event_actor(arr[8]),
+      blocks: dco_decode_list_event_block(arr[9]),
+      resources: dco_decode_list_event_resource(arr[10]),
+      soundBlocks: dco_decode_list_sound_block(arr[11]),
+      soundReferences: dco_decode_list_sound_reference(arr[12]),
+      dialogueEntries: dco_decode_list_dialogue_entry(arr[13]),
+      dataset: dco_decode_opt_box_autoadd_event_data_set(arr[14]),
+    );
+  }
+
+  @protected
+  EventResource dco_decode_event_resource(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return EventResource(
+      name: dco_decode_String(arr[0]),
+      resourceType: dco_decode_String(arr[1]),
+      externalHash: dco_decode_opt_String(arr[2]),
+    );
+  }
+
+  @protected
+  EventSummary dco_decode_event_summary(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return EventSummary(
+      name: dco_decode_String(arr[0]),
+      actorCount: dco_decode_usize(arr[1]),
+      blockCount: dco_decode_usize(arr[2]),
+      resourceCount: dco_decode_usize(arr[3]),
+      dialogueCount: dco_decode_usize(arr[4]),
+      soundBlockCount: dco_decode_usize(arr[5]),
+      totalDurationSeconds: dco_decode_f_32(arr[6]),
+      hasDataset: dco_decode_bool(arr[7]),
+      motionBlockCount: dco_decode_usize(arr[8]),
+      cameraBlockCount: dco_decode_usize(arr[9]),
+    );
+  }
+
+  @protected
+  ExternalResource dco_decode_external_resource(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ExternalResource(
+      name: dco_decode_String(arr[0]),
+      hash: dco_decode_String(arr[1]),
+      category: dco_decode_resource_category(arr[2]),
+    );
+  }
+
+  @protected
+  ExtractedEvent dco_decode_extracted_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return ExtractedEvent(
+      outputDir: dco_decode_String(arr[0]),
+      metadata: dco_decode_event_metadata(arr[1]),
+      extractedFiles: dco_decode_list_String(arr[2]),
+    );
+  }
+
+  @protected
   double dco_decode_f_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as double;
@@ -2259,6 +2943,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<BlockTrack> dco_decode_list_block_track(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_block_track).toList();
+  }
+
+  @protected
+  List<CameraControlBlock> dco_decode_list_camera_control_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_camera_control_block).toList();
+  }
+
+  @protected
   List<CrystariumEntry> dco_decode_list_crystarium_entry(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_crystarium_entry).toList();
@@ -2268,6 +2964,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<CrystariumNode> dco_decode_list_crystarium_node(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_crystarium_node).toList();
+  }
+
+  @protected
+  List<DecodedAudio> dco_decode_list_decoded_audio(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_decoded_audio).toList();
+  }
+
+  @protected
+  List<DialogueEntry> dco_decode_list_dialogue_entry(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_dialogue_entry).toList();
+  }
+
+  @protected
+  List<EventActor> dco_decode_list_event_actor(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_event_actor).toList();
+  }
+
+  @protected
+  List<EventBlock> dco_decode_list_event_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_event_block).toList();
+  }
+
+  @protected
+  List<EventResource> dco_decode_list_event_resource(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_event_resource).toList();
+  }
+
+  @protected
+  List<ExternalResource> dco_decode_list_external_resource(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_external_resource).toList();
+  }
+
+  @protected
+  List<MotionControlBlock> dco_decode_list_motion_control_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_motion_control_block).toList();
   }
 
   @protected
@@ -2337,6 +3075,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<ScdStreamInfo> dco_decode_list_scd_stream_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_scd_stream_info).toList();
+  }
+
+  @protected
+  List<SoundBlock> dco_decode_list_sound_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_sound_block).toList();
+  }
+
+  @protected
+  List<SoundReference> dco_decode_list_sound_reference(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_sound_reference).toList();
+  }
+
+  @protected
   List<Vec3> dco_decode_list_vec_3(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_vec_3).toList();
@@ -2382,6 +3138,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<WpdRecord> dco_decode_list_wpd_record(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_wpd_record).toList();
+  }
+
+  @protected
+  List<WpdRecordInfo> dco_decode_list_wpd_record_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_wpd_record_info).toList();
   }
 
   @protected
@@ -2438,9 +3200,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MotionControlBlock dco_decode_motion_control_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return MotionControlBlock(
+      name: dco_decode_String(arr[0]),
+      sourceFile: dco_decode_String(arr[1]),
+      headerSize: dco_decode_u_32(arr[2]),
+      dataSize: dco_decode_u_32(arr[3]),
+      version: dco_decode_u_16(arr[4]),
+      flags: dco_decode_u_16(arr[5]),
+    );
+  }
+
+  @protected
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
+  EventDataSet? dco_decode_opt_box_autoadd_event_data_set(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_event_data_set(raw);
+  }
+
+  @protected
+  ScheduleHeader? dco_decode_opt_box_autoadd_schedule_header(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_schedule_header(raw);
   }
 
   @protected
@@ -2536,9 +3326,177 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ResourceCategory dco_decode_resource_category(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ResourceCategory.values[raw as int];
+  }
+
+  @protected
+  ScdCodec dco_decode_scd_codec(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ScdCodec.values[raw as int];
+  }
+
+  @protected
+  ScdExtractResult dco_decode_scd_extract_result(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ScdExtractResult(
+      metadata: dco_decode_scd_metadata(arr[0]),
+      audioStreams: dco_decode_list_decoded_audio(arr[1]),
+    );
+  }
+
+  @protected
+  ScdHeader dco_decode_scd_header(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ScdHeader(
+      version: dco_decode_u_32(arr[0]),
+      bigEndian: dco_decode_bool(arr[1]),
+      tablesOffset: dco_decode_u_16(arr[2]),
+      fileSize: dco_decode_u_64(arr[3]),
+    );
+  }
+
+  @protected
+  ScdMetadata dco_decode_scd_metadata(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ScdMetadata(
+      name: dco_decode_String(arr[0]),
+      header: dco_decode_scd_header(arr[1]),
+      streams: dco_decode_list_scd_stream_info(arr[2]),
+      durationSeconds: dco_decode_f_32(arr[3]),
+    );
+  }
+
+  @protected
+  ScdStreamInfo dco_decode_scd_stream_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
+    return ScdStreamInfo(
+      index: dco_decode_u_32(arr[0]),
+      dataSize: dco_decode_u_32(arr[1]),
+      channels: dco_decode_u_32(arr[2]),
+      sampleRate: dco_decode_u_32(arr[3]),
+      codec: dco_decode_scd_codec(arr[4]),
+      loopStart: dco_decode_u_32(arr[5]),
+      loopEnd: dco_decode_u_32(arr[6]),
+      extraDataSize: dco_decode_u_32(arr[7]),
+      auxChunkCount: dco_decode_u_32(arr[8]),
+      dataOffset: dco_decode_u_32(arr[9]),
+    );
+  }
+
+  @protected
+  ScheduleHeader dco_decode_schedule_header(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ScheduleHeader(
+      magic: dco_decode_String(arr[0]),
+      version: dco_decode_u_32(arr[1]),
+      headerSize: dco_decode_u_32(arr[2]),
+      dataSize: dco_decode_u_32(arr[3]),
+    );
+  }
+
+  @protected
+  SectionCounts dco_decode_section_counts(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    return SectionCounts(
+      crst: dco_decode_u_32(arr[0]),
+      cres: dco_decode_u_32(arr[1]),
+      catt: dco_decode_u_32(arr[2]),
+      ccpt: dco_decode_u_32(arr[3]),
+      cact: dco_decode_u_32(arr[4]),
+      cdpt: dco_decode_u_32(arr[5]),
+      ctrk: dco_decode_u_32(arr[6]),
+      cbkt: dco_decode_u_32(arr[7]),
+      cblk: dco_decode_u_32(arr[8]),
+    );
+  }
+
+  @protected
+  SoundBlock dco_decode_sound_block(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SoundBlock(
+      name: dco_decode_String(arr[0]),
+      durationSamples: dco_decode_u_32(arr[1]),
+      durationSeconds: dco_decode_f_32(arr[2]),
+    );
+  }
+
+  @protected
+  SoundReference dco_decode_sound_reference(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SoundReference(
+      blockName: dco_decode_String(arr[0]),
+      soundId: dco_decode_String(arr[1]),
+      soundType: dco_decode_sound_type(arr[2]),
+    );
+  }
+
+  @protected
+  SoundType dco_decode_sound_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SoundType.values[raw as int];
+  }
+
+  @protected
   TargetType dco_decode_target_type(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return TargetType.values[raw as int];
+  }
+
+  @protected
+  TrackType dco_decode_track_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return TrackType_MotionSet();
+      case 1:
+        return TrackType_CharacterSet();
+      case 2:
+        return TrackType_Camera();
+      case 3:
+        return TrackType_Sound();
+      case 4:
+        return TrackType_MusicBus();
+      case 5:
+        return TrackType_Dialogue();
+      case 6:
+        return TrackType_Effect();
+      case 7:
+        return TrackType_EventDef();
+      case 8:
+        return TrackType_ActorControl();
+      case 9:
+        return TrackType_Unknown(
+          dco_decode_u_16(raw[1]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
   }
 
   @protected
@@ -2852,6 +3810,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WpdRecordInfo dco_decode_wpd_record_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return WpdRecordInfo(
+      name: dco_decode_String(arr[0]),
+      extension_: dco_decode_String(arr[1]),
+      offset: dco_decode_u_32(arr[2]),
+      size: dco_decode_u_32(arr[3]),
+    );
+  }
+
+  @protected
   ZtrData dco_decode_ztr_data(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -2994,6 +3966,59 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ActorType sse_decode_actor_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return ActorType_Camera();
+      case 1:
+        return ActorType_Sound();
+      case 2:
+        return ActorType_Effect();
+      case 3:
+        return ActorType_Bgm();
+      case 4:
+        return ActorType_Proxy();
+      case 5:
+        return ActorType_System();
+      case 6:
+        var var_field0 = sse_decode_String(deserializer);
+        return ActorType_Character(var_field0);
+      case 7:
+        var var_field0 = sse_decode_String(deserializer);
+        return ActorType_Unknown(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  BlockTrack sse_decode_block_track(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_size = sse_decode_u_16(deserializer);
+    var var_trackType = sse_decode_track_type(deserializer);
+    var var_typeCode = sse_decode_u_16(deserializer);
+    var var_flags = sse_decode_u_32(deserializer);
+    var var_index = sse_decode_u_32(deserializer);
+    var var_reference = sse_decode_opt_String(deserializer);
+    var var_startFrame = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_durationFrames = sse_decode_opt_box_autoadd_u_32(deserializer);
+    var var_floatValues = sse_decode_list_prim_f_32_strict(deserializer);
+    return BlockTrack(
+        size: var_size,
+        trackType: var_trackType,
+        typeCode: var_typeCode,
+        flags: var_flags,
+        index: var_index,
+        reference: var_reference,
+        startFrame: var_startFrame,
+        durationFrames: var_durationFrames,
+        floatValues: var_floatValues);
+  }
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
@@ -3006,9 +4031,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  EventDataSet sse_decode_box_autoadd_event_data_set(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_event_data_set(deserializer));
+  }
+
+  @protected
   McpFile sse_decode_box_autoadd_mcp_file(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_mcp_file(deserializer));
+  }
+
+  @protected
+  ScheduleHeader sse_decode_box_autoadd_schedule_header(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_schedule_header(deserializer));
   }
 
   @protected
@@ -3033,6 +4072,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ZtrData sse_decode_box_autoadd_ztr_data(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_ztr_data(deserializer));
+  }
+
+  @protected
+  CameraControlBlock sse_decode_camera_control_block(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_sourceFile = sse_decode_String(deserializer);
+    var var_headerSize = sse_decode_u_32(deserializer);
+    var var_dataSize = sse_decode_u_32(deserializer);
+    var var_flags = sse_decode_u_32(deserializer);
+    return CameraControlBlock(
+        name: var_name,
+        sourceFile: var_sourceFile,
+        headerSize: var_headerSize,
+        dataSize: var_dataSize,
+        flags: var_flags);
   }
 
   @protected
@@ -3118,6 +4174,177 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  DecodedAudio sse_decode_decoded_audio(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_sampleRate = sse_decode_u_32(deserializer);
+    var var_channels = sse_decode_u_16(deserializer);
+    var var_bitsPerSample = sse_decode_u_16(deserializer);
+    var var_pcmData = sse_decode_list_prim_u_8_strict(deserializer);
+    var var_durationSeconds = sse_decode_f_32(deserializer);
+    var var_originalCodec = sse_decode_String(deserializer);
+    return DecodedAudio(
+        sampleRate: var_sampleRate,
+        channels: var_channels,
+        bitsPerSample: var_bitsPerSample,
+        pcmData: var_pcmData,
+        durationSeconds: var_durationSeconds,
+        originalCodec: var_originalCodec);
+  }
+
+  @protected
+  DialogueEntry sse_decode_dialogue_entry(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_recordName = sse_decode_String(deserializer);
+    var var_rawContent = sse_decode_String(deserializer);
+    var var_ztrKey = sse_decode_String(deserializer);
+    return DialogueEntry(
+        recordName: var_recordName,
+        rawContent: var_rawContent,
+        ztrKey: var_ztrKey);
+  }
+
+  @protected
+  EventActor sse_decode_event_actor(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_actorType = sse_decode_actor_type(deserializer);
+    var var_index = sse_decode_u_16(deserializer);
+    var var_flags = sse_decode_u_32(deserializer);
+    return EventActor(
+        name: var_name,
+        actorType: var_actorType,
+        index: var_index,
+        flags: var_flags);
+  }
+
+  @protected
+  EventBlock sse_decode_event_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_id = sse_decode_u_16(deserializer);
+    var var_durationFrames = sse_decode_u_32(deserializer);
+    var var_durationSeconds = sse_decode_f_32(deserializer);
+    var var_trackCount = sse_decode_u_32(deserializer);
+    var var_tracks = sse_decode_list_block_track(deserializer);
+    return EventBlock(
+        name: var_name,
+        id: var_id,
+        durationFrames: var_durationFrames,
+        durationSeconds: var_durationSeconds,
+        trackCount: var_trackCount,
+        tracks: var_tracks);
+  }
+
+  @protected
+  EventDataSet sse_decode_event_data_set(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_motionBlocks = sse_decode_list_motion_control_block(deserializer);
+    var var_cameraBlocks = sse_decode_list_camera_control_block(deserializer);
+    var var_sourceFiles = sse_decode_list_String(deserializer);
+    return EventDataSet(
+        motionBlocks: var_motionBlocks,
+        cameraBlocks: var_cameraBlocks,
+        sourceFiles: var_sourceFiles);
+  }
+
+  @protected
+  EventMetadata sse_decode_event_metadata(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_sourcePath = sse_decode_String(deserializer);
+    var var_fileSize = sse_decode_u_64(deserializer);
+    var var_recordCount = sse_decode_usize(deserializer);
+    var var_wpdRecords = sse_decode_list_wpd_record_info(deserializer);
+    var var_scheduleHeader =
+        sse_decode_opt_box_autoadd_schedule_header(deserializer);
+    var var_sectionCounts = sse_decode_section_counts(deserializer);
+    var var_externalResources = sse_decode_list_external_resource(deserializer);
+    var var_actors = sse_decode_list_event_actor(deserializer);
+    var var_blocks = sse_decode_list_event_block(deserializer);
+    var var_resources = sse_decode_list_event_resource(deserializer);
+    var var_soundBlocks = sse_decode_list_sound_block(deserializer);
+    var var_soundReferences = sse_decode_list_sound_reference(deserializer);
+    var var_dialogueEntries = sse_decode_list_dialogue_entry(deserializer);
+    var var_dataset = sse_decode_opt_box_autoadd_event_data_set(deserializer);
+    return EventMetadata(
+        name: var_name,
+        sourcePath: var_sourcePath,
+        fileSize: var_fileSize,
+        recordCount: var_recordCount,
+        wpdRecords: var_wpdRecords,
+        scheduleHeader: var_scheduleHeader,
+        sectionCounts: var_sectionCounts,
+        externalResources: var_externalResources,
+        actors: var_actors,
+        blocks: var_blocks,
+        resources: var_resources,
+        soundBlocks: var_soundBlocks,
+        soundReferences: var_soundReferences,
+        dialogueEntries: var_dialogueEntries,
+        dataset: var_dataset);
+  }
+
+  @protected
+  EventResource sse_decode_event_resource(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_resourceType = sse_decode_String(deserializer);
+    var var_externalHash = sse_decode_opt_String(deserializer);
+    return EventResource(
+        name: var_name,
+        resourceType: var_resourceType,
+        externalHash: var_externalHash);
+  }
+
+  @protected
+  EventSummary sse_decode_event_summary(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_actorCount = sse_decode_usize(deserializer);
+    var var_blockCount = sse_decode_usize(deserializer);
+    var var_resourceCount = sse_decode_usize(deserializer);
+    var var_dialogueCount = sse_decode_usize(deserializer);
+    var var_soundBlockCount = sse_decode_usize(deserializer);
+    var var_totalDurationSeconds = sse_decode_f_32(deserializer);
+    var var_hasDataset = sse_decode_bool(deserializer);
+    var var_motionBlockCount = sse_decode_usize(deserializer);
+    var var_cameraBlockCount = sse_decode_usize(deserializer);
+    return EventSummary(
+        name: var_name,
+        actorCount: var_actorCount,
+        blockCount: var_blockCount,
+        resourceCount: var_resourceCount,
+        dialogueCount: var_dialogueCount,
+        soundBlockCount: var_soundBlockCount,
+        totalDurationSeconds: var_totalDurationSeconds,
+        hasDataset: var_hasDataset,
+        motionBlockCount: var_motionBlockCount,
+        cameraBlockCount: var_cameraBlockCount);
+  }
+
+  @protected
+  ExternalResource sse_decode_external_resource(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_hash = sse_decode_String(deserializer);
+    var var_category = sse_decode_resource_category(deserializer);
+    return ExternalResource(
+        name: var_name, hash: var_hash, category: var_category);
+  }
+
+  @protected
+  ExtractedEvent sse_decode_extracted_event(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_outputDir = sse_decode_String(deserializer);
+    var var_metadata = sse_decode_event_metadata(deserializer);
+    var var_extractedFiles = sse_decode_list_String(deserializer);
+    return ExtractedEvent(
+        outputDir: var_outputDir,
+        metadata: var_metadata,
+        extractedFiles: var_extractedFiles);
+  }
+
+  @protected
   double sse_decode_f_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getFloat32();
@@ -3190,6 +4417,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<BlockTrack> sse_decode_list_block_track(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <BlockTrack>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_block_track(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<CameraControlBlock> sse_decode_list_camera_control_block(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <CameraControlBlock>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_camera_control_block(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<CrystariumEntry> sse_decode_list_crystarium_entry(
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -3211,6 +4463,95 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <CrystariumNode>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_crystarium_node(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<DecodedAudio> sse_decode_list_decoded_audio(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <DecodedAudio>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_decoded_audio(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<DialogueEntry> sse_decode_list_dialogue_entry(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <DialogueEntry>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_dialogue_entry(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<EventActor> sse_decode_list_event_actor(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <EventActor>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_event_actor(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<EventBlock> sse_decode_list_event_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <EventBlock>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_event_block(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<EventResource> sse_decode_list_event_resource(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <EventResource>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_event_resource(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ExternalResource> sse_decode_list_external_resource(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ExternalResource>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_external_resource(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<MotionControlBlock> sse_decode_list_motion_control_block(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <MotionControlBlock>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_motion_control_block(deserializer));
     }
     return ans_;
   }
@@ -3299,6 +4640,44 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <(String, WdbValue)>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_record_string_wdb_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ScdStreamInfo> sse_decode_list_scd_stream_info(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ScdStreamInfo>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_scd_stream_info(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SoundBlock> sse_decode_list_sound_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SoundBlock>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_sound_block(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SoundReference> sse_decode_list_sound_reference(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SoundReference>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_sound_reference(deserializer));
     }
     return ans_;
   }
@@ -3402,6 +4781,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<WpdRecordInfo> sse_decode_list_wpd_record_info(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WpdRecordInfo>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_wpd_record_info(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<ZtrEntry> sse_decode_list_ztr_entry(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -3476,11 +4868,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  MotionControlBlock sse_decode_motion_control_block(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_sourceFile = sse_decode_String(deserializer);
+    var var_headerSize = sse_decode_u_32(deserializer);
+    var var_dataSize = sse_decode_u_32(deserializer);
+    var var_version = sse_decode_u_16(deserializer);
+    var var_flags = sse_decode_u_16(deserializer);
+    return MotionControlBlock(
+        name: var_name,
+        sourceFile: var_sourceFile,
+        headerSize: var_headerSize,
+        dataSize: var_dataSize,
+        version: var_version,
+        flags: var_flags);
+  }
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  EventDataSet? sse_decode_opt_box_autoadd_event_data_set(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_event_data_set(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ScheduleHeader? sse_decode_opt_box_autoadd_schedule_header(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_schedule_header(deserializer));
     } else {
       return null;
     }
@@ -3563,10 +4998,188 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ResourceCategory sse_decode_resource_category(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ResourceCategory.values[inner];
+  }
+
+  @protected
+  ScdCodec sse_decode_scd_codec(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ScdCodec.values[inner];
+  }
+
+  @protected
+  ScdExtractResult sse_decode_scd_extract_result(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_metadata = sse_decode_scd_metadata(deserializer);
+    var var_audioStreams = sse_decode_list_decoded_audio(deserializer);
+    return ScdExtractResult(
+        metadata: var_metadata, audioStreams: var_audioStreams);
+  }
+
+  @protected
+  ScdHeader sse_decode_scd_header(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_version = sse_decode_u_32(deserializer);
+    var var_bigEndian = sse_decode_bool(deserializer);
+    var var_tablesOffset = sse_decode_u_16(deserializer);
+    var var_fileSize = sse_decode_u_64(deserializer);
+    return ScdHeader(
+        version: var_version,
+        bigEndian: var_bigEndian,
+        tablesOffset: var_tablesOffset,
+        fileSize: var_fileSize);
+  }
+
+  @protected
+  ScdMetadata sse_decode_scd_metadata(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_header = sse_decode_scd_header(deserializer);
+    var var_streams = sse_decode_list_scd_stream_info(deserializer);
+    var var_durationSeconds = sse_decode_f_32(deserializer);
+    return ScdMetadata(
+        name: var_name,
+        header: var_header,
+        streams: var_streams,
+        durationSeconds: var_durationSeconds);
+  }
+
+  @protected
+  ScdStreamInfo sse_decode_scd_stream_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_index = sse_decode_u_32(deserializer);
+    var var_dataSize = sse_decode_u_32(deserializer);
+    var var_channels = sse_decode_u_32(deserializer);
+    var var_sampleRate = sse_decode_u_32(deserializer);
+    var var_codec = sse_decode_scd_codec(deserializer);
+    var var_loopStart = sse_decode_u_32(deserializer);
+    var var_loopEnd = sse_decode_u_32(deserializer);
+    var var_extraDataSize = sse_decode_u_32(deserializer);
+    var var_auxChunkCount = sse_decode_u_32(deserializer);
+    var var_dataOffset = sse_decode_u_32(deserializer);
+    return ScdStreamInfo(
+        index: var_index,
+        dataSize: var_dataSize,
+        channels: var_channels,
+        sampleRate: var_sampleRate,
+        codec: var_codec,
+        loopStart: var_loopStart,
+        loopEnd: var_loopEnd,
+        extraDataSize: var_extraDataSize,
+        auxChunkCount: var_auxChunkCount,
+        dataOffset: var_dataOffset);
+  }
+
+  @protected
+  ScheduleHeader sse_decode_schedule_header(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_magic = sse_decode_String(deserializer);
+    var var_version = sse_decode_u_32(deserializer);
+    var var_headerSize = sse_decode_u_32(deserializer);
+    var var_dataSize = sse_decode_u_32(deserializer);
+    return ScheduleHeader(
+        magic: var_magic,
+        version: var_version,
+        headerSize: var_headerSize,
+        dataSize: var_dataSize);
+  }
+
+  @protected
+  SectionCounts sse_decode_section_counts(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_crst = sse_decode_u_32(deserializer);
+    var var_cres = sse_decode_u_32(deserializer);
+    var var_catt = sse_decode_u_32(deserializer);
+    var var_ccpt = sse_decode_u_32(deserializer);
+    var var_cact = sse_decode_u_32(deserializer);
+    var var_cdpt = sse_decode_u_32(deserializer);
+    var var_ctrk = sse_decode_u_32(deserializer);
+    var var_cbkt = sse_decode_u_32(deserializer);
+    var var_cblk = sse_decode_u_32(deserializer);
+    return SectionCounts(
+        crst: var_crst,
+        cres: var_cres,
+        catt: var_catt,
+        ccpt: var_ccpt,
+        cact: var_cact,
+        cdpt: var_cdpt,
+        ctrk: var_ctrk,
+        cbkt: var_cbkt,
+        cblk: var_cblk);
+  }
+
+  @protected
+  SoundBlock sse_decode_sound_block(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_durationSamples = sse_decode_u_32(deserializer);
+    var var_durationSeconds = sse_decode_f_32(deserializer);
+    return SoundBlock(
+        name: var_name,
+        durationSamples: var_durationSamples,
+        durationSeconds: var_durationSeconds);
+  }
+
+  @protected
+  SoundReference sse_decode_sound_reference(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_blockName = sse_decode_String(deserializer);
+    var var_soundId = sse_decode_String(deserializer);
+    var var_soundType = sse_decode_sound_type(deserializer);
+    return SoundReference(
+        blockName: var_blockName,
+        soundId: var_soundId,
+        soundType: var_soundType);
+  }
+
+  @protected
+  SoundType sse_decode_sound_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SoundType.values[inner];
+  }
+
+  @protected
   TargetType sse_decode_target_type(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return TargetType.values[inner];
+  }
+
+  @protected
+  TrackType sse_decode_track_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return TrackType_MotionSet();
+      case 1:
+        return TrackType_CharacterSet();
+      case 2:
+        return TrackType_Camera();
+      case 3:
+        return TrackType_Sound();
+      case 4:
+        return TrackType_MusicBus();
+      case 5:
+        return TrackType_Dialogue();
+      case 6:
+        return TrackType_Effect();
+      case 7:
+        return TrackType_EventDef();
+      case 8:
+        return TrackType_ActorControl();
+      case 9:
+        var var_field0 = sse_decode_u_16(deserializer);
+        return TrackType_Unknown(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
   }
 
   @protected
@@ -3878,6 +5491,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  WpdRecordInfo sse_decode_wpd_record_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_extension_ = sse_decode_String(deserializer);
+    var var_offset = sse_decode_u_32(deserializer);
+    var var_size = sse_decode_u_32(deserializer);
+    return WpdRecordInfo(
+        name: var_name,
+        extension_: var_extension_,
+        offset: var_offset,
+        size: var_size);
+  }
+
+  @protected
   ZtrData sse_decode_ztr_data(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_entries = sse_decode_list_ztr_entry(deserializer);
@@ -4015,6 +5642,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_actor_type(ActorType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case ActorType_Camera():
+        sse_encode_i_32(0, serializer);
+      case ActorType_Sound():
+        sse_encode_i_32(1, serializer);
+      case ActorType_Effect():
+        sse_encode_i_32(2, serializer);
+      case ActorType_Bgm():
+        sse_encode_i_32(3, serializer);
+      case ActorType_Proxy():
+        sse_encode_i_32(4, serializer);
+      case ActorType_System():
+        sse_encode_i_32(5, serializer);
+      case ActorType_Character(field0: final field0):
+        sse_encode_i_32(6, serializer);
+        sse_encode_String(field0, serializer);
+      case ActorType_Unknown(field0: final field0):
+        sse_encode_i_32(7, serializer);
+        sse_encode_String(field0, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_block_track(BlockTrack self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_16(self.size, serializer);
+    sse_encode_track_type(self.trackType, serializer);
+    sse_encode_u_16(self.typeCode, serializer);
+    sse_encode_u_32(self.flags, serializer);
+    sse_encode_u_32(self.index, serializer);
+    sse_encode_opt_String(self.reference, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.startFrame, serializer);
+    sse_encode_opt_box_autoadd_u_32(self.durationFrames, serializer);
+    sse_encode_list_prim_f_32_strict(self.floatValues, serializer);
+  }
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
@@ -4027,9 +5693,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_event_data_set(
+      EventDataSet self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_event_data_set(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_mcp_file(McpFile self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_mcp_file(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_schedule_header(
+      ScheduleHeader self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_schedule_header(self, serializer);
   }
 
   @protected
@@ -4054,6 +5734,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_box_autoadd_ztr_data(ZtrData self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_ztr_data(self, serializer);
+  }
+
+  @protected
+  void sse_encode_camera_control_block(
+      CameraControlBlock self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.sourceFile, serializer);
+    sse_encode_u_32(self.headerSize, serializer);
+    sse_encode_u_32(self.dataSize, serializer);
+    sse_encode_u_32(self.flags, serializer);
   }
 
   @protected
@@ -4109,6 +5800,114 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.parentIndex, serializer);
     sse_encode_u_32_array_4(self.unknown, serializer);
     sse_encode_f_32_array_4(self.scales, serializer);
+  }
+
+  @protected
+  void sse_encode_decoded_audio(DecodedAudio self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.sampleRate, serializer);
+    sse_encode_u_16(self.channels, serializer);
+    sse_encode_u_16(self.bitsPerSample, serializer);
+    sse_encode_list_prim_u_8_strict(self.pcmData, serializer);
+    sse_encode_f_32(self.durationSeconds, serializer);
+    sse_encode_String(self.originalCodec, serializer);
+  }
+
+  @protected
+  void sse_encode_dialogue_entry(DialogueEntry self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.recordName, serializer);
+    sse_encode_String(self.rawContent, serializer);
+    sse_encode_String(self.ztrKey, serializer);
+  }
+
+  @protected
+  void sse_encode_event_actor(EventActor self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_actor_type(self.actorType, serializer);
+    sse_encode_u_16(self.index, serializer);
+    sse_encode_u_32(self.flags, serializer);
+  }
+
+  @protected
+  void sse_encode_event_block(EventBlock self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_u_16(self.id, serializer);
+    sse_encode_u_32(self.durationFrames, serializer);
+    sse_encode_f_32(self.durationSeconds, serializer);
+    sse_encode_u_32(self.trackCount, serializer);
+    sse_encode_list_block_track(self.tracks, serializer);
+  }
+
+  @protected
+  void sse_encode_event_data_set(EventDataSet self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_motion_control_block(self.motionBlocks, serializer);
+    sse_encode_list_camera_control_block(self.cameraBlocks, serializer);
+    sse_encode_list_String(self.sourceFiles, serializer);
+  }
+
+  @protected
+  void sse_encode_event_metadata(EventMetadata self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.sourcePath, serializer);
+    sse_encode_u_64(self.fileSize, serializer);
+    sse_encode_usize(self.recordCount, serializer);
+    sse_encode_list_wpd_record_info(self.wpdRecords, serializer);
+    sse_encode_opt_box_autoadd_schedule_header(self.scheduleHeader, serializer);
+    sse_encode_section_counts(self.sectionCounts, serializer);
+    sse_encode_list_external_resource(self.externalResources, serializer);
+    sse_encode_list_event_actor(self.actors, serializer);
+    sse_encode_list_event_block(self.blocks, serializer);
+    sse_encode_list_event_resource(self.resources, serializer);
+    sse_encode_list_sound_block(self.soundBlocks, serializer);
+    sse_encode_list_sound_reference(self.soundReferences, serializer);
+    sse_encode_list_dialogue_entry(self.dialogueEntries, serializer);
+    sse_encode_opt_box_autoadd_event_data_set(self.dataset, serializer);
+  }
+
+  @protected
+  void sse_encode_event_resource(EventResource self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.resourceType, serializer);
+    sse_encode_opt_String(self.externalHash, serializer);
+  }
+
+  @protected
+  void sse_encode_event_summary(EventSummary self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_usize(self.actorCount, serializer);
+    sse_encode_usize(self.blockCount, serializer);
+    sse_encode_usize(self.resourceCount, serializer);
+    sse_encode_usize(self.dialogueCount, serializer);
+    sse_encode_usize(self.soundBlockCount, serializer);
+    sse_encode_f_32(self.totalDurationSeconds, serializer);
+    sse_encode_bool(self.hasDataset, serializer);
+    sse_encode_usize(self.motionBlockCount, serializer);
+    sse_encode_usize(self.cameraBlockCount, serializer);
+  }
+
+  @protected
+  void sse_encode_external_resource(
+      ExternalResource self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.hash, serializer);
+    sse_encode_resource_category(self.category, serializer);
+  }
+
+  @protected
+  void sse_encode_extracted_event(
+      ExtractedEvent self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.outputDir, serializer);
+    sse_encode_event_metadata(self.metadata, serializer);
+    sse_encode_list_String(self.extractedFiles, serializer);
   }
 
   @protected
@@ -4170,6 +5969,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_block_track(
+      List<BlockTrack> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_block_track(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_camera_control_block(
+      List<CameraControlBlock> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_camera_control_block(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_crystarium_entry(
       List<CrystariumEntry> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -4186,6 +6005,76 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_crystarium_node(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_decoded_audio(
+      List<DecodedAudio> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_decoded_audio(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_dialogue_entry(
+      List<DialogueEntry> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_dialogue_entry(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_event_actor(
+      List<EventActor> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_event_actor(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_event_block(
+      List<EventBlock> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_event_block(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_event_resource(
+      List<EventResource> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_event_resource(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_external_resource(
+      List<ExternalResource> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_external_resource(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_motion_control_block(
+      List<MotionControlBlock> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_motion_control_block(item, serializer);
     }
   }
 
@@ -4277,6 +6166,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_scd_stream_info(
+      List<ScdStreamInfo> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_scd_stream_info(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_sound_block(
+      List<SoundBlock> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_sound_block(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_sound_reference(
+      List<SoundReference> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_sound_reference(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_vec_3(List<Vec3> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -4356,6 +6275,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_wpd_record_info(
+      List<WpdRecordInfo> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_wpd_record_info(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_ztr_entry(
       List<ZtrEntry> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -4413,12 +6342,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_motion_control_block(
+      MotionControlBlock self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.sourceFile, serializer);
+    sse_encode_u_32(self.headerSize, serializer);
+    sse_encode_u_32(self.dataSize, serializer);
+    sse_encode_u_16(self.version, serializer);
+    sse_encode_u_16(self.flags, serializer);
+  }
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_String(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_event_data_set(
+      EventDataSet? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_event_data_set(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_schedule_header(
+      ScheduleHeader? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_schedule_header(self, serializer);
     }
   }
 
@@ -4491,9 +6454,139 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_resource_category(
+      ResourceCategory self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_scd_codec(ScdCodec self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_scd_extract_result(
+      ScdExtractResult self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_scd_metadata(self.metadata, serializer);
+    sse_encode_list_decoded_audio(self.audioStreams, serializer);
+  }
+
+  @protected
+  void sse_encode_scd_header(ScdHeader self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.version, serializer);
+    sse_encode_bool(self.bigEndian, serializer);
+    sse_encode_u_16(self.tablesOffset, serializer);
+    sse_encode_u_64(self.fileSize, serializer);
+  }
+
+  @protected
+  void sse_encode_scd_metadata(ScdMetadata self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_scd_header(self.header, serializer);
+    sse_encode_list_scd_stream_info(self.streams, serializer);
+    sse_encode_f_32(self.durationSeconds, serializer);
+  }
+
+  @protected
+  void sse_encode_scd_stream_info(
+      ScdStreamInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.index, serializer);
+    sse_encode_u_32(self.dataSize, serializer);
+    sse_encode_u_32(self.channels, serializer);
+    sse_encode_u_32(self.sampleRate, serializer);
+    sse_encode_scd_codec(self.codec, serializer);
+    sse_encode_u_32(self.loopStart, serializer);
+    sse_encode_u_32(self.loopEnd, serializer);
+    sse_encode_u_32(self.extraDataSize, serializer);
+    sse_encode_u_32(self.auxChunkCount, serializer);
+    sse_encode_u_32(self.dataOffset, serializer);
+  }
+
+  @protected
+  void sse_encode_schedule_header(
+      ScheduleHeader self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.magic, serializer);
+    sse_encode_u_32(self.version, serializer);
+    sse_encode_u_32(self.headerSize, serializer);
+    sse_encode_u_32(self.dataSize, serializer);
+  }
+
+  @protected
+  void sse_encode_section_counts(SectionCounts self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self.crst, serializer);
+    sse_encode_u_32(self.cres, serializer);
+    sse_encode_u_32(self.catt, serializer);
+    sse_encode_u_32(self.ccpt, serializer);
+    sse_encode_u_32(self.cact, serializer);
+    sse_encode_u_32(self.cdpt, serializer);
+    sse_encode_u_32(self.ctrk, serializer);
+    sse_encode_u_32(self.cbkt, serializer);
+    sse_encode_u_32(self.cblk, serializer);
+  }
+
+  @protected
+  void sse_encode_sound_block(SoundBlock self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_u_32(self.durationSamples, serializer);
+    sse_encode_f_32(self.durationSeconds, serializer);
+  }
+
+  @protected
+  void sse_encode_sound_reference(
+      SoundReference self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.blockName, serializer);
+    sse_encode_String(self.soundId, serializer);
+    sse_encode_sound_type(self.soundType, serializer);
+  }
+
+  @protected
+  void sse_encode_sound_type(SoundType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_target_type(TargetType self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_track_type(TrackType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case TrackType_MotionSet():
+        sse_encode_i_32(0, serializer);
+      case TrackType_CharacterSet():
+        sse_encode_i_32(1, serializer);
+      case TrackType_Camera():
+        sse_encode_i_32(2, serializer);
+      case TrackType_Sound():
+        sse_encode_i_32(3, serializer);
+      case TrackType_MusicBus():
+        sse_encode_i_32(4, serializer);
+      case TrackType_Dialogue():
+        sse_encode_i_32(5, serializer);
+      case TrackType_Effect():
+        sse_encode_i_32(6, serializer);
+      case TrackType_EventDef():
+        sse_encode_i_32(7, serializer);
+      case TrackType_ActorControl():
+        sse_encode_i_32(8, serializer);
+      case TrackType_Unknown(field0: final field0):
+        sse_encode_i_32(9, serializer);
+        sse_encode_u_16(field0, serializer);
+    }
   }
 
   @protected
@@ -4722,6 +6815,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.name, serializer);
     sse_encode_String(self.extension_, serializer);
     sse_encode_list_prim_u_8_strict(self.data, serializer);
+  }
+
+  @protected
+  void sse_encode_wpd_record_info(
+      WpdRecordInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.extension_, serializer);
+    sse_encode_u_32(self.offset, serializer);
+    sse_encode_u_32(self.size, serializer);
   }
 
   @protected

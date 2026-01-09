@@ -53,6 +53,9 @@ dependencies:
   vector_math: ^2.1.4
   flutter_highlight: ^0.7.0
   uuid: ^4.5.1
+  audioplayers: ^6.1.0
+  audioplayers_linux: ^4.2.1
+  audioplayers_windows: ^4.2.1
 
 dev_dependencies:
   flutter_test:

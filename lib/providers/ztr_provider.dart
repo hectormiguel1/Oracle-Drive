@@ -176,6 +176,59 @@ class ZtrNotifier {
     }
   }
 
+  /// Dumps filtered entries to a text file.
+  /// Uses the currently filtered entries (search + source file filter).
+  Future<void> dumpFilteredTxtFile(String outputPath) async {
+    final filteredEntries = _ref.read(filteredZtrEntriesProvider(_gameCode));
+    if (filteredEntries.isEmpty) {
+      throw Exception("No filtered entries to dump.");
+    }
+
+    _ref.read(ztrIsLoadingProvider(_gameCode).notifier).state = true;
+
+    try {
+      final entries = filteredEntries.map((e) => (e.id, e.text)).toList();
+      _logger.info("Dumping ${entries.length} filtered ZTR entries to $outputPath as text");
+      await NativeService.instance.dumpFilteredTxtFile(entries, outputPath);
+      _logger.info("Filtered ZTR data dumped to text successfully.");
+    } catch (e, stack) {
+      _logger.severe("Error dumping filtered ZTR to text: $e\n$stack");
+      rethrow;
+    } finally {
+      _ref.read(ztrIsLoadingProvider(_gameCode).notifier).state = false;
+    }
+  }
+
+  /// Dumps filtered entries to a ZTR file.
+  /// Uses the currently filtered entries (search + source file filter).
+  Future<void> dumpFilteredZtrFile(String outputPath) async {
+    final filteredEntries = _ref.read(filteredZtrEntriesProvider(_gameCode));
+    if (filteredEntries.isEmpty) {
+      throw Exception("No filtered entries to dump.");
+    }
+
+    _ref.read(ztrIsLoadingProvider(_gameCode).notifier).state = true;
+
+    try {
+      final entries = filteredEntries.map((e) => (e.id, e.text)).toList();
+      _logger.info("Dumping ${entries.length} filtered ZTR entries to $outputPath");
+      await NativeService.instance.dumpFilteredZtrFile(entries, outputPath, _gameCode);
+      _logger.info("Filtered ZTR data dumped successfully.");
+    } catch (e, stack) {
+      _logger.severe("Error dumping filtered ZTR: $e\n$stack");
+      rethrow;
+    } finally {
+      _ref.read(ztrIsLoadingProvider(_gameCode).notifier).state = false;
+    }
+  }
+
+  /// Returns true if any filters are active (search or source file filter).
+  bool get hasActiveFilters {
+    final searchFilter = _ref.read(ztrFilterProvider(_gameCode));
+    final sourceFilter = _ref.read(ztrSourceFileFilterProvider(_gameCode));
+    return searchFilter.isNotEmpty || (sourceFilter != null && sourceFilter.isNotEmpty);
+  }
+
   Future<void> updateEntry(ZtrEntry updatedEntry) async {
     _ref.read(ztrIsLoadingProvider(_gameCode).notifier).state = true;
 

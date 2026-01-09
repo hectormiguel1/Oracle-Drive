@@ -6,7 +6,10 @@ import 'package:oracle_drive/components/widgets/crystal_action_bar.dart';
 import 'package:oracle_drive/components/widgets/crystal_snackbar.dart';
 import 'package:oracle_drive/models/app_game_code.dart';
 import 'package:oracle_drive/providers/wpd_provider.dart';
+import 'package:oracle_drive/src/services/native_service.dart';
 import 'package:fabula_nova_sdk/bridge_generated/modules/wct.dart' as wct_sdk;
+import 'package:path/path.dart' as p;
+import 'package:audioplayers/audioplayers.dart';
 
 /// Callback types for WPD actions that need UI interaction
 typedef OnBatchDecompile = void Function(Directory dir);
@@ -47,7 +50,8 @@ class WpdFileActions extends ConsumerWidget {
         notifier: notifier,
         onBatchDecompile: onBatchDecompile,
         onTreeRebuild: onTreeRebuild,
-        showSnackBar: (msg, {bool isError = false}) => _showSnackBar(context, msg, isError: isError),
+        showSnackBar: (msg, {bool isError = false, bool isWarning = false}) =>
+            _showSnackBar(context, msg, isError: isError, isWarning: isWarning),
       );
     } else {
       return _FileActions(
@@ -58,15 +62,19 @@ class WpdFileActions extends ConsumerWidget {
         onPickDdsFile: onPickDdsFile,
         onEnterArchiveMode: onEnterArchiveMode,
         onTreeRebuild: onTreeRebuild,
-        showSnackBar: (msg, {bool isError = false}) => _showSnackBar(context, msg, isError: isError),
+        showSnackBar: (msg, {bool isError = false, bool isWarning = false}) =>
+            _showSnackBar(context, msg, isError: isError, isWarning: isWarning),
       );
     }
   }
 
-  void _showSnackBar(BuildContext context, String message, {bool isError = false}) {
+  void _showSnackBar(BuildContext context, String message,
+      {bool isError = false, bool isWarning = false}) {
     if (!context.mounted) return;
     if (isError) {
       context.showErrorSnackBar(message);
+    } else if (isWarning) {
+      context.showWarningSnackBar(message);
     } else {
       context.showSuccessSnackBar(message);
     }
@@ -79,7 +87,7 @@ class _DirectoryActions extends StatelessWidget {
   final WpdNotifier notifier;
   final OnBatchDecompile onBatchDecompile;
   final VoidCallback onTreeRebuild;
-  final void Function(String, {bool isError}) showSnackBar;
+  final void Function(String, {bool isError, bool isWarning}) showSnackBar;
 
   const _DirectoryActions({
     required this.dir,
@@ -143,6 +151,23 @@ class _DirectoryActions extends StatelessWidget {
             ),
           ],
         ),
+        // Batch Sound Operations
+        CrystalActionBar(
+          label: 'BATCH SOUND',
+          actions: [
+            CrystalAction(
+              icon: Icons.music_note,
+              tooltip: 'Convert All SCD to WAV',
+              onPressed: isProcessing ? null : _convertAllScdToWav,
+              isPrimary: true,
+            ),
+            CrystalAction(
+              icon: Icons.transform,
+              tooltip: 'Convert All WAV to SCD',
+              onPressed: isProcessing ? null : _convertAllWavToScd,
+            ),
+          ],
+        ),
         // Build actions
         CrystalActionBar(
           label: 'BUILD',
@@ -193,6 +218,86 @@ class _DirectoryActions extends StatelessWidget {
       showSnackBar('Error: $e', isError: true);
     }
   }
+
+  Future<void> _convertAllScdToWav() async {
+    try {
+      int successCount = 0;
+      int errorCount = 0;
+
+      // Find all .scd files recursively
+      final scdFiles = dir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.toLowerCase().endsWith('.scd'))
+          .toList();
+
+      if (scdFiles.isEmpty) {
+        showSnackBar('No SCD files found in directory', isWarning: true);
+        return;
+      }
+
+      showSnackBar('Converting ${scdFiles.length} SCD files to WAV...');
+
+      for (final scdFile in scdFiles) {
+        try {
+          final wavPath = '${scdFile.path.substring(0, scdFile.path.length - 4)}.wav';
+          await NativeService.instance.extractScdToWav(scdFile.path, wavPath);
+          successCount++;
+        } catch (e) {
+          errorCount++;
+        }
+      }
+
+      onTreeRebuild();
+      if (errorCount > 0) {
+        showSnackBar('SCD→WAV: $successCount succeeded, $errorCount failed', isError: true);
+      } else {
+        showSnackBar('SCD→WAV: $successCount files converted');
+      }
+    } catch (e) {
+      showSnackBar('Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _convertAllWavToScd() async {
+    try {
+      int successCount = 0;
+      int errorCount = 0;
+
+      // Find all .wav files recursively
+      final wavFiles = dir
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((f) => f.path.toLowerCase().endsWith('.wav'))
+          .toList();
+
+      if (wavFiles.isEmpty) {
+        showSnackBar('No WAV files found in directory', isWarning: true);
+        return;
+      }
+
+      showSnackBar('Converting ${wavFiles.length} WAV files to SCD...');
+
+      for (final wavFile in wavFiles) {
+        try {
+          final scdPath = '${wavFile.path.substring(0, wavFile.path.length - 4)}.scd';
+          await NativeService.instance.convertWavToScd(wavFile.path, scdPath);
+          successCount++;
+        } catch (e) {
+          errorCount++;
+        }
+      }
+
+      onTreeRebuild();
+      if (errorCount > 0) {
+        showSnackBar('WAV→SCD: $successCount succeeded, $errorCount failed', isError: true);
+      } else {
+        showSnackBar('WAV→SCD: $successCount files converted');
+      }
+    } catch (e) {
+      showSnackBar('Error: $e', isError: true);
+    }
+  }
 }
 
 class _FileActions extends StatelessWidget {
@@ -203,7 +308,10 @@ class _FileActions extends StatelessWidget {
   final OnPickDdsFile onPickDdsFile;
   final OnEnterArchiveMode onEnterArchiveMode;
   final VoidCallback onTreeRebuild;
-  final void Function(String, {bool isError}) showSnackBar;
+  final void Function(String, {bool isError, bool isWarning}) showSnackBar;
+
+  // Static audio player for playback across the app
+  static AudioPlayer? _audioPlayer;
 
   const _FileActions({
     required this.file,
@@ -283,6 +391,20 @@ class _FileActions extends StatelessWidget {
                 tooltip: 'Unpack BIN',
                 onPressed: isProcessing ? null : _unpackBin,
                 isPrimary: true,
+              ),
+            ],
+          ),
+
+        // Force WPD unpack for files that might be misidentified
+        // (e.g., filelist_sound_pack*.bin are WPD containers, not WBT archives)
+        if (_ext == 'bin' && (_isWhiteBin || _isFileList))
+          CrystalActionBar(
+            label: 'FORCE',
+            actions: [
+              CrystalAction(
+                icon: Icons.folder_zip_outlined,
+                tooltip: 'Force Unpack as WPD',
+                onPressed: isProcessing ? null : _unpackBin,
               ),
             ],
           ),
@@ -403,11 +525,69 @@ class _FileActions extends StatelessWidget {
               ),
             ],
           ),
+
+        // SCD (Sound) Actions
+        if (_ext == 'scd')
+          CrystalActionBar(
+            label: 'SOUND',
+            actions: [
+              CrystalAction(
+                icon: Icons.play_arrow,
+                tooltip: 'Play Sound',
+                onPressed: isProcessing ? null : _playScd,
+                isPrimary: true,
+              ),
+              CrystalAction(
+                icon: Icons.save_alt,
+                tooltip: 'Extract to WAV',
+                onPressed: isProcessing ? null : _extractScdToWav,
+              ),
+            ],
+          ),
+
+        // WAV (Audio) Actions
+        if (_ext == 'wav')
+          CrystalActionBar(
+            label: 'AUDIO',
+            actions: [
+              CrystalAction(
+                icon: Icons.play_arrow,
+                tooltip: 'Play WAV',
+                onPressed: isProcessing ? null : _playWav,
+                isPrimary: true,
+              ),
+              CrystalAction(
+                icon: Icons.stop,
+                tooltip: 'Stop Playback',
+                onPressed: _stopPlayback,
+              ),
+              CrystalAction(
+                icon: Icons.transform,
+                tooltip: 'Convert to SCD',
+                onPressed: isProcessing ? null : _convertWavToScd,
+              ),
+              CrystalAction(
+                icon: Icons.translate,
+                tooltip: 'Translate Audio',
+                onPressed: isProcessing ? null : _translateWav,
+              ),
+            ],
+          ),
       ],
     );
   }
 
+  /// Returns true if file is 0 bytes (shows warning and should skip action)
+  bool _isZeroByteFile() {
+    if (file.lengthSync() == 0) {
+      showSnackBar('File is 0 bytes, skipping action', isWarning: true);
+      return true;
+    }
+    return false;
+  }
+
   Future<void> _unpackWpd() async {
+    if (_isZeroByteFile()) return;
     try {
       await notifier.unpackWpd(file);
       onTreeRebuild();
@@ -418,6 +598,7 @@ class _FileActions extends StatelessWidget {
   }
 
   Future<void> _unpackBin() async {
+    if (_isZeroByteFile()) return;
     try {
       await notifier.unpackBin(file);
       onTreeRebuild();
@@ -428,6 +609,7 @@ class _FileActions extends StatelessWidget {
   }
 
   Future<void> _extractImg() async {
+    if (_isZeroByteFile()) return;
     try {
       await notifier.extractImg(file);
       onTreeRebuild();
@@ -438,6 +620,7 @@ class _FileActions extends StatelessWidget {
   }
 
   Future<void> _repackImg() async {
+    if (_isZeroByteFile()) return;
     try {
       final ddsPath = await onPickDdsFile();
       if (ddsPath != null) {
@@ -450,6 +633,7 @@ class _FileActions extends StatelessWidget {
   }
 
   Future<void> _openInDatabase() async {
+    if (_isZeroByteFile()) return;
     try {
       final rowCount = await notifier.openInDatabase(file);
       showSnackBar('Loaded $rowCount records');
@@ -462,6 +646,7 @@ class _FileActions extends StatelessWidget {
     wct_sdk.Action action, {
     wct_sdk.TargetType target = wct_sdk.TargetType.clb,
   }) async {
+    if (_isZeroByteFile()) return;
     try {
       await notifier.processWct(file, target, action);
       onTreeRebuild();
@@ -471,12 +656,115 @@ class _FileActions extends StatelessWidget {
     }
   }
 
+  Future<void> _playScd() async {
+    if (_isZeroByteFile()) return;
+    try {
+      // Convert SCD to WAV bytes in memory
+      final wavBytes = await NativeService.instance.scdToWav(file.path);
+
+      // Write to a temporary file for playback
+      final tempDir = Directory.systemTemp;
+      final wavFile = File(
+        p.join(tempDir.path, '${p.basenameWithoutExtension(file.path)}.wav'),
+      );
+      await wavFile.writeAsBytes(wavBytes);
+
+      // Play the audio
+      final player = AudioPlayer();
+      await player.play(DeviceFileSource(wavFile.path));
+
+      showSnackBar('Playing: ${p.basename(file.path)}');
+    } catch (e) {
+      showSnackBar('Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _extractScdToWav() async {
+    if (_isZeroByteFile()) return;
+    try {
+      final wavPath = p.join(
+        file.parent.path,
+        '${p.basenameWithoutExtension(file.path)}.wav',
+      );
+      await NativeService.instance.extractScdToWav(file.path, wavPath);
+      onTreeRebuild();
+      showSnackBar('Extracted to ${p.basename(wavPath)}');
+    } catch (e) {
+      showSnackBar('Error: $e', isError: true);
+    }
+  }
+
   Future<void> _decompileClass() async {
+    if (_isZeroByteFile()) return;
     try {
       final javaPath = await notifier.decompileClass(file);
       onTreeRebuild();
       showSnackBar('Decompiled successfully');
       onViewJavaSource(File(javaPath));
+    } catch (e) {
+      showSnackBar('Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _playWav() async {
+    if (_isZeroByteFile()) return;
+    try {
+      // Stop any existing playback
+      await _audioPlayer?.stop();
+      _audioPlayer?.dispose();
+
+      // Create new player and play the WAV file directly
+      _audioPlayer = AudioPlayer();
+      await _audioPlayer!.play(DeviceFileSource(file.path));
+
+      showSnackBar('Playing: ${p.basename(file.path)}');
+    } catch (e) {
+      showSnackBar('Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _stopPlayback() async {
+    try {
+      await _audioPlayer?.stop();
+      showSnackBar('Playback stopped');
+    } catch (e) {
+      showSnackBar('Error stopping playback: $e', isError: true);
+    }
+  }
+
+  Future<void> _translateWav() async {
+    if (_isZeroByteFile()) return;
+    try {
+      showSnackBar('Translation starting... (this may take a while)');
+
+      // Call the translation API
+      final translatedWavPath = await NativeService.instance.translateWav(
+        file.path,
+        'eng', // Target language: English
+      );
+
+      onTreeRebuild();
+      showSnackBar('Translated to: ${p.basename(translatedWavPath)}');
+
+      // Optionally play the translated audio
+      _audioPlayer?.dispose();
+      _audioPlayer = AudioPlayer();
+      await _audioPlayer!.play(DeviceFileSource(translatedWavPath));
+    } catch (e) {
+      showSnackBar('Translation error: $e', isError: true);
+    }
+  }
+
+  Future<void> _convertWavToScd() async {
+    if (_isZeroByteFile()) return;
+    try {
+      final scdPath = p.join(
+        file.parent.path,
+        '${p.basenameWithoutExtension(file.path)}.scd',
+      );
+      await NativeService.instance.convertWavToScd(file.path, scdPath);
+      onTreeRebuild();
+      showSnackBar('Converted to ${p.basename(scdPath)}');
     } catch (e) {
       showSnackBar('Error: $e', isError: true);
     }

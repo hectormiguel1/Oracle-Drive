@@ -10,7 +10,9 @@ import 'dart:ffi' as ffi;
 import 'frb_generated.dart';
 import 'lib.dart';
 import 'modules/crystalium/structs.dart';
+import 'modules/event/structs.dart';
 import 'modules/img/structs.dart';
+import 'modules/scd/structs.dart';
 import 'modules/vfx/structs.dart';
 import 'modules/wct.dart';
 import 'modules/wdb/enums.dart';
@@ -50,13 +52,25 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Action dco_decode_action(dynamic raw);
 
   @protected
+  ActorType dco_decode_actor_type(dynamic raw);
+
+  @protected
+  BlockTrack dco_decode_block_track(dynamic raw);
+
+  @protected
   bool dco_decode_bool(dynamic raw);
 
   @protected
   CgtFile dco_decode_box_autoadd_cgt_file(dynamic raw);
 
   @protected
+  EventDataSet dco_decode_box_autoadd_event_data_set(dynamic raw);
+
+  @protected
   McpFile dco_decode_box_autoadd_mcp_file(dynamic raw);
+
+  @protected
+  ScheduleHeader dco_decode_box_autoadd_schedule_header(dynamic raw);
 
   @protected
   int dco_decode_box_autoadd_u_32(dynamic raw);
@@ -69,6 +83,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ZtrData dco_decode_box_autoadd_ztr_data(dynamic raw);
+
+  @protected
+  CameraControlBlock dco_decode_camera_control_block(dynamic raw);
 
   @protected
   CgtFile dco_decode_cgt_file(dynamic raw);
@@ -84,6 +101,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CrystariumNode dco_decode_crystarium_node(dynamic raw);
+
+  @protected
+  DecodedAudio dco_decode_decoded_audio(dynamic raw);
+
+  @protected
+  DialogueEntry dco_decode_dialogue_entry(dynamic raw);
+
+  @protected
+  EventActor dco_decode_event_actor(dynamic raw);
+
+  @protected
+  EventBlock dco_decode_event_block(dynamic raw);
+
+  @protected
+  EventDataSet dco_decode_event_data_set(dynamic raw);
+
+  @protected
+  EventMetadata dco_decode_event_metadata(dynamic raw);
+
+  @protected
+  EventResource dco_decode_event_resource(dynamic raw);
+
+  @protected
+  EventSummary dco_decode_event_summary(dynamic raw);
+
+  @protected
+  ExternalResource dco_decode_external_resource(dynamic raw);
+
+  @protected
+  ExtractedEvent dco_decode_extracted_event(dynamic raw);
 
   @protected
   double dco_decode_f_32(dynamic raw);
@@ -111,10 +158,37 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<String> dco_decode_list_String(dynamic raw);
 
   @protected
+  List<BlockTrack> dco_decode_list_block_track(dynamic raw);
+
+  @protected
+  List<CameraControlBlock> dco_decode_list_camera_control_block(dynamic raw);
+
+  @protected
   List<CrystariumEntry> dco_decode_list_crystarium_entry(dynamic raw);
 
   @protected
   List<CrystariumNode> dco_decode_list_crystarium_node(dynamic raw);
+
+  @protected
+  List<DecodedAudio> dco_decode_list_decoded_audio(dynamic raw);
+
+  @protected
+  List<DialogueEntry> dco_decode_list_dialogue_entry(dynamic raw);
+
+  @protected
+  List<EventActor> dco_decode_list_event_actor(dynamic raw);
+
+  @protected
+  List<EventBlock> dco_decode_list_event_block(dynamic raw);
+
+  @protected
+  List<EventResource> dco_decode_list_event_resource(dynamic raw);
+
+  @protected
+  List<ExternalResource> dco_decode_list_external_resource(dynamic raw);
+
+  @protected
+  List<MotionControlBlock> dco_decode_list_motion_control_block(dynamic raw);
 
   @protected
   Float32List dco_decode_list_prim_f_32_strict(dynamic raw);
@@ -148,6 +222,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<(String, WdbValue)> dco_decode_list_record_string_wdb_value(dynamic raw);
 
   @protected
+  List<ScdStreamInfo> dco_decode_list_scd_stream_info(dynamic raw);
+
+  @protected
+  List<SoundBlock> dco_decode_list_sound_block(dynamic raw);
+
+  @protected
+  List<SoundReference> dco_decode_list_sound_reference(dynamic raw);
+
+  @protected
   List<Vec3> dco_decode_list_vec_3(dynamic raw);
 
   @protected
@@ -172,6 +255,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<WpdRecord> dco_decode_list_wpd_record(dynamic raw);
 
   @protected
+  List<WpdRecordInfo> dco_decode_list_wpd_record_info(dynamic raw);
+
+  @protected
   List<ZtrEntry> dco_decode_list_ztr_entry(dynamic raw);
 
   @protected
@@ -190,7 +276,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   McpPattern dco_decode_mcp_pattern(dynamic raw);
 
   @protected
+  MotionControlBlock dco_decode_motion_control_block(dynamic raw);
+
+  @protected
   String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  EventDataSet? dco_decode_opt_box_autoadd_event_data_set(dynamic raw);
+
+  @protected
+  ScheduleHeader? dco_decode_opt_box_autoadd_schedule_header(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
@@ -219,7 +314,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (int, int) dco_decode_record_u_32_u_32(dynamic raw);
 
   @protected
+  ResourceCategory dco_decode_resource_category(dynamic raw);
+
+  @protected
+  ScdCodec dco_decode_scd_codec(dynamic raw);
+
+  @protected
+  ScdExtractResult dco_decode_scd_extract_result(dynamic raw);
+
+  @protected
+  ScdHeader dco_decode_scd_header(dynamic raw);
+
+  @protected
+  ScdMetadata dco_decode_scd_metadata(dynamic raw);
+
+  @protected
+  ScdStreamInfo dco_decode_scd_stream_info(dynamic raw);
+
+  @protected
+  ScheduleHeader dco_decode_schedule_header(dynamic raw);
+
+  @protected
+  SectionCounts dco_decode_section_counts(dynamic raw);
+
+  @protected
+  SoundBlock dco_decode_sound_block(dynamic raw);
+
+  @protected
+  SoundReference dco_decode_sound_reference(dynamic raw);
+
+  @protected
+  SoundType dco_decode_sound_type(dynamic raw);
+
+  @protected
   TargetType dco_decode_target_type(dynamic raw);
+
+  @protected
+  TrackType dco_decode_track_type(dynamic raw);
 
   @protected
   int dco_decode_u_16(dynamic raw);
@@ -291,6 +422,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   WpdRecord dco_decode_wpd_record(dynamic raw);
 
   @protected
+  WpdRecordInfo dco_decode_wpd_record_info(dynamic raw);
+
+  @protected
   ZtrData dco_decode_ztr_data(dynamic raw);
 
   @protected
@@ -337,13 +471,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Action sse_decode_action(SseDeserializer deserializer);
 
   @protected
+  ActorType sse_decode_actor_type(SseDeserializer deserializer);
+
+  @protected
+  BlockTrack sse_decode_block_track(SseDeserializer deserializer);
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
   CgtFile sse_decode_box_autoadd_cgt_file(SseDeserializer deserializer);
 
   @protected
+  EventDataSet sse_decode_box_autoadd_event_data_set(
+      SseDeserializer deserializer);
+
+  @protected
   McpFile sse_decode_box_autoadd_mcp_file(SseDeserializer deserializer);
+
+  @protected
+  ScheduleHeader sse_decode_box_autoadd_schedule_header(
+      SseDeserializer deserializer);
 
   @protected
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
@@ -356,6 +504,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ZtrData sse_decode_box_autoadd_ztr_data(SseDeserializer deserializer);
+
+  @protected
+  CameraControlBlock sse_decode_camera_control_block(
+      SseDeserializer deserializer);
 
   @protected
   CgtFile sse_decode_cgt_file(SseDeserializer deserializer);
@@ -371,6 +523,36 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   CrystariumNode sse_decode_crystarium_node(SseDeserializer deserializer);
+
+  @protected
+  DecodedAudio sse_decode_decoded_audio(SseDeserializer deserializer);
+
+  @protected
+  DialogueEntry sse_decode_dialogue_entry(SseDeserializer deserializer);
+
+  @protected
+  EventActor sse_decode_event_actor(SseDeserializer deserializer);
+
+  @protected
+  EventBlock sse_decode_event_block(SseDeserializer deserializer);
+
+  @protected
+  EventDataSet sse_decode_event_data_set(SseDeserializer deserializer);
+
+  @protected
+  EventMetadata sse_decode_event_metadata(SseDeserializer deserializer);
+
+  @protected
+  EventResource sse_decode_event_resource(SseDeserializer deserializer);
+
+  @protected
+  EventSummary sse_decode_event_summary(SseDeserializer deserializer);
+
+  @protected
+  ExternalResource sse_decode_external_resource(SseDeserializer deserializer);
+
+  @protected
+  ExtractedEvent sse_decode_extracted_event(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_32(SseDeserializer deserializer);
@@ -398,11 +580,44 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
+  List<BlockTrack> sse_decode_list_block_track(SseDeserializer deserializer);
+
+  @protected
+  List<CameraControlBlock> sse_decode_list_camera_control_block(
+      SseDeserializer deserializer);
+
+  @protected
   List<CrystariumEntry> sse_decode_list_crystarium_entry(
       SseDeserializer deserializer);
 
   @protected
   List<CrystariumNode> sse_decode_list_crystarium_node(
+      SseDeserializer deserializer);
+
+  @protected
+  List<DecodedAudio> sse_decode_list_decoded_audio(
+      SseDeserializer deserializer);
+
+  @protected
+  List<DialogueEntry> sse_decode_list_dialogue_entry(
+      SseDeserializer deserializer);
+
+  @protected
+  List<EventActor> sse_decode_list_event_actor(SseDeserializer deserializer);
+
+  @protected
+  List<EventBlock> sse_decode_list_event_block(SseDeserializer deserializer);
+
+  @protected
+  List<EventResource> sse_decode_list_event_resource(
+      SseDeserializer deserializer);
+
+  @protected
+  List<ExternalResource> sse_decode_list_external_resource(
+      SseDeserializer deserializer);
+
+  @protected
+  List<MotionControlBlock> sse_decode_list_motion_control_block(
       SseDeserializer deserializer);
 
   @protected
@@ -439,6 +654,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       SseDeserializer deserializer);
 
   @protected
+  List<ScdStreamInfo> sse_decode_list_scd_stream_info(
+      SseDeserializer deserializer);
+
+  @protected
+  List<SoundBlock> sse_decode_list_sound_block(SseDeserializer deserializer);
+
+  @protected
+  List<SoundReference> sse_decode_list_sound_reference(
+      SseDeserializer deserializer);
+
+  @protected
   List<Vec3> sse_decode_list_vec_3(SseDeserializer deserializer);
 
   @protected
@@ -465,6 +691,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<WpdRecord> sse_decode_list_wpd_record(SseDeserializer deserializer);
 
   @protected
+  List<WpdRecordInfo> sse_decode_list_wpd_record_info(
+      SseDeserializer deserializer);
+
+  @protected
   List<ZtrEntry> sse_decode_list_ztr_entry(SseDeserializer deserializer);
 
   @protected
@@ -485,7 +715,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   McpPattern sse_decode_mcp_pattern(SseDeserializer deserializer);
 
   @protected
+  MotionControlBlock sse_decode_motion_control_block(
+      SseDeserializer deserializer);
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  EventDataSet? sse_decode_opt_box_autoadd_event_data_set(
+      SseDeserializer deserializer);
+
+  @protected
+  ScheduleHeader? sse_decode_opt_box_autoadd_schedule_header(
+      SseDeserializer deserializer);
 
   @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
@@ -518,7 +760,43 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   (int, int) sse_decode_record_u_32_u_32(SseDeserializer deserializer);
 
   @protected
+  ResourceCategory sse_decode_resource_category(SseDeserializer deserializer);
+
+  @protected
+  ScdCodec sse_decode_scd_codec(SseDeserializer deserializer);
+
+  @protected
+  ScdExtractResult sse_decode_scd_extract_result(SseDeserializer deserializer);
+
+  @protected
+  ScdHeader sse_decode_scd_header(SseDeserializer deserializer);
+
+  @protected
+  ScdMetadata sse_decode_scd_metadata(SseDeserializer deserializer);
+
+  @protected
+  ScdStreamInfo sse_decode_scd_stream_info(SseDeserializer deserializer);
+
+  @protected
+  ScheduleHeader sse_decode_schedule_header(SseDeserializer deserializer);
+
+  @protected
+  SectionCounts sse_decode_section_counts(SseDeserializer deserializer);
+
+  @protected
+  SoundBlock sse_decode_sound_block(SseDeserializer deserializer);
+
+  @protected
+  SoundReference sse_decode_sound_reference(SseDeserializer deserializer);
+
+  @protected
+  SoundType sse_decode_sound_type(SseDeserializer deserializer);
+
+  @protected
   TargetType sse_decode_target_type(SseDeserializer deserializer);
+
+  @protected
+  TrackType sse_decode_track_type(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_16(SseDeserializer deserializer);
@@ -590,6 +868,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   WpdRecord sse_decode_wpd_record(SseDeserializer deserializer);
 
   @protected
+  WpdRecordInfo sse_decode_wpd_record_info(SseDeserializer deserializer);
+
+  @protected
   ZtrData sse_decode_ztr_data(SseDeserializer deserializer);
 
   @protected
@@ -639,13 +920,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_action(Action self, SseSerializer serializer);
 
   @protected
+  void sse_encode_actor_type(ActorType self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_block_track(BlockTrack self, SseSerializer serializer);
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_cgt_file(CgtFile self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_event_data_set(
+      EventDataSet self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_mcp_file(McpFile self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_schedule_header(
+      ScheduleHeader self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
@@ -658,6 +953,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_box_autoadd_ztr_data(ZtrData self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_camera_control_block(
+      CameraControlBlock self, SseSerializer serializer);
 
   @protected
   void sse_encode_cgt_file(CgtFile self, SseSerializer serializer);
@@ -676,6 +975,38 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_crystarium_node(
       CrystariumNode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_decoded_audio(DecodedAudio self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_dialogue_entry(DialogueEntry self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_event_actor(EventActor self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_event_block(EventBlock self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_event_data_set(EventDataSet self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_event_metadata(EventMetadata self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_event_resource(EventResource self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_event_summary(EventSummary self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_external_resource(
+      ExternalResource self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_extracted_event(
+      ExtractedEvent self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_32(double self, SseSerializer serializer);
@@ -703,12 +1034,48 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_block_track(
+      List<BlockTrack> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_camera_control_block(
+      List<CameraControlBlock> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_crystarium_entry(
       List<CrystariumEntry> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_crystarium_node(
       List<CrystariumNode> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_decoded_audio(
+      List<DecodedAudio> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_dialogue_entry(
+      List<DialogueEntry> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_event_actor(
+      List<EventActor> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_event_block(
+      List<EventBlock> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_event_resource(
+      List<EventResource> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_external_resource(
+      List<ExternalResource> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_motion_control_block(
+      List<MotionControlBlock> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_f_32_strict(
@@ -750,6 +1117,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       List<(String, WdbValue)> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_scd_stream_info(
+      List<ScdStreamInfo> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_sound_block(
+      List<SoundBlock> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_sound_reference(
+      List<SoundReference> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_vec_3(List<Vec3> self, SseSerializer serializer);
 
   @protected
@@ -780,6 +1159,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       List<WpdRecord> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_wpd_record_info(
+      List<WpdRecordInfo> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_ztr_entry(List<ZtrEntry> self, SseSerializer serializer);
 
   @protected
@@ -801,7 +1184,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_mcp_pattern(McpPattern self, SseSerializer serializer);
 
   @protected
+  void sse_encode_motion_control_block(
+      MotionControlBlock self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_event_data_set(
+      EventDataSet? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_schedule_header(
+      ScheduleHeader? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
@@ -834,7 +1229,47 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_record_u_32_u_32((int, int) self, SseSerializer serializer);
 
   @protected
+  void sse_encode_resource_category(
+      ResourceCategory self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scd_codec(ScdCodec self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scd_extract_result(
+      ScdExtractResult self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scd_header(ScdHeader self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scd_metadata(ScdMetadata self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scd_stream_info(ScdStreamInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_schedule_header(
+      ScheduleHeader self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_section_counts(SectionCounts self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sound_block(SoundBlock self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sound_reference(
+      SoundReference self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sound_type(SoundType self, SseSerializer serializer);
+
+  @protected
   void sse_encode_target_type(TargetType self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_track_type(TrackType self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_16(int self, SseSerializer serializer);
@@ -905,6 +1340,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_wpd_record(WpdRecord self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_wpd_record_info(WpdRecordInfo self, SseSerializer serializer);
 
   @protected
   void sse_encode_ztr_data(ZtrData self, SseSerializer serializer);

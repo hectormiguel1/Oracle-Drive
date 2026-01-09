@@ -6,7 +6,9 @@
 import 'frb_generated.dart';
 import 'lib.dart';
 import 'modules/crystalium/structs.dart';
+import 'modules/event/structs.dart';
 import 'modules/img/structs.dart';
+import 'modules/scd/structs.dart';
 import 'modules/vfx/structs.dart';
 import 'modules/wct.dart';
 import 'modules/wdb/enums.dart';
@@ -582,6 +584,231 @@ Future<bool> vfxPlayerIsInitialized() =>
 /// Tuple of (width, height) in pixels.
 Future<(int, int)> vfxPlayerGetDimensions() =>
     RustLib.instance.api.crateApiVfxPlayerGetDimensions();
+
+/// Parses an event file and extracts metadata (in-memory, no extraction).
+///
+/// This is the primary function for quick viewing of cutscene contents.
+/// It loads the file, parses the structure, and returns actors, blocks,
+/// resources, and dialogue entry references.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file (`.white.win32.xwb`)
+///
+/// # Returns
+/// Complete event metadata.
+///
+/// # Example
+/// ```dart
+/// final meta = await api.eventParse('ev_ddaa_080.white.win32.xwb');
+/// print('Actors: ${meta.actors.length}');
+/// print('Blocks: ${meta.blocks.length}');
+/// ```
+Future<EventMetadata> eventParse({required String inFile}) =>
+    RustLib.instance.api.crateApiEventParse(inFile: inFile);
+
+/// Parses event metadata from raw bytes.
+///
+/// Useful when the data is already in memory (e.g., from archive extraction).
+///
+/// # Arguments
+/// * `data` - Raw bytes of the event file
+/// * `name` - Optional name for the event
+Future<EventMetadata> eventParseFromMemory(
+        {required List<int> data, String? name}) =>
+    RustLib.instance.api.crateApiEventParseFromMemory(data: data, name: name);
+
+/// Gets a quick summary of event contents.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file
+///
+/// # Returns
+/// Summary with counts and total duration.
+Future<EventSummary> eventGetSummary({required String inFile}) =>
+    RustLib.instance.api.crateApiEventGetSummary(inFile: inFile);
+
+/// Extracts an event file to a directory and returns metadata.
+///
+/// This combines WPD extraction with metadata parsing, giving you
+/// both the extracted files and the parsed structure.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file
+/// * `out_dir` - Directory to extract files to
+///
+/// # Returns
+/// Extraction result with metadata and file list.
+Future<ExtractedEvent> eventExtract(
+        {required String inFile, required String outDir}) =>
+    RustLib.instance.api.crateApiEventExtract(inFile: inFile, outDir: outDir);
+
+/// Exports event metadata to JSON string.
+///
+/// Useful for external tools or debugging.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file
+///
+/// # Returns
+/// JSON string representation of event metadata.
+Future<String> eventExportJson({required String inFile}) =>
+    RustLib.instance.api.crateApiEventExportJson(inFile: inFile);
+
+/// Parses an event from a directory (including DataSet if present).
+///
+/// This is the preferred method when you have the full event directory
+/// structure, as it will also parse the DataSet folder containing
+/// motion and camera control blocks for animation data.
+///
+/// # Directory Structure
+/// ```text
+/// ev_xxxx_xxx/
+/// ├── bin/
+/// │   └── ev_xxxx_xxx.white.win32.xwb
+/// └── DataSet/  (optional)
+///     ├── a00.white.win32.bin
+///     ├── a01.white.win32.bin
+///     └── ...
+/// ```
+///
+/// # Arguments
+/// * `dir_path` - Path to the event directory
+///
+/// # Returns
+/// Event metadata with `dataset` field populated if DataSet exists.
+///
+/// # Example
+/// ```dart
+/// final meta = await api.eventParseDirectory('./ev_yuaa_360');
+/// if (meta.dataset != null) {
+///   print('Motion blocks: ${meta.dataset!.motionBlocks.length}');
+///   print('Camera blocks: ${meta.dataset!.cameraBlocks.length}');
+/// }
+/// ```
+Future<EventMetadata> eventParseDirectory({required String dirPath}) =>
+    RustLib.instance.api.crateApiEventParseDirectory(dirPath: dirPath);
+
+/// Parses SCD file metadata without decoding audio.
+///
+/// Use this for quick inspection of sound file properties.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+///
+/// # Returns
+/// Metadata including stream count, codec types, sample rates.
+///
+/// # Example
+/// ```dart
+/// final meta = await api.scdParse('sound.scd');
+/// for (final stream in meta.streams) {
+///   print('Stream ${stream.index}: ${stream.codec} @ ${stream.sampleRate}Hz');
+/// }
+/// ```
+Future<ScdMetadata> scdParse({required String inFile}) =>
+    RustLib.instance.api.crateApiScdParse(inFile: inFile);
+
+/// Parses SCD metadata from raw bytes.
+///
+/// # Arguments
+/// * `data` - Raw SCD file bytes
+/// * `name` - Name for identification
+Future<ScdMetadata> scdParseFromMemory(
+        {required List<int> data, required String name}) =>
+    RustLib.instance.api.crateApiScdParseFromMemory(data: data, name: name);
+
+/// Decodes all audio streams from an SCD file.
+///
+/// Returns decoded PCM audio data ready for playback.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+///
+/// # Returns
+/// Extract result with metadata and decoded audio streams.
+Future<ScdExtractResult> scdDecode({required String inFile}) =>
+    RustLib.instance.api.crateApiScdDecode(inFile: inFile);
+
+/// Decodes all audio streams from SCD bytes.
+///
+/// # Arguments
+/// * `data` - Raw SCD file bytes
+/// * `name` - Name for identification
+Future<ScdExtractResult> scdDecodeFromMemory(
+        {required List<int> data, required String name}) =>
+    RustLib.instance.api.crateApiScdDecodeFromMemory(data: data, name: name);
+
+/// Decodes a specific audio stream from an SCD file.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+/// * `stream_index` - Index of the stream to decode
+///
+/// # Returns
+/// Decoded audio data (PCM, ready for playback).
+Future<DecodedAudio> scdDecodeStream(
+        {required String inFile, required int streamIndex}) =>
+    RustLib.instance.api
+        .crateApiScdDecodeStream(inFile: inFile, streamIndex: streamIndex);
+
+/// Converts SCD file to WAV bytes (first stream).
+///
+/// Returns complete WAV file data that can be played directly
+/// or written to a file.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+///
+/// # Returns
+/// WAV file bytes (RIFF format, PCM audio).
+///
+/// # Example
+/// ```dart
+/// final wavBytes = await api.scdToWav('sound.scd');
+/// // Play wavBytes using an audio player
+/// ```
+Future<Uint8List> scdToWav({required String inFile}) =>
+    RustLib.instance.api.crateApiScdToWav(inFile: inFile);
+
+/// Converts SCD bytes to WAV bytes (first stream).
+///
+/// # Arguments
+/// * `data` - Raw SCD file bytes
+/// * `name` - Name for identification
+///
+/// # Returns
+/// WAV file bytes.
+Future<Uint8List> scdBytesToWav(
+        {required List<int> data, required String name}) =>
+    RustLib.instance.api.crateApiScdBytesToWav(data: data, name: name);
+
+/// Extracts SCD to WAV file on disk.
+///
+/// # Arguments
+/// * `scd_path` - Path to input SCD file
+/// * `wav_path` - Path to output WAV file
+Future<void> scdExtractToWav(
+        {required String scdPath, required String wavPath}) =>
+    RustLib.instance.api
+        .crateApiScdExtractToWav(scdPath: scdPath, wavPath: wavPath);
+
+/// Convert WAV file to SCD format
+///
+/// Creates an SCD container with MS-ADPCM encoded audio.
+///
+/// # Arguments
+/// * `wav_path` - Path to input WAV file
+/// * `scd_path` - Path to output SCD file
+Future<void> wavToScd({required String wavPath, required String scdPath}) =>
+    RustLib.instance.api.crateApiWavToScd(wavPath: wavPath, scdPath: scdPath);
+
+/// Placeholder for when translation feature is disabled
+Future<void> translateWav(
+        {required String inputPath,
+        required String outputPath,
+        required String targetLang}) =>
+    RustLib.instance.api.crateApiTranslateWav(
+        inputPath: inputPath, outputPath: outputPath, targetLang: targetLang);
 
 /// File metadata for a single entry in a WBT archive.
 /// Mirrors the Rust struct for flutter_rust_bridge serialization.

@@ -889,3 +889,290 @@ pub fn vfx_player_get_dimensions() -> Result<(u32, u32)> {
 
     Ok((player.frame_buffer.width, player.frame_buffer.height))
 }
+
+// ============================================================================
+// EVENT API - Cutscene Schedules
+// ============================================================================
+
+use crate::modules::event::{
+    api as event_api,
+    structs::{EventMetadata, EventSummary, ExtractedEvent},
+};
+
+/// Parses an event file and extracts metadata (in-memory, no extraction).
+///
+/// This is the primary function for quick viewing of cutscene contents.
+/// It loads the file, parses the structure, and returns actors, blocks,
+/// resources, and dialogue entry references.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file (`.white.win32.xwb`)
+///
+/// # Returns
+/// Complete event metadata.
+///
+/// # Example
+/// ```dart
+/// final meta = await api.eventParse('ev_ddaa_080.white.win32.xwb');
+/// print('Actors: ${meta.actors.length}');
+/// print('Blocks: ${meta.blocks.length}');
+/// ```
+pub fn event_parse(in_file: String) -> Result<EventMetadata> {
+    event_api::parse_event_metadata(&in_file)
+}
+
+/// Parses event metadata from raw bytes.
+///
+/// Useful when the data is already in memory (e.g., from archive extraction).
+///
+/// # Arguments
+/// * `data` - Raw bytes of the event file
+/// * `name` - Optional name for the event
+pub fn event_parse_from_memory(data: Vec<u8>, name: Option<String>) -> Result<EventMetadata> {
+    event_api::parse_event_metadata_bytes(&data, name.as_deref())
+}
+
+/// Gets a quick summary of event contents.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file
+///
+/// # Returns
+/// Summary with counts and total duration.
+pub fn event_get_summary(in_file: String) -> Result<EventSummary> {
+    event_api::get_event_summary(&in_file)
+}
+
+/// Extracts an event file to a directory and returns metadata.
+///
+/// This combines WPD extraction with metadata parsing, giving you
+/// both the extracted files and the parsed structure.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file
+/// * `out_dir` - Directory to extract files to
+///
+/// # Returns
+/// Extraction result with metadata and file list.
+pub fn event_extract(in_file: String, out_dir: String) -> Result<ExtractedEvent> {
+    event_api::extract_event(&in_file, &out_dir)
+}
+
+/// Exports event metadata to JSON string.
+///
+/// Useful for external tools or debugging.
+///
+/// # Arguments
+/// * `in_file` - Path to the event file
+///
+/// # Returns
+/// JSON string representation of event metadata.
+pub fn event_export_json(in_file: String) -> Result<String> {
+    event_api::parse_event_to_json(&in_file)
+}
+
+/// Parses an event from a directory (including DataSet if present).
+///
+/// This is the preferred method when you have the full event directory
+/// structure, as it will also parse the DataSet folder containing
+/// motion and camera control blocks for animation data.
+///
+/// # Directory Structure
+/// ```text
+/// ev_xxxx_xxx/
+/// ├── bin/
+/// │   └── ev_xxxx_xxx.white.win32.xwb
+/// └── DataSet/  (optional)
+///     ├── a00.white.win32.bin
+///     ├── a01.white.win32.bin
+///     └── ...
+/// ```
+///
+/// # Arguments
+/// * `dir_path` - Path to the event directory
+///
+/// # Returns
+/// Event metadata with `dataset` field populated if DataSet exists.
+///
+/// # Example
+/// ```dart
+/// final meta = await api.eventParseDirectory('./ev_yuaa_360');
+/// if (meta.dataset != null) {
+///   print('Motion blocks: ${meta.dataset!.motionBlocks.length}');
+///   print('Camera blocks: ${meta.dataset!.cameraBlocks.length}');
+/// }
+/// ```
+pub fn event_parse_directory(dir_path: String) -> Result<EventMetadata> {
+    event_api::parse_event_directory(&dir_path)
+}
+
+// ============================================================================
+// SCD API - Sound Container Data
+// ============================================================================
+
+use crate::modules::scd::{
+    api as scd_api,
+    structs::{ScdMetadata, DecodedAudio, ScdExtractResult},
+};
+
+/// Parses SCD file metadata without decoding audio.
+///
+/// Use this for quick inspection of sound file properties.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+///
+/// # Returns
+/// Metadata including stream count, codec types, sample rates.
+///
+/// # Example
+/// ```dart
+/// final meta = await api.scdParse('sound.scd');
+/// for (final stream in meta.streams) {
+///   print('Stream ${stream.index}: ${stream.codec} @ ${stream.sampleRate}Hz');
+/// }
+/// ```
+pub fn scd_parse(in_file: String) -> Result<ScdMetadata> {
+    scd_api::parse_scd_metadata(&in_file)
+}
+
+/// Parses SCD metadata from raw bytes.
+///
+/// # Arguments
+/// * `data` - Raw SCD file bytes
+/// * `name` - Name for identification
+pub fn scd_parse_from_memory(data: Vec<u8>, name: String) -> Result<ScdMetadata> {
+    scd_api::parse_scd_metadata_bytes(&data, &name)
+}
+
+/// Decodes all audio streams from an SCD file.
+///
+/// Returns decoded PCM audio data ready for playback.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+///
+/// # Returns
+/// Extract result with metadata and decoded audio streams.
+pub fn scd_decode(in_file: String) -> Result<ScdExtractResult> {
+    scd_api::decode_scd(&in_file)
+}
+
+/// Decodes all audio streams from SCD bytes.
+///
+/// # Arguments
+/// * `data` - Raw SCD file bytes
+/// * `name` - Name for identification
+pub fn scd_decode_from_memory(data: Vec<u8>, name: String) -> Result<ScdExtractResult> {
+    scd_api::decode_scd_bytes(&data, &name)
+}
+
+/// Decodes a specific audio stream from an SCD file.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+/// * `stream_index` - Index of the stream to decode
+///
+/// # Returns
+/// Decoded audio data (PCM, ready for playback).
+pub fn scd_decode_stream(in_file: String, stream_index: u32) -> Result<DecodedAudio> {
+    scd_api::decode_scd_stream(&in_file, stream_index)
+}
+
+/// Converts SCD file to WAV bytes (first stream).
+///
+/// Returns complete WAV file data that can be played directly
+/// or written to a file.
+///
+/// # Arguments
+/// * `in_file` - Path to the SCD file
+///
+/// # Returns
+/// WAV file bytes (RIFF format, PCM audio).
+///
+/// # Example
+/// ```dart
+/// final wavBytes = await api.scdToWav('sound.scd');
+/// // Play wavBytes using an audio player
+/// ```
+pub fn scd_to_wav(in_file: String) -> Result<Vec<u8>> {
+    scd_api::scd_to_wav_bytes(&in_file)
+}
+
+/// Converts SCD bytes to WAV bytes (first stream).
+///
+/// # Arguments
+/// * `data` - Raw SCD file bytes
+/// * `name` - Name for identification
+///
+/// # Returns
+/// WAV file bytes.
+pub fn scd_bytes_to_wav(data: Vec<u8>, name: String) -> Result<Vec<u8>> {
+    scd_api::scd_bytes_to_wav_bytes(&data, &name)
+}
+
+/// Extracts SCD to WAV file on disk.
+///
+/// # Arguments
+/// * `scd_path` - Path to input SCD file
+/// * `wav_path` - Path to output WAV file
+pub fn scd_extract_to_wav(scd_path: String, wav_path: String) -> Result<()> {
+    scd_api::extract_scd_to_wav(&scd_path, &wav_path)
+}
+
+/// Convert WAV file to SCD format
+///
+/// Creates an SCD container with MS-ADPCM encoded audio.
+///
+/// # Arguments
+/// * `wav_path` - Path to input WAV file
+/// * `scd_path` - Path to output SCD file
+pub fn wav_to_scd(wav_path: String, scd_path: String) -> Result<()> {
+    scd_api::wav_to_scd(&wav_path, &scd_path)
+}
+
+// ============================================================================
+// Translation API (SeamlessM4T)
+// ============================================================================
+
+/// Translate WAV audio to target language
+///
+/// Uses SeamlessM4T model via Candle for speech-to-speech translation.
+/// Requires `translation` feature to be enabled.
+///
+/// # Arguments
+/// * `input_path` - Path to input WAV file (will be resampled to 16kHz)
+/// * `output_path` - Path for translated WAV output
+/// * `target_lang` - Target language code (e.g., "eng", "jpn", "fra")
+#[cfg(feature = "translation")]
+pub fn translate_wav(input_path: String, output_path: String, target_lang: String) -> Result<()> {
+    use crate::modules::translation::{SeamlessTranslator, Language};
+    use std::fs;
+
+    // Initialize translator - try GPU first, fall back to CPU
+    let mut translator = SeamlessTranslator::new().or_else(|e| {
+        log::warn!("GPU init failed ({}), falling back to CPU", e);
+        SeamlessTranslator::cpu()
+    })?;
+
+    // Parse target language
+    let lang = Language::from_code(&target_lang)
+        .ok_or_else(|| anyhow::anyhow!("Unsupported language: {}", target_lang))?;
+
+    // Read input WAV
+    let input_data = fs::read(&input_path)?;
+
+    // Translate
+    let result = translator.translate(&input_data, lang)?;
+
+    // Write output WAV
+    fs::write(&output_path, &result.audio_wav)?;
+
+    Ok(())
+}
+
+/// Placeholder for when translation feature is disabled
+#[cfg(not(feature = "translation"))]
+pub fn translate_wav(_input_path: String, _output_path: String, _target_lang: String) -> Result<()> {
+    anyhow::bail!("Translation feature not enabled. Build with: cargo build --features translation,rocm")
+}

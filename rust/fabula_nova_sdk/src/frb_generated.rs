@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1786907440;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -447743656;
 
 // Section: executor
 
@@ -429,6 +429,218 @@ fn wire__crate__api__create_log_stream_impl(
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || {
                         let output_ok = crate::api::create_log_stream(api_sink)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__event_export_json_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "event_export_json",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::event_export_json(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__event_extract_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "event_extract",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            let api_out_dir = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::event_extract(api_in_file, api_out_dir)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__event_get_summary_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "event_get_summary",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::event_get_summary(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__event_parse_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "event_parse",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::event_parse(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__event_parse_directory_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "event_parse_directory",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_dir_path = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::event_parse_directory(api_dir_path)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__event_parse_from_memory_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "event_parse_from_memory",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_data = <Vec<u8>>::sse_decode(&mut deserializer);
+            let api_name = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::event_parse_from_memory(api_data, api_name)?;
                         Ok(output_ok)
                     })(),
                 )
@@ -857,6 +1069,292 @@ fn wire__crate__api__reset_log_read_index_impl(
         },
     )
 }
+fn wire__crate__api__scd_bytes_to_wav_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_bytes_to_wav",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_data = <Vec<u8>>::sse_decode(&mut deserializer);
+            let api_name = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::scd_bytes_to_wav(api_data, api_name)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__scd_decode_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_decode",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::scd_decode(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__scd_decode_from_memory_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_decode_from_memory",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_data = <Vec<u8>>::sse_decode(&mut deserializer);
+            let api_name = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::scd_decode_from_memory(api_data, api_name)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__scd_decode_stream_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_decode_stream",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            let api_stream_index = <u32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok =
+                            crate::api::scd_decode_stream(api_in_file, api_stream_index)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__scd_extract_to_wav_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_extract_to_wav",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_scd_path = <String>::sse_decode(&mut deserializer);
+            let api_wav_path = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::scd_extract_to_wav(api_scd_path, api_wav_path)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__scd_parse_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_parse",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::scd_parse(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__scd_parse_from_memory_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_parse_from_memory",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_data = <Vec<u8>>::sse_decode(&mut deserializer);
+            let api_name = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::scd_parse_from_memory(api_data, api_name)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__scd_to_wav_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "scd_to_wav",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_in_file = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::scd_to_wav(api_in_file)?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__set_log_level_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -923,6 +1421,47 @@ fn wire__crate__api__test_log_impl(
                     })?;
                     Ok(output_ok)
                 })())
+            }
+        },
+    )
+}
+fn wire__crate__api__translate_wav_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "translate_wav",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api__input_path = <String>::sse_decode(&mut deserializer);
+            let api__output_path = <String>::sse_decode(&mut deserializer);
+            let api__target_lang = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::translate_wav(
+                            api__input_path,
+                            api__output_path,
+                            api__target_lang,
+                        )?;
+                        Ok(output_ok)
+                    })(),
+                )
             }
         },
     )
@@ -1488,6 +2027,42 @@ fn wire__crate__api__vfx_player_reset_impl(
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || {
                         let output_ok = crate::api::vfx_player_reset()?;
+                        Ok(output_ok)
+                    })(),
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__wav_to_scd_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "wav_to_scd",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_wav_path = <String>::sse_decode(&mut deserializer);
+            let api_scd_path = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || {
+                        let output_ok = crate::api::wav_to_scd(api_wav_path, api_scd_path)?;
                         Ok(output_ok)
                     })(),
                 )
@@ -2521,10 +3096,93 @@ impl SseDecode for crate::modules::wct::Action {
     }
 }
 
+impl SseDecode for crate::modules::event::structs::ActorType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                return crate::modules::event::structs::ActorType::Camera;
+            }
+            1 => {
+                return crate::modules::event::structs::ActorType::Sound;
+            }
+            2 => {
+                return crate::modules::event::structs::ActorType::Effect;
+            }
+            3 => {
+                return crate::modules::event::structs::ActorType::Bgm;
+            }
+            4 => {
+                return crate::modules::event::structs::ActorType::Proxy;
+            }
+            5 => {
+                return crate::modules::event::structs::ActorType::System;
+            }
+            6 => {
+                let mut var_field0 = <String>::sse_decode(deserializer);
+                return crate::modules::event::structs::ActorType::Character(var_field0);
+            }
+            7 => {
+                let mut var_field0 = <String>::sse_decode(deserializer);
+                return crate::modules::event::structs::ActorType::Unknown(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::BlockTrack {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_size = <u16>::sse_decode(deserializer);
+        let mut var_trackType =
+            <crate::modules::event::structs::TrackType>::sse_decode(deserializer);
+        let mut var_typeCode = <u16>::sse_decode(deserializer);
+        let mut var_flags = <u32>::sse_decode(deserializer);
+        let mut var_index = <u32>::sse_decode(deserializer);
+        let mut var_reference = <Option<String>>::sse_decode(deserializer);
+        let mut var_startFrame = <Option<u32>>::sse_decode(deserializer);
+        let mut var_durationFrames = <Option<u32>>::sse_decode(deserializer);
+        let mut var_floatValues = <Vec<f32>>::sse_decode(deserializer);
+        return crate::modules::event::structs::BlockTrack {
+            size: var_size,
+            track_type: var_trackType,
+            type_code: var_typeCode,
+            flags: var_flags,
+            index: var_index,
+            reference: var_reference,
+            start_frame: var_startFrame,
+            duration_frames: var_durationFrames,
+            float_values: var_floatValues,
+        };
+    }
+}
+
 impl SseDecode for bool {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_u8().unwrap() != 0
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::CameraControlBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_sourceFile = <String>::sse_decode(deserializer);
+        let mut var_headerSize = <u32>::sse_decode(deserializer);
+        let mut var_dataSize = <u32>::sse_decode(deserializer);
+        let mut var_flags = <u32>::sse_decode(deserializer);
+        return crate::modules::event::structs::CameraControlBlock {
+            name: var_name,
+            source_file: var_sourceFile,
+            header_size: var_headerSize,
+            data_size: var_dataSize,
+            flags: var_flags,
+        };
     }
 }
 
@@ -2642,6 +3300,215 @@ impl SseDecode for crate::modules::crystalium::structs::CrystariumNode {
     }
 }
 
+impl SseDecode for crate::modules::scd::structs::DecodedAudio {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_sampleRate = <u32>::sse_decode(deserializer);
+        let mut var_channels = <u16>::sse_decode(deserializer);
+        let mut var_bitsPerSample = <u16>::sse_decode(deserializer);
+        let mut var_pcmData = <Vec<u8>>::sse_decode(deserializer);
+        let mut var_durationSeconds = <f32>::sse_decode(deserializer);
+        let mut var_originalCodec = <String>::sse_decode(deserializer);
+        return crate::modules::scd::structs::DecodedAudio {
+            sample_rate: var_sampleRate,
+            channels: var_channels,
+            bits_per_sample: var_bitsPerSample,
+            pcm_data: var_pcmData,
+            duration_seconds: var_durationSeconds,
+            original_codec: var_originalCodec,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::DialogueEntry {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_recordName = <String>::sse_decode(deserializer);
+        let mut var_rawContent = <String>::sse_decode(deserializer);
+        let mut var_ztrKey = <String>::sse_decode(deserializer);
+        return crate::modules::event::structs::DialogueEntry {
+            record_name: var_recordName,
+            raw_content: var_rawContent,
+            ztr_key: var_ztrKey,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::EventActor {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_actorType =
+            <crate::modules::event::structs::ActorType>::sse_decode(deserializer);
+        let mut var_index = <u16>::sse_decode(deserializer);
+        let mut var_flags = <u32>::sse_decode(deserializer);
+        return crate::modules::event::structs::EventActor {
+            name: var_name,
+            actor_type: var_actorType,
+            index: var_index,
+            flags: var_flags,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::EventBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_id = <u16>::sse_decode(deserializer);
+        let mut var_durationFrames = <u32>::sse_decode(deserializer);
+        let mut var_durationSeconds = <f32>::sse_decode(deserializer);
+        let mut var_trackCount = <u32>::sse_decode(deserializer);
+        let mut var_tracks =
+            <Vec<crate::modules::event::structs::BlockTrack>>::sse_decode(deserializer);
+        return crate::modules::event::structs::EventBlock {
+            name: var_name,
+            id: var_id,
+            duration_frames: var_durationFrames,
+            duration_seconds: var_durationSeconds,
+            track_count: var_trackCount,
+            tracks: var_tracks,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::EventDataSet {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_motionBlocks =
+            <Vec<crate::modules::event::structs::MotionControlBlock>>::sse_decode(deserializer);
+        let mut var_cameraBlocks =
+            <Vec<crate::modules::event::structs::CameraControlBlock>>::sse_decode(deserializer);
+        let mut var_sourceFiles = <Vec<String>>::sse_decode(deserializer);
+        return crate::modules::event::structs::EventDataSet {
+            motion_blocks: var_motionBlocks,
+            camera_blocks: var_cameraBlocks,
+            source_files: var_sourceFiles,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::EventMetadata {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_sourcePath = <String>::sse_decode(deserializer);
+        let mut var_fileSize = <u64>::sse_decode(deserializer);
+        let mut var_recordCount = <usize>::sse_decode(deserializer);
+        let mut var_wpdRecords =
+            <Vec<crate::modules::event::structs::WpdRecordInfo>>::sse_decode(deserializer);
+        let mut var_scheduleHeader =
+            <Option<crate::modules::event::structs::ScheduleHeader>>::sse_decode(deserializer);
+        let mut var_sectionCounts =
+            <crate::modules::event::structs::SectionCounts>::sse_decode(deserializer);
+        let mut var_externalResources =
+            <Vec<crate::modules::event::structs::ExternalResource>>::sse_decode(deserializer);
+        let mut var_actors =
+            <Vec<crate::modules::event::structs::EventActor>>::sse_decode(deserializer);
+        let mut var_blocks =
+            <Vec<crate::modules::event::structs::EventBlock>>::sse_decode(deserializer);
+        let mut var_resources =
+            <Vec<crate::modules::event::structs::EventResource>>::sse_decode(deserializer);
+        let mut var_soundBlocks =
+            <Vec<crate::modules::event::structs::SoundBlock>>::sse_decode(deserializer);
+        let mut var_soundReferences =
+            <Vec<crate::modules::event::structs::SoundReference>>::sse_decode(deserializer);
+        let mut var_dialogueEntries =
+            <Vec<crate::modules::event::structs::DialogueEntry>>::sse_decode(deserializer);
+        let mut var_dataset =
+            <Option<crate::modules::event::structs::EventDataSet>>::sse_decode(deserializer);
+        return crate::modules::event::structs::EventMetadata {
+            name: var_name,
+            source_path: var_sourcePath,
+            file_size: var_fileSize,
+            record_count: var_recordCount,
+            wpd_records: var_wpdRecords,
+            schedule_header: var_scheduleHeader,
+            section_counts: var_sectionCounts,
+            external_resources: var_externalResources,
+            actors: var_actors,
+            blocks: var_blocks,
+            resources: var_resources,
+            sound_blocks: var_soundBlocks,
+            sound_references: var_soundReferences,
+            dialogue_entries: var_dialogueEntries,
+            dataset: var_dataset,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::EventResource {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_resourceType = <String>::sse_decode(deserializer);
+        let mut var_externalHash = <Option<String>>::sse_decode(deserializer);
+        return crate::modules::event::structs::EventResource {
+            name: var_name,
+            resource_type: var_resourceType,
+            external_hash: var_externalHash,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::EventSummary {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_actorCount = <usize>::sse_decode(deserializer);
+        let mut var_blockCount = <usize>::sse_decode(deserializer);
+        let mut var_resourceCount = <usize>::sse_decode(deserializer);
+        let mut var_dialogueCount = <usize>::sse_decode(deserializer);
+        let mut var_soundBlockCount = <usize>::sse_decode(deserializer);
+        let mut var_totalDurationSeconds = <f32>::sse_decode(deserializer);
+        let mut var_hasDataset = <bool>::sse_decode(deserializer);
+        let mut var_motionBlockCount = <usize>::sse_decode(deserializer);
+        let mut var_cameraBlockCount = <usize>::sse_decode(deserializer);
+        return crate::modules::event::structs::EventSummary {
+            name: var_name,
+            actor_count: var_actorCount,
+            block_count: var_blockCount,
+            resource_count: var_resourceCount,
+            dialogue_count: var_dialogueCount,
+            sound_block_count: var_soundBlockCount,
+            total_duration_seconds: var_totalDurationSeconds,
+            has_dataset: var_hasDataset,
+            motion_block_count: var_motionBlockCount,
+            camera_block_count: var_cameraBlockCount,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::ExternalResource {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_hash = <String>::sse_decode(deserializer);
+        let mut var_category =
+            <crate::modules::event::structs::ResourceCategory>::sse_decode(deserializer);
+        return crate::modules::event::structs::ExternalResource {
+            name: var_name,
+            hash: var_hash,
+            category: var_category,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::ExtractedEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_outputDir = <String>::sse_decode(deserializer);
+        let mut var_metadata =
+            <crate::modules::event::structs::EventMetadata>::sse_decode(deserializer);
+        let mut var_extractedFiles = <Vec<String>>::sse_decode(deserializer);
+        return crate::modules::event::structs::ExtractedEvent {
+            output_dir: var_outputDir,
+            metadata: var_metadata,
+            extracted_files: var_extractedFiles,
+        };
+    }
+}
+
 impl SseDecode for f32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2723,6 +3590,34 @@ impl SseDecode for Vec<String> {
     }
 }
 
+impl SseDecode for Vec<crate::modules::event::structs::BlockTrack> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::BlockTrack>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::CameraControlBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(
+                <crate::modules::event::structs::CameraControlBlock>::sse_decode(deserializer),
+            );
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::modules::crystalium::structs::CrystariumEntry> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2745,6 +3640,102 @@ impl SseDecode for Vec<crate::modules::crystalium::structs::CrystariumNode> {
         for idx_ in 0..len_ {
             ans_.push(
                 <crate::modules::crystalium::structs::CrystariumNode>::sse_decode(deserializer),
+            );
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::scd::structs::DecodedAudio> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::scd::structs::DecodedAudio>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::DialogueEntry> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::DialogueEntry>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::EventActor> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::EventActor>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::EventBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::EventBlock>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::EventResource> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::EventResource>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::ExternalResource> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::ExternalResource>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::MotionControlBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(
+                <crate::modules::event::structs::MotionControlBlock>::sse_decode(deserializer),
             );
         }
         return ans_;
@@ -2863,6 +3854,46 @@ impl SseDecode for Vec<(String, crate::modules::wdb::structs::WdbValue)> {
     }
 }
 
+impl SseDecode for Vec<crate::modules::scd::structs::ScdStreamInfo> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::scd::structs::ScdStreamInfo>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::SoundBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::SoundBlock>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
+impl SseDecode for Vec<crate::modules::event::structs::SoundReference> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::SoundReference>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::modules::crystalium::structs::Vec3> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2973,6 +4004,20 @@ impl SseDecode for Vec<crate::modules::wpd::structs::WpdRecord> {
     }
 }
 
+impl SseDecode for Vec<crate::modules::event::structs::WpdRecordInfo> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::modules::event::structs::WpdRecordInfo>::sse_decode(
+                deserializer,
+            ));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::modules::ztr::structs::ZtrEntry> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3061,11 +4106,57 @@ impl SseDecode for crate::modules::crystalium::structs::McpPattern {
     }
 }
 
+impl SseDecode for crate::modules::event::structs::MotionControlBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_sourceFile = <String>::sse_decode(deserializer);
+        let mut var_headerSize = <u32>::sse_decode(deserializer);
+        let mut var_dataSize = <u32>::sse_decode(deserializer);
+        let mut var_version = <u16>::sse_decode(deserializer);
+        let mut var_flags = <u16>::sse_decode(deserializer);
+        return crate::modules::event::structs::MotionControlBlock {
+            name: var_name,
+            source_file: var_sourceFile,
+            header_size: var_headerSize,
+            data_size: var_dataSize,
+            version: var_version,
+            flags: var_flags,
+        };
+    }
+}
+
 impl SseDecode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<String>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::modules::event::structs::EventDataSet> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::modules::event::structs::EventDataSet>::sse_decode(
+                deserializer,
+            ));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::modules::event::structs::ScheduleHeader> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(
+                <crate::modules::event::structs::ScheduleHeader>::sse_decode(deserializer),
+            );
         } else {
             return None;
         }
@@ -3151,6 +4242,204 @@ impl SseDecode for (u32, u32) {
     }
 }
 
+impl SseDecode for crate::modules::event::structs::ResourceCategory {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::modules::event::structs::ResourceCategory::Event,
+            1 => crate::modules::event::structs::ResourceCategory::Camera,
+            2 => crate::modules::event::structs::ResourceCategory::World,
+            3 => crate::modules::event::structs::ResourceCategory::Facial,
+            4 => crate::modules::event::structs::ResourceCategory::Normal,
+            5 => crate::modules::event::structs::ResourceCategory::Block,
+            6 => crate::modules::event::structs::ResourceCategory::CutsceneCamera,
+            7 => crate::modules::event::structs::ResourceCategory::Unknown,
+            _ => unreachable!("Invalid variant for ResourceCategory: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::modules::scd::structs::ScdCodec {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::modules::scd::structs::ScdCodec::PcmBe,
+            1 => crate::modules::scd::structs::ScdCodec::PcmLe,
+            2 => crate::modules::scd::structs::ScdCodec::PsAdpcm,
+            3 => crate::modules::scd::structs::ScdCodec::OggVorbis,
+            4 => crate::modules::scd::structs::ScdCodec::Mpeg,
+            5 => crate::modules::scd::structs::ScdCodec::MsAdpcm,
+            6 => crate::modules::scd::structs::ScdCodec::Xma2,
+            7 => crate::modules::scd::structs::ScdCodec::Atrac,
+            8 => crate::modules::scd::structs::ScdCodec::Unknown,
+            _ => unreachable!("Invalid variant for ScdCodec: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for crate::modules::scd::structs::ScdExtractResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_metadata =
+            <crate::modules::scd::structs::ScdMetadata>::sse_decode(deserializer);
+        let mut var_audioStreams =
+            <Vec<crate::modules::scd::structs::DecodedAudio>>::sse_decode(deserializer);
+        return crate::modules::scd::structs::ScdExtractResult {
+            metadata: var_metadata,
+            audio_streams: var_audioStreams,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::scd::structs::ScdHeader {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_version = <u32>::sse_decode(deserializer);
+        let mut var_bigEndian = <bool>::sse_decode(deserializer);
+        let mut var_tablesOffset = <u16>::sse_decode(deserializer);
+        let mut var_fileSize = <u64>::sse_decode(deserializer);
+        return crate::modules::scd::structs::ScdHeader {
+            version: var_version,
+            big_endian: var_bigEndian,
+            tables_offset: var_tablesOffset,
+            file_size: var_fileSize,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::scd::structs::ScdMetadata {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_header = <crate::modules::scd::structs::ScdHeader>::sse_decode(deserializer);
+        let mut var_streams =
+            <Vec<crate::modules::scd::structs::ScdStreamInfo>>::sse_decode(deserializer);
+        let mut var_durationSeconds = <f32>::sse_decode(deserializer);
+        return crate::modules::scd::structs::ScdMetadata {
+            name: var_name,
+            header: var_header,
+            streams: var_streams,
+            duration_seconds: var_durationSeconds,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::scd::structs::ScdStreamInfo {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_index = <u32>::sse_decode(deserializer);
+        let mut var_dataSize = <u32>::sse_decode(deserializer);
+        let mut var_channels = <u32>::sse_decode(deserializer);
+        let mut var_sampleRate = <u32>::sse_decode(deserializer);
+        let mut var_codec = <crate::modules::scd::structs::ScdCodec>::sse_decode(deserializer);
+        let mut var_loopStart = <u32>::sse_decode(deserializer);
+        let mut var_loopEnd = <u32>::sse_decode(deserializer);
+        let mut var_extraDataSize = <u32>::sse_decode(deserializer);
+        let mut var_auxChunkCount = <u32>::sse_decode(deserializer);
+        let mut var_dataOffset = <u32>::sse_decode(deserializer);
+        return crate::modules::scd::structs::ScdStreamInfo {
+            index: var_index,
+            data_size: var_dataSize,
+            channels: var_channels,
+            sample_rate: var_sampleRate,
+            codec: var_codec,
+            loop_start: var_loopStart,
+            loop_end: var_loopEnd,
+            extra_data_size: var_extraDataSize,
+            aux_chunk_count: var_auxChunkCount,
+            data_offset: var_dataOffset,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::ScheduleHeader {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_magic = <String>::sse_decode(deserializer);
+        let mut var_version = <u32>::sse_decode(deserializer);
+        let mut var_headerSize = <u32>::sse_decode(deserializer);
+        let mut var_dataSize = <u32>::sse_decode(deserializer);
+        return crate::modules::event::structs::ScheduleHeader {
+            magic: var_magic,
+            version: var_version,
+            header_size: var_headerSize,
+            data_size: var_dataSize,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::SectionCounts {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_crst = <u32>::sse_decode(deserializer);
+        let mut var_cres = <u32>::sse_decode(deserializer);
+        let mut var_catt = <u32>::sse_decode(deserializer);
+        let mut var_ccpt = <u32>::sse_decode(deserializer);
+        let mut var_cact = <u32>::sse_decode(deserializer);
+        let mut var_cdpt = <u32>::sse_decode(deserializer);
+        let mut var_ctrk = <u32>::sse_decode(deserializer);
+        let mut var_cbkt = <u32>::sse_decode(deserializer);
+        let mut var_cblk = <u32>::sse_decode(deserializer);
+        return crate::modules::event::structs::SectionCounts {
+            crst: var_crst,
+            cres: var_cres,
+            catt: var_catt,
+            ccpt: var_ccpt,
+            cact: var_cact,
+            cdpt: var_cdpt,
+            ctrk: var_ctrk,
+            cbkt: var_cbkt,
+            cblk: var_cblk,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::SoundBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_durationSamples = <u32>::sse_decode(deserializer);
+        let mut var_durationSeconds = <f32>::sse_decode(deserializer);
+        return crate::modules::event::structs::SoundBlock {
+            name: var_name,
+            duration_samples: var_durationSamples,
+            duration_seconds: var_durationSeconds,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::SoundReference {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_blockName = <String>::sse_decode(deserializer);
+        let mut var_soundId = <String>::sse_decode(deserializer);
+        let mut var_soundType =
+            <crate::modules::event::structs::SoundType>::sse_decode(deserializer);
+        return crate::modules::event::structs::SoundReference {
+            block_name: var_blockName,
+            sound_id: var_soundId,
+            sound_type: var_soundType,
+        };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::SoundType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::modules::event::structs::SoundType::Music,
+            1 => crate::modules::event::structs::SoundType::Ambient,
+            2 => crate::modules::event::structs::SoundType::Voice,
+            3 => crate::modules::event::structs::SoundType::SoundEffect,
+            4 => crate::modules::event::structs::SoundType::Unknown,
+            _ => unreachable!("Invalid variant for SoundType: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::modules::wct::TargetType {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3160,6 +4449,49 @@ impl SseDecode for crate::modules::wct::TargetType {
             1 => crate::modules::wct::TargetType::Clb,
             _ => unreachable!("Invalid variant for TargetType: {}", inner),
         };
+    }
+}
+
+impl SseDecode for crate::modules::event::structs::TrackType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                return crate::modules::event::structs::TrackType::MotionSet;
+            }
+            1 => {
+                return crate::modules::event::structs::TrackType::CharacterSet;
+            }
+            2 => {
+                return crate::modules::event::structs::TrackType::Camera;
+            }
+            3 => {
+                return crate::modules::event::structs::TrackType::Sound;
+            }
+            4 => {
+                return crate::modules::event::structs::TrackType::MusicBus;
+            }
+            5 => {
+                return crate::modules::event::structs::TrackType::Dialogue;
+            }
+            6 => {
+                return crate::modules::event::structs::TrackType::Effect;
+            }
+            7 => {
+                return crate::modules::event::structs::TrackType::EventDef;
+            }
+            8 => {
+                return crate::modules::event::structs::TrackType::ActorControl;
+            }
+            9 => {
+                let mut var_field0 = <u16>::sse_decode(deserializer);
+                return crate::modules::event::structs::TrackType::Unknown(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -3549,6 +4881,22 @@ impl SseDecode for crate::modules::wpd::structs::WpdRecord {
     }
 }
 
+impl SseDecode for crate::modules::event::structs::WpdRecordInfo {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_extension_ = <String>::sse_decode(deserializer);
+        let mut var_offset = <u32>::sse_decode(deserializer);
+        let mut var_size = <u32>::sse_decode(deserializer);
+        return crate::modules::event::structs::WpdRecordInfo {
+            name: var_name,
+            extension: var_extension_,
+            offset: var_offset,
+            size: var_size,
+        };
+    }
+}
+
 impl SseDecode for crate::modules::ztr::structs::ZtrData {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3671,62 +5019,78 @@ fn pde_ffi_dispatcher_primary_impl(
         9 => wire__crate__api__convert_dds_to_png_impl(port, ptr, rust_vec_len, data_len),
         10 => wire__crate__api__convert_dds_to_png_bytes_impl(port, ptr, rust_vec_len, data_len),
         11 => wire__crate__api__create_log_stream_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__fetch_logs_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__get_all_buffered_logs_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__get_log_level_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__img_repack_strict_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__img_unpack_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__img_unpack_to_memory_impl(port, ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__mcp_from_json_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__mcp_parse_impl(port, ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__mcp_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
-        22 => wire__crate__api__mcp_to_json_impl(port, ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__reset_log_read_index_impl(port, ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__set_log_level_impl(port, ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__test_log_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__vfx_export_json_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__vfx_extract_texture_as_png_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__vfx_extract_textures_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__vfx_get_summary_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__vfx_list_effects_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__vfx_list_textures_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__vfx_parse_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__vfx_player_dispose_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__vfx_player_get_dimensions_impl(port, ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__vfx_player_get_time_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__vfx_player_init_impl(port, ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__vfx_player_is_initialized_impl(port, ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__vfx_player_load_model_impl(port, ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__vfx_player_load_test_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__vfx_player_render_frame_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__vfx_player_reset_impl(port, ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
-        44 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
-        45 => {
+        12 => wire__crate__api__event_export_json_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__event_extract_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__event_get_summary_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__event_parse_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__event_parse_directory_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__event_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__fetch_logs_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__get_all_buffered_logs_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__get_log_level_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__img_repack_strict_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__img_unpack_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__img_unpack_to_memory_impl(port, ptr, rust_vec_len, data_len),
+        24 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__mcp_from_json_impl(port, ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__mcp_parse_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__mcp_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__mcp_to_json_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__reset_log_read_index_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__scd_bytes_to_wav_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__scd_decode_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__scd_decode_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__scd_decode_stream_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__scd_extract_to_wav_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__scd_parse_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__scd_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__scd_to_wav_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__set_log_level_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__test_log_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__translate_wav_impl(port, ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__vfx_export_json_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__vfx_extract_texture_as_png_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__vfx_extract_textures_impl(port, ptr, rust_vec_len, data_len),
+        44 => wire__crate__api__vfx_get_summary_impl(port, ptr, rust_vec_len, data_len),
+        45 => wire__crate__api__vfx_list_effects_impl(port, ptr, rust_vec_len, data_len),
+        46 => wire__crate__api__vfx_list_textures_impl(port, ptr, rust_vec_len, data_len),
+        47 => wire__crate__api__vfx_parse_impl(port, ptr, rust_vec_len, data_len),
+        48 => wire__crate__api__vfx_player_dispose_impl(port, ptr, rust_vec_len, data_len),
+        49 => wire__crate__api__vfx_player_get_dimensions_impl(port, ptr, rust_vec_len, data_len),
+        50 => wire__crate__api__vfx_player_get_time_impl(port, ptr, rust_vec_len, data_len),
+        51 => wire__crate__api__vfx_player_init_impl(port, ptr, rust_vec_len, data_len),
+        52 => wire__crate__api__vfx_player_is_initialized_impl(port, ptr, rust_vec_len, data_len),
+        53 => wire__crate__api__vfx_player_load_model_impl(port, ptr, rust_vec_len, data_len),
+        54 => wire__crate__api__vfx_player_load_test_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__api__vfx_player_render_frame_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__api__vfx_player_reset_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__api__wav_to_scd_impl(port, ptr, rust_vec_len, data_len),
+        58 => wire__crate__api__wbt_extract_impl(port, ptr, rust_vec_len, data_len),
+        59 => wire__crate__api__wbt_extract_directory_impl(port, ptr, rust_vec_len, data_len),
+        60 => wire__crate__api__wbt_extract_file_by_index_impl(port, ptr, rust_vec_len, data_len),
+        61 => {
             wire__crate__api__wbt_extract_files_by_indices_impl(port, ptr, rust_vec_len, data_len)
         }
-        46 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
-        47 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
-        48 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
-        49 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
-        50 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
-        51 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
-        52 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
-        53 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
-        54 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
-        55 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
-        56 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
-        57 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
-        58 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
-        59 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
-        60 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
-        61 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
-        62 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
-        63 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
-        64 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
-        65 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
+        62 => wire__crate__api__wbt_extract_single_file_impl(port, ptr, rust_vec_len, data_len),
+        63 => wire__crate__api__wbt_get_file_list_impl(port, ptr, rust_vec_len, data_len),
+        64 => wire__crate__api__wbt_repack_impl(port, ptr, rust_vec_len, data_len),
+        65 => wire__crate__api__wbt_repack_multiple_impl(port, ptr, rust_vec_len, data_len),
+        66 => wire__crate__api__wbt_repack_single_impl(port, ptr, rust_vec_len, data_len),
+        67 => wire__crate__api__wct_process_impl(port, ptr, rust_vec_len, data_len),
+        68 => wire__crate__api__wdb_from_json_impl(port, ptr, rust_vec_len, data_len),
+        69 => wire__crate__api__wdb_parse_impl(port, ptr, rust_vec_len, data_len),
+        70 => wire__crate__api__wdb_repack_impl(port, ptr, rust_vec_len, data_len),
+        71 => wire__crate__api__wdb_to_json_impl(port, ptr, rust_vec_len, data_len),
+        72 => wire__crate__api__wpd_repack_impl(port, ptr, rust_vec_len, data_len),
+        73 => wire__crate__api__wpd_unpack_impl(port, ptr, rust_vec_len, data_len),
+        74 => wire__crate__api__ztr_extract_to_text_impl(port, ptr, rust_vec_len, data_len),
+        75 => wire__crate__api__ztr_pack_from_data_impl(port, ptr, rust_vec_len, data_len),
+        76 => wire__crate__api__ztr_pack_from_struct_impl(port, ptr, rust_vec_len, data_len),
+        77 => wire__crate__api__ztr_parse_impl(port, ptr, rust_vec_len, data_len),
+        78 => wire__crate__api__ztr_parse_directory_impl(port, ptr, rust_vec_len, data_len),
+        79 => wire__crate__api__ztr_parse_directory_simple_impl(port, ptr, rust_vec_len, data_len),
+        80 => wire__crate__api__ztr_parse_from_memory_impl(port, ptr, rust_vec_len, data_len),
+        81 => wire__crate__api__ztr_to_text_string_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3762,6 +5126,91 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::wct::Action>
     for crate::modules::wct::Action
 {
     fn into_into_dart(self) -> crate::modules::wct::Action {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::ActorType {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::modules::event::structs::ActorType::Camera => [0.into_dart()].into_dart(),
+            crate::modules::event::structs::ActorType::Sound => [1.into_dart()].into_dart(),
+            crate::modules::event::structs::ActorType::Effect => [2.into_dart()].into_dart(),
+            crate::modules::event::structs::ActorType::Bgm => [3.into_dart()].into_dart(),
+            crate::modules::event::structs::ActorType::Proxy => [4.into_dart()].into_dart(),
+            crate::modules::event::structs::ActorType::System => [5.into_dart()].into_dart(),
+            crate::modules::event::structs::ActorType::Character(field0) => {
+                [6.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            crate::modules::event::structs::ActorType::Unknown(field0) => {
+                [7.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::ActorType
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::ActorType>
+    for crate::modules::event::structs::ActorType
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::ActorType {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::BlockTrack {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.size.into_into_dart().into_dart(),
+            self.track_type.into_into_dart().into_dart(),
+            self.type_code.into_into_dart().into_dart(),
+            self.flags.into_into_dart().into_dart(),
+            self.index.into_into_dart().into_dart(),
+            self.reference.into_into_dart().into_dart(),
+            self.start_frame.into_into_dart().into_dart(),
+            self.duration_frames.into_into_dart().into_dart(),
+            self.float_values.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::BlockTrack
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::BlockTrack>
+    for crate::modules::event::structs::BlockTrack
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::BlockTrack {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::CameraControlBlock {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.source_file.into_into_dart().into_dart(),
+            self.header_size.into_into_dart().into_dart(),
+            self.data_size.into_into_dart().into_dart(),
+            self.flags.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::CameraControlBlock
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::CameraControlBlock>
+    for crate::modules::event::structs::CameraControlBlock
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::CameraControlBlock {
         self
     }
 }
@@ -3901,6 +5350,252 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::Crys
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::scd::structs::DecodedAudio {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.sample_rate.into_into_dart().into_dart(),
+            self.channels.into_into_dart().into_dart(),
+            self.bits_per_sample.into_into_dart().into_dart(),
+            self.pcm_data.into_into_dart().into_dart(),
+            self.duration_seconds.into_into_dart().into_dart(),
+            self.original_codec.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::scd::structs::DecodedAudio
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::scd::structs::DecodedAudio>
+    for crate::modules::scd::structs::DecodedAudio
+{
+    fn into_into_dart(self) -> crate::modules::scd::structs::DecodedAudio {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::DialogueEntry {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.record_name.into_into_dart().into_dart(),
+            self.raw_content.into_into_dart().into_dart(),
+            self.ztr_key.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::DialogueEntry
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::DialogueEntry>
+    for crate::modules::event::structs::DialogueEntry
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::DialogueEntry {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::EventActor {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.actor_type.into_into_dart().into_dart(),
+            self.index.into_into_dart().into_dart(),
+            self.flags.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::EventActor
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::EventActor>
+    for crate::modules::event::structs::EventActor
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::EventActor {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::EventBlock {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.id.into_into_dart().into_dart(),
+            self.duration_frames.into_into_dart().into_dart(),
+            self.duration_seconds.into_into_dart().into_dart(),
+            self.track_count.into_into_dart().into_dart(),
+            self.tracks.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::EventBlock
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::EventBlock>
+    for crate::modules::event::structs::EventBlock
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::EventBlock {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::EventDataSet {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.motion_blocks.into_into_dart().into_dart(),
+            self.camera_blocks.into_into_dart().into_dart(),
+            self.source_files.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::EventDataSet
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::EventDataSet>
+    for crate::modules::event::structs::EventDataSet
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::EventDataSet {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::EventMetadata {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.source_path.into_into_dart().into_dart(),
+            self.file_size.into_into_dart().into_dart(),
+            self.record_count.into_into_dart().into_dart(),
+            self.wpd_records.into_into_dart().into_dart(),
+            self.schedule_header.into_into_dart().into_dart(),
+            self.section_counts.into_into_dart().into_dart(),
+            self.external_resources.into_into_dart().into_dart(),
+            self.actors.into_into_dart().into_dart(),
+            self.blocks.into_into_dart().into_dart(),
+            self.resources.into_into_dart().into_dart(),
+            self.sound_blocks.into_into_dart().into_dart(),
+            self.sound_references.into_into_dart().into_dart(),
+            self.dialogue_entries.into_into_dart().into_dart(),
+            self.dataset.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::EventMetadata
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::EventMetadata>
+    for crate::modules::event::structs::EventMetadata
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::EventMetadata {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::EventResource {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.resource_type.into_into_dart().into_dart(),
+            self.external_hash.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::EventResource
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::EventResource>
+    for crate::modules::event::structs::EventResource
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::EventResource {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::EventSummary {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.actor_count.into_into_dart().into_dart(),
+            self.block_count.into_into_dart().into_dart(),
+            self.resource_count.into_into_dart().into_dart(),
+            self.dialogue_count.into_into_dart().into_dart(),
+            self.sound_block_count.into_into_dart().into_dart(),
+            self.total_duration_seconds.into_into_dart().into_dart(),
+            self.has_dataset.into_into_dart().into_dart(),
+            self.motion_block_count.into_into_dart().into_dart(),
+            self.camera_block_count.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::EventSummary
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::EventSummary>
+    for crate::modules::event::structs::EventSummary
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::EventSummary {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::ExternalResource {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.hash.into_into_dart().into_dart(),
+            self.category.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::ExternalResource
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::ExternalResource>
+    for crate::modules::event::structs::ExternalResource
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::ExternalResource {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::ExtractedEvent {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.output_dir.into_into_dart().into_dart(),
+            self.metadata.into_into_dart().into_dart(),
+            self.extracted_files.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::ExtractedEvent
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::ExtractedEvent>
+    for crate::modules::event::structs::ExtractedEvent
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::ExtractedEvent {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::modules::img::structs::ImgData {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -3969,6 +5664,301 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::crystalium::structs::McpP
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::MotionControlBlock {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.source_file.into_into_dart().into_dart(),
+            self.header_size.into_into_dart().into_dart(),
+            self.data_size.into_into_dart().into_dart(),
+            self.version.into_into_dart().into_dart(),
+            self.flags.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::MotionControlBlock
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::MotionControlBlock>
+    for crate::modules::event::structs::MotionControlBlock
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::MotionControlBlock {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::ResourceCategory {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Event => 0.into_dart(),
+            Self::Camera => 1.into_dart(),
+            Self::World => 2.into_dart(),
+            Self::Facial => 3.into_dart(),
+            Self::Normal => 4.into_dart(),
+            Self::Block => 5.into_dart(),
+            Self::CutsceneCamera => 6.into_dart(),
+            Self::Unknown => 7.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::ResourceCategory
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::ResourceCategory>
+    for crate::modules::event::structs::ResourceCategory
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::ResourceCategory {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::scd::structs::ScdCodec {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::PcmBe => 0.into_dart(),
+            Self::PcmLe => 1.into_dart(),
+            Self::PsAdpcm => 2.into_dart(),
+            Self::OggVorbis => 3.into_dart(),
+            Self::Mpeg => 4.into_dart(),
+            Self::MsAdpcm => 5.into_dart(),
+            Self::Xma2 => 6.into_dart(),
+            Self::Atrac => 7.into_dart(),
+            Self::Unknown => 8.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::scd::structs::ScdCodec
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::scd::structs::ScdCodec>
+    for crate::modules::scd::structs::ScdCodec
+{
+    fn into_into_dart(self) -> crate::modules::scd::structs::ScdCodec {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::scd::structs::ScdExtractResult {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.metadata.into_into_dart().into_dart(),
+            self.audio_streams.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::scd::structs::ScdExtractResult
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::scd::structs::ScdExtractResult>
+    for crate::modules::scd::structs::ScdExtractResult
+{
+    fn into_into_dart(self) -> crate::modules::scd::structs::ScdExtractResult {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::scd::structs::ScdHeader {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.version.into_into_dart().into_dart(),
+            self.big_endian.into_into_dart().into_dart(),
+            self.tables_offset.into_into_dart().into_dart(),
+            self.file_size.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::scd::structs::ScdHeader
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::scd::structs::ScdHeader>
+    for crate::modules::scd::structs::ScdHeader
+{
+    fn into_into_dart(self) -> crate::modules::scd::structs::ScdHeader {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::scd::structs::ScdMetadata {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.header.into_into_dart().into_dart(),
+            self.streams.into_into_dart().into_dart(),
+            self.duration_seconds.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::scd::structs::ScdMetadata
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::scd::structs::ScdMetadata>
+    for crate::modules::scd::structs::ScdMetadata
+{
+    fn into_into_dart(self) -> crate::modules::scd::structs::ScdMetadata {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::scd::structs::ScdStreamInfo {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.index.into_into_dart().into_dart(),
+            self.data_size.into_into_dart().into_dart(),
+            self.channels.into_into_dart().into_dart(),
+            self.sample_rate.into_into_dart().into_dart(),
+            self.codec.into_into_dart().into_dart(),
+            self.loop_start.into_into_dart().into_dart(),
+            self.loop_end.into_into_dart().into_dart(),
+            self.extra_data_size.into_into_dart().into_dart(),
+            self.aux_chunk_count.into_into_dart().into_dart(),
+            self.data_offset.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::scd::structs::ScdStreamInfo
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::scd::structs::ScdStreamInfo>
+    for crate::modules::scd::structs::ScdStreamInfo
+{
+    fn into_into_dart(self) -> crate::modules::scd::structs::ScdStreamInfo {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::ScheduleHeader {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.magic.into_into_dart().into_dart(),
+            self.version.into_into_dart().into_dart(),
+            self.header_size.into_into_dart().into_dart(),
+            self.data_size.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::ScheduleHeader
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::ScheduleHeader>
+    for crate::modules::event::structs::ScheduleHeader
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::ScheduleHeader {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::SectionCounts {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.crst.into_into_dart().into_dart(),
+            self.cres.into_into_dart().into_dart(),
+            self.catt.into_into_dart().into_dart(),
+            self.ccpt.into_into_dart().into_dart(),
+            self.cact.into_into_dart().into_dart(),
+            self.cdpt.into_into_dart().into_dart(),
+            self.ctrk.into_into_dart().into_dart(),
+            self.cbkt.into_into_dart().into_dart(),
+            self.cblk.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::SectionCounts
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::SectionCounts>
+    for crate::modules::event::structs::SectionCounts
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::SectionCounts {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::SoundBlock {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.duration_samples.into_into_dart().into_dart(),
+            self.duration_seconds.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::SoundBlock
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::SoundBlock>
+    for crate::modules::event::structs::SoundBlock
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::SoundBlock {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::SoundReference {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.block_name.into_into_dart().into_dart(),
+            self.sound_id.into_into_dart().into_dart(),
+            self.sound_type.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::SoundReference
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::SoundReference>
+    for crate::modules::event::structs::SoundReference
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::SoundReference {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::SoundType {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Music => 0.into_dart(),
+            Self::Ambient => 1.into_dart(),
+            Self::Voice => 2.into_dart(),
+            Self::SoundEffect => 3.into_dart(),
+            Self::Unknown => 4.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::SoundType
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::SoundType>
+    for crate::modules::event::structs::SoundType
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::SoundType {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::modules::wct::TargetType {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -3986,6 +5976,39 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::wct::TargetType>
     for crate::modules::wct::TargetType
 {
     fn into_into_dart(self) -> crate::modules::wct::TargetType {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::TrackType {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::modules::event::structs::TrackType::MotionSet => [0.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::CharacterSet => [1.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::Camera => [2.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::Sound => [3.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::MusicBus => [4.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::Dialogue => [5.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::Effect => [6.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::EventDef => [7.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::ActorControl => [8.into_dart()].into_dart(),
+            crate::modules::event::structs::TrackType::Unknown(field0) => {
+                [9.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::TrackType
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::TrackType>
+    for crate::modules::event::structs::TrackType
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::TrackType {
         self
     }
 }
@@ -4393,6 +6416,29 @@ impl flutter_rust_bridge::IntoIntoDart<crate::modules::wpd::structs::WpdRecord>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::modules::event::structs::WpdRecordInfo {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.extension.into_into_dart().into_dart(),
+            self.offset.into_into_dart().into_dart(),
+            self.size.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::modules::event::structs::WpdRecordInfo
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::modules::event::structs::WpdRecordInfo>
+    for crate::modules::event::structs::WpdRecordInfo
+{
+    fn into_into_dart(self) -> crate::modules::event::structs::WpdRecordInfo {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::modules::ztr::structs::ZtrData {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -4620,10 +6666,73 @@ impl SseEncode for crate::modules::wct::Action {
     }
 }
 
+impl SseEncode for crate::modules::event::structs::ActorType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::modules::event::structs::ActorType::Camera => {
+                <i32>::sse_encode(0, serializer);
+            }
+            crate::modules::event::structs::ActorType::Sound => {
+                <i32>::sse_encode(1, serializer);
+            }
+            crate::modules::event::structs::ActorType::Effect => {
+                <i32>::sse_encode(2, serializer);
+            }
+            crate::modules::event::structs::ActorType::Bgm => {
+                <i32>::sse_encode(3, serializer);
+            }
+            crate::modules::event::structs::ActorType::Proxy => {
+                <i32>::sse_encode(4, serializer);
+            }
+            crate::modules::event::structs::ActorType::System => {
+                <i32>::sse_encode(5, serializer);
+            }
+            crate::modules::event::structs::ActorType::Character(field0) => {
+                <i32>::sse_encode(6, serializer);
+                <String>::sse_encode(field0, serializer);
+            }
+            crate::modules::event::structs::ActorType::Unknown(field0) => {
+                <i32>::sse_encode(7, serializer);
+                <String>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::BlockTrack {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u16>::sse_encode(self.size, serializer);
+        <crate::modules::event::structs::TrackType>::sse_encode(self.track_type, serializer);
+        <u16>::sse_encode(self.type_code, serializer);
+        <u32>::sse_encode(self.flags, serializer);
+        <u32>::sse_encode(self.index, serializer);
+        <Option<String>>::sse_encode(self.reference, serializer);
+        <Option<u32>>::sse_encode(self.start_frame, serializer);
+        <Option<u32>>::sse_encode(self.duration_frames, serializer);
+        <Vec<f32>>::sse_encode(self.float_values, serializer);
+    }
+}
+
 impl SseEncode for bool {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_u8(self as _).unwrap();
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::CameraControlBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.source_file, serializer);
+        <u32>::sse_encode(self.header_size, serializer);
+        <u32>::sse_encode(self.data_size, serializer);
+        <u32>::sse_encode(self.flags, serializer);
     }
 }
 
@@ -4718,6 +6827,155 @@ impl SseEncode for crate::modules::crystalium::structs::CrystariumNode {
     }
 }
 
+impl SseEncode for crate::modules::scd::structs::DecodedAudio {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.sample_rate, serializer);
+        <u16>::sse_encode(self.channels, serializer);
+        <u16>::sse_encode(self.bits_per_sample, serializer);
+        <Vec<u8>>::sse_encode(self.pcm_data, serializer);
+        <f32>::sse_encode(self.duration_seconds, serializer);
+        <String>::sse_encode(self.original_codec, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::DialogueEntry {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.record_name, serializer);
+        <String>::sse_encode(self.raw_content, serializer);
+        <String>::sse_encode(self.ztr_key, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::EventActor {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <crate::modules::event::structs::ActorType>::sse_encode(self.actor_type, serializer);
+        <u16>::sse_encode(self.index, serializer);
+        <u32>::sse_encode(self.flags, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::EventBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <u16>::sse_encode(self.id, serializer);
+        <u32>::sse_encode(self.duration_frames, serializer);
+        <f32>::sse_encode(self.duration_seconds, serializer);
+        <u32>::sse_encode(self.track_count, serializer);
+        <Vec<crate::modules::event::structs::BlockTrack>>::sse_encode(self.tracks, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::EventDataSet {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Vec<crate::modules::event::structs::MotionControlBlock>>::sse_encode(
+            self.motion_blocks,
+            serializer,
+        );
+        <Vec<crate::modules::event::structs::CameraControlBlock>>::sse_encode(
+            self.camera_blocks,
+            serializer,
+        );
+        <Vec<String>>::sse_encode(self.source_files, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::EventMetadata {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.source_path, serializer);
+        <u64>::sse_encode(self.file_size, serializer);
+        <usize>::sse_encode(self.record_count, serializer);
+        <Vec<crate::modules::event::structs::WpdRecordInfo>>::sse_encode(
+            self.wpd_records,
+            serializer,
+        );
+        <Option<crate::modules::event::structs::ScheduleHeader>>::sse_encode(
+            self.schedule_header,
+            serializer,
+        );
+        <crate::modules::event::structs::SectionCounts>::sse_encode(
+            self.section_counts,
+            serializer,
+        );
+        <Vec<crate::modules::event::structs::ExternalResource>>::sse_encode(
+            self.external_resources,
+            serializer,
+        );
+        <Vec<crate::modules::event::structs::EventActor>>::sse_encode(self.actors, serializer);
+        <Vec<crate::modules::event::structs::EventBlock>>::sse_encode(self.blocks, serializer);
+        <Vec<crate::modules::event::structs::EventResource>>::sse_encode(
+            self.resources,
+            serializer,
+        );
+        <Vec<crate::modules::event::structs::SoundBlock>>::sse_encode(
+            self.sound_blocks,
+            serializer,
+        );
+        <Vec<crate::modules::event::structs::SoundReference>>::sse_encode(
+            self.sound_references,
+            serializer,
+        );
+        <Vec<crate::modules::event::structs::DialogueEntry>>::sse_encode(
+            self.dialogue_entries,
+            serializer,
+        );
+        <Option<crate::modules::event::structs::EventDataSet>>::sse_encode(
+            self.dataset,
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::EventResource {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.resource_type, serializer);
+        <Option<String>>::sse_encode(self.external_hash, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::EventSummary {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <usize>::sse_encode(self.actor_count, serializer);
+        <usize>::sse_encode(self.block_count, serializer);
+        <usize>::sse_encode(self.resource_count, serializer);
+        <usize>::sse_encode(self.dialogue_count, serializer);
+        <usize>::sse_encode(self.sound_block_count, serializer);
+        <f32>::sse_encode(self.total_duration_seconds, serializer);
+        <bool>::sse_encode(self.has_dataset, serializer);
+        <usize>::sse_encode(self.motion_block_count, serializer);
+        <usize>::sse_encode(self.camera_block_count, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::ExternalResource {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.hash, serializer);
+        <crate::modules::event::structs::ResourceCategory>::sse_encode(self.category, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::ExtractedEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.output_dir, serializer);
+        <crate::modules::event::structs::EventMetadata>::sse_encode(self.metadata, serializer);
+        <Vec<String>>::sse_encode(self.extracted_files, serializer);
+    }
+}
+
 impl SseEncode for f32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -4803,6 +7061,26 @@ impl SseEncode for Vec<String> {
     }
 }
 
+impl SseEncode for Vec<crate::modules::event::structs::BlockTrack> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::BlockTrack>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::CameraControlBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::CameraControlBlock>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::modules::crystalium::structs::CrystariumEntry> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -4819,6 +7097,76 @@ impl SseEncode for Vec<crate::modules::crystalium::structs::CrystariumNode> {
         <i32>::sse_encode(self.len() as _, serializer);
         for item in self {
             <crate::modules::crystalium::structs::CrystariumNode>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::scd::structs::DecodedAudio> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::scd::structs::DecodedAudio>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::DialogueEntry> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::DialogueEntry>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::EventActor> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::EventActor>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::EventBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::EventBlock>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::EventResource> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::EventResource>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::ExternalResource> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::ExternalResource>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::MotionControlBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::MotionControlBlock>::sse_encode(item, serializer);
         }
     }
 }
@@ -4915,6 +7263,36 @@ impl SseEncode for Vec<(String, crate::modules::wdb::structs::WdbValue)> {
     }
 }
 
+impl SseEncode for Vec<crate::modules::scd::structs::ScdStreamInfo> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::scd::structs::ScdStreamInfo>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::SoundBlock> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::SoundBlock>::sse_encode(item, serializer);
+        }
+    }
+}
+
+impl SseEncode for Vec<crate::modules::event::structs::SoundReference> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::SoundReference>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::modules::crystalium::structs::Vec3> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -4995,6 +7373,16 @@ impl SseEncode for Vec<crate::modules::wpd::structs::WpdRecord> {
     }
 }
 
+impl SseEncode for Vec<crate::modules::event::structs::WpdRecordInfo> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::modules::event::structs::WpdRecordInfo>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::modules::ztr::structs::ZtrEntry> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5054,12 +7442,44 @@ impl SseEncode for crate::modules::crystalium::structs::McpPattern {
     }
 }
 
+impl SseEncode for crate::modules::event::structs::MotionControlBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.source_file, serializer);
+        <u32>::sse_encode(self.header_size, serializer);
+        <u32>::sse_encode(self.data_size, serializer);
+        <u16>::sse_encode(self.version, serializer);
+        <u16>::sse_encode(self.flags, serializer);
+    }
+}
+
 impl SseEncode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <String>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::modules::event::structs::EventDataSet> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::modules::event::structs::EventDataSet>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::modules::event::structs::ScheduleHeader> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::modules::event::structs::ScheduleHeader>::sse_encode(value, serializer);
         }
     }
 }
@@ -5132,6 +7552,160 @@ impl SseEncode for (u32, u32) {
     }
 }
 
+impl SseEncode for crate::modules::event::structs::ResourceCategory {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::modules::event::structs::ResourceCategory::Event => 0,
+                crate::modules::event::structs::ResourceCategory::Camera => 1,
+                crate::modules::event::structs::ResourceCategory::World => 2,
+                crate::modules::event::structs::ResourceCategory::Facial => 3,
+                crate::modules::event::structs::ResourceCategory::Normal => 4,
+                crate::modules::event::structs::ResourceCategory::Block => 5,
+                crate::modules::event::structs::ResourceCategory::CutsceneCamera => 6,
+                crate::modules::event::structs::ResourceCategory::Unknown => 7,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::modules::scd::structs::ScdCodec {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::modules::scd::structs::ScdCodec::PcmBe => 0,
+                crate::modules::scd::structs::ScdCodec::PcmLe => 1,
+                crate::modules::scd::structs::ScdCodec::PsAdpcm => 2,
+                crate::modules::scd::structs::ScdCodec::OggVorbis => 3,
+                crate::modules::scd::structs::ScdCodec::Mpeg => 4,
+                crate::modules::scd::structs::ScdCodec::MsAdpcm => 5,
+                crate::modules::scd::structs::ScdCodec::Xma2 => 6,
+                crate::modules::scd::structs::ScdCodec::Atrac => 7,
+                crate::modules::scd::structs::ScdCodec::Unknown => 8,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::modules::scd::structs::ScdExtractResult {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <crate::modules::scd::structs::ScdMetadata>::sse_encode(self.metadata, serializer);
+        <Vec<crate::modules::scd::structs::DecodedAudio>>::sse_encode(
+            self.audio_streams,
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for crate::modules::scd::structs::ScdHeader {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.version, serializer);
+        <bool>::sse_encode(self.big_endian, serializer);
+        <u16>::sse_encode(self.tables_offset, serializer);
+        <u64>::sse_encode(self.file_size, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::scd::structs::ScdMetadata {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <crate::modules::scd::structs::ScdHeader>::sse_encode(self.header, serializer);
+        <Vec<crate::modules::scd::structs::ScdStreamInfo>>::sse_encode(self.streams, serializer);
+        <f32>::sse_encode(self.duration_seconds, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::scd::structs::ScdStreamInfo {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.index, serializer);
+        <u32>::sse_encode(self.data_size, serializer);
+        <u32>::sse_encode(self.channels, serializer);
+        <u32>::sse_encode(self.sample_rate, serializer);
+        <crate::modules::scd::structs::ScdCodec>::sse_encode(self.codec, serializer);
+        <u32>::sse_encode(self.loop_start, serializer);
+        <u32>::sse_encode(self.loop_end, serializer);
+        <u32>::sse_encode(self.extra_data_size, serializer);
+        <u32>::sse_encode(self.aux_chunk_count, serializer);
+        <u32>::sse_encode(self.data_offset, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::ScheduleHeader {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.magic, serializer);
+        <u32>::sse_encode(self.version, serializer);
+        <u32>::sse_encode(self.header_size, serializer);
+        <u32>::sse_encode(self.data_size, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::SectionCounts {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <u32>::sse_encode(self.crst, serializer);
+        <u32>::sse_encode(self.cres, serializer);
+        <u32>::sse_encode(self.catt, serializer);
+        <u32>::sse_encode(self.ccpt, serializer);
+        <u32>::sse_encode(self.cact, serializer);
+        <u32>::sse_encode(self.cdpt, serializer);
+        <u32>::sse_encode(self.ctrk, serializer);
+        <u32>::sse_encode(self.cbkt, serializer);
+        <u32>::sse_encode(self.cblk, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::SoundBlock {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <u32>::sse_encode(self.duration_samples, serializer);
+        <f32>::sse_encode(self.duration_seconds, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::SoundReference {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.block_name, serializer);
+        <String>::sse_encode(self.sound_id, serializer);
+        <crate::modules::event::structs::SoundType>::sse_encode(self.sound_type, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::SoundType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::modules::event::structs::SoundType::Music => 0,
+                crate::modules::event::structs::SoundType::Ambient => 1,
+                crate::modules::event::structs::SoundType::Voice => 2,
+                crate::modules::event::structs::SoundType::SoundEffect => 3,
+                crate::modules::event::structs::SoundType::Unknown => 4,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::modules::wct::TargetType {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5145,6 +7719,48 @@ impl SseEncode for crate::modules::wct::TargetType {
             },
             serializer,
         );
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::TrackType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::modules::event::structs::TrackType::MotionSet => {
+                <i32>::sse_encode(0, serializer);
+            }
+            crate::modules::event::structs::TrackType::CharacterSet => {
+                <i32>::sse_encode(1, serializer);
+            }
+            crate::modules::event::structs::TrackType::Camera => {
+                <i32>::sse_encode(2, serializer);
+            }
+            crate::modules::event::structs::TrackType::Sound => {
+                <i32>::sse_encode(3, serializer);
+            }
+            crate::modules::event::structs::TrackType::MusicBus => {
+                <i32>::sse_encode(4, serializer);
+            }
+            crate::modules::event::structs::TrackType::Dialogue => {
+                <i32>::sse_encode(5, serializer);
+            }
+            crate::modules::event::structs::TrackType::Effect => {
+                <i32>::sse_encode(6, serializer);
+            }
+            crate::modules::event::structs::TrackType::EventDef => {
+                <i32>::sse_encode(7, serializer);
+            }
+            crate::modules::event::structs::TrackType::ActorControl => {
+                <i32>::sse_encode(8, serializer);
+            }
+            crate::modules::event::structs::TrackType::Unknown(field0) => {
+                <i32>::sse_encode(9, serializer);
+                <u16>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -5433,6 +8049,16 @@ impl SseEncode for crate::modules::wpd::structs::WpdRecord {
         <String>::sse_encode(self.name, serializer);
         <String>::sse_encode(self.extension, serializer);
         <Vec<u8>>::sse_encode(self.data, serializer);
+    }
+}
+
+impl SseEncode for crate::modules::event::structs::WpdRecordInfo {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.extension, serializer);
+        <u32>::sse_encode(self.offset, serializer);
+        <u32>::sse_encode(self.size, serializer);
     }
 }
 
